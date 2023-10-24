@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <sys/time.h>
 #include <ctype.h>
+#include <algorithm>
 
 void printLog (const char * level, const char * fmt,  ...);
 
@@ -25,7 +26,6 @@ class dp2200Window : public virtual Window {
     cursorY=0;
     win = newwin(14, 82, 0, 0);
     normalWindow();
-    //mvwprintw(win, 3, 1, "NORMAL");
     wrefresh(win);
   } 
   void hightlightWindow() {
@@ -158,6 +158,7 @@ class commandWindow : public virtual Window {
         paramStrings.push_back(tmp);
       }
     }
+    std::transform(commandWord.begin(), commandWord.end(), commandWord.begin(), ::toupper);
 
     for (std::vector<std::string>::const_iterator it=paramStrings.begin(); it != paramStrings.end();it++) {
       printLog("INFO", "paramString=%s**\n ", it->c_str());
@@ -195,6 +196,7 @@ class commandWindow : public virtual Window {
           // split param at =
           found = it->find_first_of('=');
           auto s = it->substr(0,found);
+          std::transform(s.begin(), s.end(), s.begin(), ::toupper);
           auto v = it->substr(found+1);
           printLog("INFO", "s=%s v=%s\n", s.c_str(), v.c_str());
           // Find matching in command params.
@@ -289,8 +291,8 @@ class commandWindow : public virtual Window {
     if (ch=='?') {
       processCommand(ch);
     } else if ((ch>=32) && (ch <127)) {
-      waddch(innerWin, toupper(ch));
-      commandLine += toupper(ch);
+      waddch(innerWin, ch);
+      commandLine += ch;
     } else if (ch==10) {
       waddch(innerWin,'\n');
       processCommand(ch);
