@@ -170,8 +170,6 @@ class commandWindow : public virtual Window {
       }
     }
     if (ch == '?') {
-
-
       if (filtered.size()==1) {
         int y,x;
         getyx(innerWin, y, x);
@@ -191,8 +189,6 @@ class commandWindow : public virtual Window {
       } else if (filtered.size()==1) {
         std::string paramName;
         std::vector<Param*> filteredParams;
-        //wprintw(innerWin, "%s - %s \n", filtered[0].command.c_str(), filtered[0].help.c_str());
-
         // process all parameters 
         for (auto it = paramStrings.begin(); it != paramStrings.end(); it++) {
           printLog("INFO", "paramStrings=%s\n", it->c_str());
@@ -240,12 +236,6 @@ class commandWindow : public virtual Window {
           }
           filteredParams.clear();
         }
-
-
-        /*
-        for (auto it = filtered[0].params.begin(); it <= filtered[0].params.end(); ++it ) {
-
-        }*/
         if (!failed) ((*this).*(filtered[0].func))(filtered[0].params);
       } else if (filtered.size()>1) {
         wprintw(innerWin, "Ambiguous command given. Did you mean: ");
@@ -270,14 +260,6 @@ class commandWindow : public virtual Window {
     innerWin = newwin(LINES-16, 80, 15,1);
     normalWindow();
     scrollok(innerWin,TRUE);
-    /*
-    wprintw(innerWin, "TESTING\n");
-    wrefresh(win);
-    wrefresh(innerWin);
-    for (int i=1;i<30;i++) {
-      wprintw(innerWin, "TESTING%d\n", i); 
-    } 
-    */
     wmove(innerWin,0,0);
     waddch(innerWin, '>');
     wrefresh(innerWin);    
@@ -439,24 +421,13 @@ int main(int argc, char *argv[]) {
 
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);
-	initscr();			/* Start curses mode 		*/
-	raw();			/* Line buffering disabled, Pass on
-					 * everty thing to me 		*/
+	initscr();			        /* Start curses mode 		*/
+	raw();			            /* Line buffering disabled, Pass on everything to me 		*/
 	keypad(stdscr, TRUE);		/* I need that nifty F1 	*/
   noecho();
   nodelay(stdscr, true);
   timeout(0);
-	//height = 3;
-	//width = 10;
-	//starty = (LINES - height) / 2;	/* Calculating for a center placement */
-	//startx = (COLS - width) / 2;	/* of the window		*/
-	//printw("Press F1 to exit");	
   refresh();
-	//my_win = create_newwin(height, width, starty, startx);
-       /*win = newwin(14, 82, 3, 3);
-    box(win, 0 , 0);
-    wrefresh(win);*/
-   
   dpw = new dp2200Window();
   rw = new registerWindow();
   cw = new commandWindow();
@@ -474,14 +445,11 @@ int main(int argc, char *argv[]) {
       timeout.tv_nsec += 1000000000;
       timeout.tv_sec--;
     }  
-    //printLog("INFO", "timeout.tv_sec=%ld\n", timeout.tv_sec);
-    //printLog("INFO", "timeout.tv_nsec=%ld\n", timeout.tv_nsec);
     nanosleep(&timeout, NULL);
     timerqueue.front().cb();
     timerqueue.erase(timerqueue.begin());
    
 
   }		
-	endwin();			/* End curses mode		  */
 	return 0;
 }
