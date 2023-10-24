@@ -1,5 +1,7 @@
 # Datapoint 2200
 
+The purpose of this repo is to describe the effort in restoring a Datapoint 2200 that I received as an IKEA-kit. This will include documenting all the parts of the machine as well as create a simulator for it.
+
 ![Datapoint 2200 in a kit](https://i.imgur.com/pP6DzC2.jpg)
 
 I received this Datapoint 2200 (Version II) as a trade with a German collector for a Q1 computersystem. The 2200 was delivered as a kit, but I am pretty sure all parts are present. The goal is to revive this very interesting milestone in computer history. It can be considered as the first personal computer (depending on definition) and is also the beginning of x86 archicture whis still is omnipresent.
