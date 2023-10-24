@@ -10,61 +10,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <termios.h>
+#include "dp2200_cpu_sim.h"
 
-class dp2200_cpu {
-public:
-  // Define Registerset
-  enum Reg { A, B, C, D, E, H, L };
-  // unsigned char regs[sizeof(Reg),2];
 
-  // accumulator and scratch registers
-  struct r {
-    unsigned char regA;
-    unsigned char regB;
-    unsigned char regC;
-    unsigned char regD;
-    unsigned char regE;
-    unsigned char regH;
-    unsigned char regL;
-  };
 
-  int setSel;
-
-  union regs {
-    unsigned char regs[7];
-    struct r r;
-  } regs;
-
-  union regs regSets[2];
-
-  struct address {
-    unsigned char regH;
-    unsigned char regL;
-  };
-
-  // PC and stack
-  union stack {
-    struct address stack[16];
-    unsigned short stk[16];
-  } stack;
-
-  unsigned char stackptr;
-
-  // flags
-  unsigned char flagParity[2];
-  unsigned char flagSign[2];
-  unsigned char flagCarry[2];
-  unsigned char flagZero[2];
-
-  int interruptPending;
-  int interruptEnabled;
-
-  unsigned short P;
-
-  // 16K memory
-  unsigned char memory[0x4000];
-
-  // mnemonic symbols for opcodes
+// mnemonic symbols for opcodes
   /*
   const char *mnems[] = {
       // 00xxxxxx  load (immediate), add/subtract (immediate), increment,
@@ -186,23 +136,11 @@ public:
   XXX load (bits 0-5 determine src/dest,except 0xFF = halt)
 
   *********************************************************************/
-  /*int immediateplus(unsigned char inst);
-  int iojmpcall(unsigned char inst);
-  int mathboolean(unsigned char inst);
-  int load(unsigned char inst);
-  int chkconditional(unsigned char inst);
-  void setflags(int result, int carryzero);
-  void reset();
-  int execute();
-  void setflagsinc(int result);
-  void setparity(int result);
-*/
-  unsigned long instructions = 0;
-  unsigned long fetches = 0;
-  unsigned int outbitcnt = 0;
-  unsigned int inbitcnt = 0;
 
-  void reset() {
+
+
+
+void dp2200_cpu::reset() {
     unsigned char i, j;
 
     for (i = A; i <= L; i++)
@@ -217,7 +155,7 @@ public:
     interruptEnabled = 0;
   }
 
-  int execute() {
+  int dp2200_cpu::execute() {
     unsigned char inst;
 
     int halted;
@@ -257,8 +195,8 @@ public:
     }
     return halted;
   }
-  private:
-  int immediateplus(unsigned char inst) {
+
+int dp2200_cpu::immediateplus(unsigned char inst) {
     unsigned int op;
     unsigned int reg;
     int oldflag;
@@ -457,7 +395,7 @@ public:
     return 0;
   }
 
-  int iojmpcall(unsigned char inst) {
+  int dp2200_cpu::iojmpcall(unsigned char inst) {
     unsigned int op;
     unsigned int cc; /* condition code to check, if conditional operation */
     unsigned int addrL, addrH;
@@ -660,7 +598,7 @@ public:
     return 0;
   }
 
-  int mathboolean(unsigned char inst) {
+  int dp2200_cpu::mathboolean(unsigned char inst) {
     unsigned int src, op;
     int carryzero;
     unsigned int sdata1, sdata2, result;
@@ -737,7 +675,7 @@ public:
     return 0;
   }
 
-  void setflags(int result, int carryzero) {
+  void dp2200_cpu::setflags(int result, int carryzero) {
 
     if (result & 0xff) {
       flagZero[setSel] = 0;
@@ -763,7 +701,7 @@ public:
     return;
   }
 
-  void setflagsinc(int result) {
+  void dp2200_cpu::setflagsinc(int result) {
     if (result & 0xff) {
       flagZero[setSel] = 0;
       if (result & 0x80) {
@@ -779,7 +717,7 @@ public:
     return;
   }
 
-  void setparity(int result) {
+  void dp2200_cpu::setparity(int result) {
     int i, p;
 
     p = 0;
@@ -795,7 +733,7 @@ public:
     }
   }
 
-  int load(unsigned char inst) {
+  int dp2200_cpu::load(unsigned char inst) {
     unsigned int src, dest;
     unsigned char data;
     src = inst & 0x7;
@@ -820,7 +758,7 @@ public:
     return 0;
   }
 
-  int chkconditional(unsigned char inst) {
+  int dp2200_cpu::chkconditional(unsigned char inst) {
     unsigned int cc;
     cc = (inst & 0x38) >> 3;
 
@@ -851,5 +789,4 @@ public:
       break; /* parity true */
     }
     return (cc);
-  }
-};
+  }  
