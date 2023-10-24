@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <ctype.h>
 #include <algorithm>
+#include "dp2200_cpu_sim.h"
 
 void printLog (const char * level, const char * fmt,  ...);
 
@@ -21,7 +22,7 @@ class dp2200Window : public virtual Window {
   int cursorX, cursorY;
   WINDOW *win;
   public:
-  dp2200Window() {
+  dp2200Window(class dp2200_cpu *) {
     cursorX=0;
     cursorY=0;
     win = newwin(14, 82, 0, 0);
@@ -250,7 +251,7 @@ class commandWindow : public virtual Window {
 
   }
   public:
-  commandWindow() {
+  commandWindow(class dp2200_cpu *) {
     cursorX=0;
     cursorY=0;
     commands.push_back({ "HELP", "Show help information", {}, &commandWindow::doHelp});
@@ -314,7 +315,7 @@ class registerWindow : public virtual Window {
   int cursorX, cursorY;
   WINDOW *win;
   public:
-  registerWindow() {
+  registerWindow(class dp2200_cpu *) {
     cursorX=0;
     cursorY=0;
     win = newwin(LINES, COLS-82, 0, 82);
@@ -418,8 +419,7 @@ int main(int argc, char *argv[]) {
   class dp2200Window * dpw;
   class registerWindow * rw;
   class commandWindow * cw;
-
-  class Window * test;
+  class dp2200_cpu cpu;
 
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);
@@ -430,13 +430,12 @@ int main(int argc, char *argv[]) {
   nodelay(stdscr, true);
   timeout(0);
   refresh();
-  dpw = new dp2200Window();
-  rw = new registerWindow();
-  cw = new commandWindow();
+  dpw = new dp2200Window(&cpu);
+  rw = new registerWindow(&cpu);
+  cw = new commandWindow(&cpu);
   windows[0] = cw;
   windows[1] = rw;
   windows[2] = dpw;
-  test = cw;
   windows[activeWindow]->hightlightWindow();
   pollKeyboard();
 	while (1) { // event loop
