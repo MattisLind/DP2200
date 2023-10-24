@@ -2,6 +2,10 @@
 
 PLEASE NOTE!  THIS IS NOT WORKING AT ALL. JUST WORK IN PROGRESS.
 
+Until there is a makefile use this command to compile:
+
+```c++ main.cpp dp2200_cpu_sim.cpp -std=c++17 -lncurses  -o dp2200sim ```
+
 ## Requirements
 
 This is an unsorted list of requirements. Not necessarily part of the MVP. More as a list coming from brain-storming.

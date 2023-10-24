@@ -63,7 +63,7 @@ unsigned short P;
 unsigned char memory[0x4000];
 
 // mnemonic symbols for opcodes
-char *mnems[] = {
+const char *mnems[] = {
     // 00xxxxxx  load (immediate), add/subtract (immediate), increment,
     // decrement,
     "HALT", "HALT", "SLC", "RFC", "AD ", "---", "LA ", "RETURN", "SYNC", "---",
@@ -477,23 +477,28 @@ int iojmpcall(unsigned char inst) {
     switch(op) {
       case 0:
         /* INPUT */
-        return 0;
+        break;
       case 1:
         /* Unimplemented */
         return 1;
       case 2:
         /* EX ADR */
+        break;
       case 3:
         /* EX COM1 */
+        break;
       case 4:
         /* Unimplemented */
         return 1;
       case 5:
         /* EX BEEP */
+        break;
       case 6:
         /* EX RBK */
+        break;
       case 7:
         /* EX SF */
+        break;
     }    
     break;
   case 2: /* call conditionally */
@@ -525,17 +530,22 @@ int iojmpcall(unsigned char inst) {
         return 1;
       case 2:
         /* EX STATUS */
+        break;
       case 3:
         /* EX COM2 */
+        break;
       case 4:
         /* Unimplemented */
         return 1;
       case 5:
         /* EX CLICK */
+        break;
       case 6:
         /* EX WBK */
+        break;
       case 7:
         /* EX SB */
+        break;
     }    
     break;
   case 4: /* jump */
@@ -567,16 +577,22 @@ case 5:
         return 1;
       case 2:
         /* EX DATA */
+        break;
       case 3:
         /* EX COM3 */
+        break;
       case 4:
         /* Unimplemented */
+        break;
       case 5:
         /* EX DECK1 */
+        break;
       case 6:
         /* Unimplemented */
+        break;
       case 7:
         /* EX REWND */
+        break;
     }   
 
     break;
@@ -613,16 +629,22 @@ case 5:
         return 1;
       case 2:
         /* EX WRITE */
+        break;
       case 3:
         /* EX COM4 */
+        break;
       case 4:
         /* Unimplemented */
+        return 1;
       case 5:
         /* EX DECK2 */
+        break;
       case 6:
         /* EX BSP */
+        break;
       case 7:
         /* EX TSTOP */
+        break;
     }   
 
     break;
