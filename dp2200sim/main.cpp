@@ -90,6 +90,11 @@ class commandWindow : public virtual Window {
     wprintw(innerWin, "Do STEP\n"); 
   }
 
+  void doExit(std::vector<Param> params) {
+    endwin();
+    exit(0);  
+  }
+
   void doAttach (std::vector<Param> params) { 
     std::string fileName;
     int drive;
@@ -260,6 +265,7 @@ class commandWindow : public virtual Window {
     commands.push_back({ "STEP", "Step one instruction", {}, &commandWindow::doStep});
     commands.push_back({ "ATTACH", "Step one instruction", {{"DRIVE",DRIVE, NUMBER,{.i=0}}, {"FILENAME", FILENAME, STRING, {.s={'\0'}}}}, &commandWindow::doAttach});
     commands.push_back({ "STOP", "Stop execution", {}, &commandWindow::doStop});
+    commands.push_back({ "EXIT", "Exit the simulator", {}, &commandWindow::doExit});
     win = newwin(LINES-14, 82, 14, 0);
     innerWin = newwin(LINES-16, 80, 15,1);
     normalWindow();
@@ -374,23 +380,10 @@ int pollKeyboard () {
       activeWindow = activeWindow<0?2:activeWindow;
       windows[activeWindow]->hightlightWindow();
       break; 
-    case KEY_RESIZE:
-      //height = 3;
-      //width = 10;
-      //starty = (LINES - height) / 2;	/* Calculating for a center placement */
-      //startx = (COLS - width) / 2;	/* of the window		*/    
+    case KEY_RESIZE:    
       break;  
     case ERR:
-    // reschedule
-
       break;  
-    case  KEY_F(5):
-      return 1;
-      break;
-    case KEY_LEFT:
-    case KEY_RIGHT:
-    case KEY_UP:
-    case KEY_DOWN:
     default:
       windows[activeWindow]->handleKey(ch);
       break;
@@ -437,7 +430,6 @@ void printLog (const char * level, const char * fmt,  ...) {
 int main(int argc, char *argv[]) {	
   WINDOW *my_win, * win;
 	int startx, starty, width, height;
-  int exitProgram = 0;
   struct timespec now, timeout;
   class dp2200Window * dpw;
   class registerWindow * rw;
@@ -474,7 +466,7 @@ int main(int argc, char *argv[]) {
   test = cw;
   windows[activeWindow]->hightlightWindow();
   pollKeyboard();
-	while (!exitProgram) { // event loop
+	while (1) { // event loop
     clock_gettime(CLOCK_MONOTONIC, &now);
     timeout.tv_nsec = timerqueue.front().deadline.tv_nsec -now.tv_nsec;
     timeout.tv_sec = timerqueue.front().deadline.tv_sec -now.tv_sec;
@@ -485,7 +477,7 @@ int main(int argc, char *argv[]) {
     //printLog("INFO", "timeout.tv_sec=%ld\n", timeout.tv_sec);
     //printLog("INFO", "timeout.tv_nsec=%ld\n", timeout.tv_nsec);
     nanosleep(&timeout, NULL);
-    exitProgram= timerqueue.front().cb();
+    timerqueue.front().cb();
     timerqueue.erase(timerqueue.begin());
    
 
