@@ -80,6 +80,7 @@ class commandWindow : public virtual Window {
   WINDOW *win, * innerWin;
   std::string commandLine;
   std::vector<Cmd> commands;
+  dp2200_cpu * cpu;
   void doHelp (std::vector<Param> params) {
     for (std::vector<Cmd>::const_iterator it=commands.begin(); it != commands.end(); it++) {
       wprintw(innerWin, "%s - %s\n", it->command.c_str(), it->help.c_str());
@@ -96,9 +97,33 @@ class commandWindow : public virtual Window {
     exit(0);  
   }
 
+  void doLoadBoot(std::vector<Param> params) { 
+  }
+
+  void doRun(std::vector<Param> params) { 
+  }
+  void doReset(std::vector<Param> params) { 
+  }
+  void doRestart(std::vector<Param> params) { 
+  }
+  void doHalt(std::vector<Param> params) { 
+  }  
+  void doDetach (std::vector<Param> params) { 
+    int drive;
+    for (auto it = params.begin(); it < params.end(); it++) {
+      if (it->paramId == DRIVE) {
+        drive = it->paramValue.i;
+      }
+    } 
+    fclose(cpu->tapeDrives[drive].file);
+    wprintw (innerWin, "Detaching file %s to drive %d\n", cpu->tapeDrives[drive].fileName.c_str(), drive);
+  }
+
+
   void doAttach (std::vector<Param> params) { 
     std::string fileName;
     int drive;
+    FILE * tmp;
     for (auto it = params.begin(); it < params.end(); it++) {
       printLog("INFO", "paramName=%s paramType=%d paramId=%d\n", it->paramName.c_str(), it->type, it->paramId);
       switch(it->type) {
@@ -118,9 +143,15 @@ class commandWindow : public virtual Window {
       if (it->paramId == DRIVE) {
         drive = it->paramValue.i;
       }
+    } 
+    tmp = fopen(fileName.c_str(),"rw");
+    if (tmp==NULL) {
+      wprintw (innerWin, "Failed to open file %s\n", fileName.c_str());
+    } else {
+      wprintw (innerWin, "Attaching file %s to drive %d\n", fileName.c_str(), drive);
+      cpu->tapeDrives[drive].file=tmp;
+      cpu->tapeDrives[drive].fileName = fileName;
     }
-    wprintw (innerWin, "Attaching file %s to drive %d\n", fileName.c_str(), drive);
-    
   }
   void doStop (std::vector<Param> params) {
     wprintw(innerWin, "Stopping!\n"); 
@@ -256,9 +287,15 @@ class commandWindow : public virtual Window {
     cursorY=0;
     commands.push_back({ "HELP", "Show help information", {}, &commandWindow::doHelp});
     commands.push_back({ "STEP", "Step one instruction", {}, &commandWindow::doStep});
-    commands.push_back({ "ATTACH", "Step one instruction", {{"DRIVE",DRIVE, NUMBER,{.i=0}}, {"FILENAME", FILENAME, STRING, {.s={'\0'}}}}, &commandWindow::doAttach});
+    commands.push_back({ "ATTACH", "Attach file to cassette drive", {{"DRIVE",DRIVE, NUMBER,{.i=0}}, {"FILENAME", FILENAME, STRING, {.s={'\0'}}}}, &commandWindow::doAttach});
+    commands.push_back({ "DETACH", "Detach file from cassette drive", {{"DRIVE",DRIVE, NUMBER,{.i=0}}}, &commandWindow::doDetach});
     commands.push_back({ "STOP", "Stop execution", {}, &commandWindow::doStop});
     commands.push_back({ "EXIT", "Exit the simulator", {}, &commandWindow::doExit});
+    commands.push_back({ "LOADBOOT", "Load the bootstrap from cassette into memory", {}, &commandWindow::doLoadBoot});
+    commands.push_back({ "RESTART", "Load bootstrap and restart CPU", {}, &commandWindow::doRestart});
+    commands.push_back({ "RESET", "Reset the CPU", {}, &commandWindow::doReset});
+    commands.push_back({ "STOP", "Stop the CPU", {},&commandWindow::doHalt });
+    commands.push_back({ "RUN", "Run CPU from current location", {}, &commandWindow::doRun});
     win = newwin(LINES-14, 82, 14, 0);
     innerWin = newwin(LINES-16, 80, 15,1);
     normalWindow();
@@ -314,15 +351,19 @@ class commandWindow : public virtual Window {
 class registerWindow : public virtual Window {
   int cursorX, cursorY;
   WINDOW *win;
+  dp2200_cpu * cpu;
   public:
-  registerWindow(class dp2200_cpu *) {
+  registerWindow(class dp2200_cpu * c) {
     cursorX=0;
     cursorY=0;
     win = newwin(LINES, COLS-82, 0, 82);
     normalWindow();
     wrefresh(win);
-
+    cpu = c;
   } 
+  void updateWindow() {
+
+  }
   void hightlightWindow() {
     wattrset(win, A_STANDOUT);
     box(win, 0 , 0); 
@@ -339,6 +380,10 @@ class registerWindow : public virtual Window {
     
   }
 };
+
+class dp2200Window * dpw;
+class registerWindow * rw;
+class commandWindow * cw;
 
 int pollKeyboard(void);
 struct callbackRecord {
@@ -374,7 +419,7 @@ int pollKeyboard () {
       break;
     
   }
-  
+  rw->updateWindow();
   clock_gettime(CLOCK_MONOTONIC, &cbr.deadline);
   cbr.deadline.tv_nsec += 10000000; // 10 ms
   if(cbr.deadline.tv_nsec >= 1000000000) {
@@ -416,9 +461,7 @@ int main(int argc, char *argv[]) {
   WINDOW *my_win, * win;
 	int startx, starty, width, height;
   struct timespec now, timeout;
-  class dp2200Window * dpw;
-  class registerWindow * rw;
-  class commandWindow * cw;
+
   class dp2200_cpu cpu;
 
   logfile = fopen("dp2200.log", "w");
