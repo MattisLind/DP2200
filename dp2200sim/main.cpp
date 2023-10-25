@@ -8,8 +8,30 @@
 #include <ctype.h>
 #include <algorithm>
 #include "dp2200_cpu_sim.h"
+#include "cassetteTape.h"
 
 void printLog (const char * level, const char * fmt,  ...);
+
+CassetteTape::CassetteTape () {
+  
+}
+
+bool CassetteTape::openFile (std::string fileName) {
+  file = fopen(fileName.c_str(),"rw");
+  return file!=NULL;
+}
+
+void CassetteTape::closeFile () {
+  fclose(file);  
+}
+std::string CassetteTape::getFileName () {
+  return fileName;
+}
+
+void CassetteTape::loadBoot (unsigned char * address) {
+  // rewinds the tape and read first block into memory
+}
+
 
 class Window {
   public: 
@@ -115,8 +137,8 @@ class commandWindow : public virtual Window {
         drive = it->paramValue.i;
       }
     } 
-    fclose(cpu->tapeDrives[drive].file);
-    wprintw (innerWin, "Detaching file %s to drive %d\n", cpu->tapeDrives[drive].fileName.c_str(), drive);
+    cpu->tapeDrive[drive]->closeFile();
+    wprintw (innerWin, "Detaching file %s to drive %d\n", cpu->tapeDrive[drive]->getFileName().c_str(), drive);
   }
 
 
@@ -144,13 +166,11 @@ class commandWindow : public virtual Window {
         drive = it->paramValue.i;
       }
     } 
-    tmp = fopen(fileName.c_str(),"rw");
-    if (tmp==NULL) {
+    
+    if (cpu->tapeDrive[0]->openFile(fileName)) {
       wprintw (innerWin, "Failed to open file %s\n", fileName.c_str());
     } else {
       wprintw (innerWin, "Attaching file %s to drive %d\n", fileName.c_str(), drive);
-      cpu->tapeDrives[drive].file=tmp;
-      cpu->tapeDrives[drive].fileName = fileName;
     }
   }
   void doStop (std::vector<Param> params) {
@@ -463,7 +483,8 @@ int main(int argc, char *argv[]) {
   struct timespec now, timeout;
 
   class dp2200_cpu cpu;
-
+  cpu.tapeDrive[0] = new CassetteTape();
+  cpu.tapeDrive[1] = new CassetteTape();
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);
 	initscr();			        /* Start curses mode 		*/
