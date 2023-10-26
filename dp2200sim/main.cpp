@@ -13,7 +13,7 @@
 void printLog (const char * level, const char * fmt,  ...);
 
 CassetteTape::CassetteTape () {
-  
+
 }
 
 bool CassetteTape::openFile (std::string fileName) {
@@ -37,34 +37,48 @@ class Window {
   public: 
   virtual void hightlightWindow() = 0;
   virtual void normalWindow() = 0;
-  virtual void handleKey(int) = 0;
+  virtual void  handleKey(int) = 0;
+  virtual void resetCursor() = 0;
 };
 
 class dp2200Window : public virtual Window {
   int cursorX, cursorY;
   WINDOW *win;
+  bool activeWindow;
   public:
   dp2200Window(class dp2200_cpu *) {
-    cursorX=0;
-    cursorY=0;
+    cursorX=1;
+    cursorY=1;
     win = newwin(14, 82, 0, 0);
     normalWindow();
     wrefresh(win);
+    activeWindow=false;
   } 
   void hightlightWindow() {
     wattrset(win, A_STANDOUT);
     box(win, 0 , 0); 
     mvwprintw(win, 0, 1, "DATAPOINT 2200 SCREEN"); 
     wattrset(win, 0);
+    wmove(win,cursorY,cursorX);
     wrefresh(win);
+    activeWindow=true;
   }
   void normalWindow() {
+    curs_set(0);    
     box(win, 0 , 0); 
     mvwprintw(win, 0, 1, "DATAPOINT 2200 SCREEN"); 
-    wrefresh(win);  
+    wrefresh(win);
+    activeWindow=false;  
   }
   void handleKey(int key) {
     
+  }
+  void resetCursor() {
+    if (activeWindow) {
+      curs_set(2);  
+      wmove(win,cursorY,cursorX);
+      wrefresh(win);
+    }
   }
 
 };
@@ -103,6 +117,7 @@ class commandWindow : public virtual Window {
   std::string commandLine;
   std::vector<Cmd> commands;
   dp2200_cpu * cpu;
+  bool activeWindow;
   void doHelp (std::vector<Param> params) {
     for (std::vector<Cmd>::const_iterator it=commands.begin(); it != commands.end(); it++) {
       wprintw(innerWin, "%s - %s\n", it->command.c_str(), it->help.c_str());
@@ -303,8 +318,9 @@ class commandWindow : public virtual Window {
   }
   public:
   commandWindow(class dp2200_cpu *) {
-    cursorX=0;
+    cursorX=1;
     cursorY=0;
+    activeWindow=false;
     commands.push_back({ "HELP", "Show help information", {}, &commandWindow::doHelp});
     commands.push_back({ "STEP", "Step one instruction", {}, &commandWindow::doStep});
     commands.push_back({ "ATTACH", "Attach file to cassette drive", {{"DRIVE",DRIVE, NUMBER,{.i=0}}, {"FILENAME", FILENAME, STRING, {.s={'\0'}}}}, &commandWindow::doAttach});
@@ -325,23 +341,29 @@ class commandWindow : public virtual Window {
     wrefresh(innerWin);    
   } 
   void hightlightWindow() {
+    curs_set(1);
     wattrset(win, A_STANDOUT);
     box(win, 0 , 0); 
     //draw_borders(win);
     mvwprintw(win, 0, 1, "COMMAND WINDOW");
+    wmove(innerWin,cursorY,cursorX);
     wattrset(win, 0);
     wrefresh(win);
     redrawwin(innerWin);
     wrefresh(innerWin); 
     //wrefresh(win);
+    activeWindow=true;
   }
   void normalWindow() {
+    //getyx(innerWin,cursorY,cursorX);
+    //curs_set(0);
     box(win, 0 , 0); 
     //draw_borders(win);
     mvwprintw(win, 0, 1, "COMMAND WINDOW");
     wrefresh(win);
     redrawwin(innerWin);
     wrefresh(innerWin);  
+    activeWindow=false;
     //wrefresh(win); 
   }
   void handleKey(int ch) {
@@ -365,6 +387,14 @@ class commandWindow : public virtual Window {
       commandLine.erase(commandLine.size()-1,1);
     }
     wrefresh(innerWin);
+    getyx(innerWin, cursorY, cursorX);
+  }
+  void resetCursor() {
+    if (activeWindow) {
+      curs_set(2);  
+      wmove(innerWin,cursorY,cursorX);
+      wrefresh(innerWin);
+    }
   }
 };
 
@@ -372,31 +402,83 @@ class registerWindow : public virtual Window {
   int cursorX, cursorY;
   WINDOW *win;
   dp2200_cpu * cpu;
+  bool octal;
+  bool activeWindow;
   public:
   registerWindow(class dp2200_cpu * c) {
-    cursorX=0;
-    cursorY=0;
+    cursorX=4;
+    cursorY=3;
     win = newwin(LINES, COLS-82, 0, 82);
     normalWindow();
     wrefresh(win);
     cpu = c;
+    octal=false;
+    activeWindow=false;
   } 
   void updateWindow() {
-
+    //curs_set(0);
+    
+    mvwprintw(win, 2,5, "REGISTERS");
+    mvwprintw(win, 2,2, "ALPHA       BETA");
+    mvwprintw(win, 3,2, "A:%02x        A:%02x", cpu->regSets[0].r.regA, cpu->regSets[1].r.regA);
+    mvwprintw(win, 4,2, "B:%02x        B:%02x", cpu->regSets[0].r.regB, cpu->regSets[1].r.regB);
+    mvwprintw(win, 5,2, "C:%02x        C:%02x", cpu->regSets[0].r.regC, cpu->regSets[1].r.regC);
+    mvwprintw(win, 6,2, "D:%02x        D:%02x", cpu->regSets[0].r.regD, cpu->regSets[1].r.regD);
+    mvwprintw(win, 7,2, "E:%02x        E:%02x", cpu->regSets[0].r.regE, cpu->regSets[1].r.regE);
+    mvwprintw(win, 8,2, "H:%02x        H:%02x", cpu->regSets[0].r.regH, cpu->regSets[1].r.regH); 
+    mvwprintw(win, 9,2, "L:%02x        L:%02x", cpu->regSets[0].r.regL, cpu->regSets[1].r.regL);   
+    mvwprintw(win,10,2, "C:%1d Z:%1d", 0x1&cpu->flagCarry[0], 0x1&cpu->flagZero[0]); 
+    mvwprintw(win,11,2, "P:%1d S:%1d", 0x1&cpu->flagParity[0], 0x1&cpu->flagSign[0]); 
+    mvwprintw(win,10,14, "C:%1d Z:%1d ", 0x1&cpu->flagCarry[1], 0x1&cpu->flagZero[1]); 
+    mvwprintw(win,11,14, "P:%1d S:%1d", 0x1&cpu->flagParity[1], 0x1&cpu->flagSign[1]);
+    mvwprintw(win, 13, 10, "MEMORY");
+    
+    //leaveok(win, true); 
+    wrefresh(win);
   }
+
   void hightlightWindow() {
+    curs_set(0);
     wattrset(win, A_STANDOUT);
     box(win, 0 , 0); 
     mvwprintw(win, 0, 1, "REGISTER WINDOW");
     wattrset(win, 0);
     wrefresh(win);
+    activeWindow=true;
   }
   void normalWindow() {
+    curs_set(0);
     box(win, 0 , 0); 
     mvwprintw(win, 0, 1, "REGISTER WINDOW");
-    wrefresh(win);  
+    wrefresh(win); 
+    activeWindow=false; 
+  }
+  void resetCursor() {
+    if (activeWindow) {
+      curs_set(2);  
+      wmove(win,cursorY,cursorX);
+      wrefresh(win);
+    }
   }
   void handleKey(int key) {
+    /*
+    '?' toggle a help screen for the register window
+    'A', 'B', 'C', 'D', 'E', 'H', 'L' Toggles between positioning the cursor on the first digit of either ALPHA or BETA register set. Going to the active set when pressing the key the first time.
+    'M' goes to the memory view, last accessed location or top left corner if first time 
+    'LEFT', 'RIGHT', 'UP', 'DOWN' let you change memory location when the memoyview is activated by pressing M.
+    'SHIFT-LEFT', 'SHIFT-RIGHT' shows previous or next page of memory
+    'LEFT', 'RIGHT' navigates among digits in the register view
+    'F' toggles all the flag bits. Going back to the last accessed flag bit 
+    'O' toggles octal and hex presentation.
+    The register set which active is highlighted (ALPHA / BETA)
+    'P' goes to the P-register. 
+    The instruction pointed to by the P register is decoded into the mnemonic and printed next to P-register in the view.
+
+    A better structure to handle the view then just hardcoded X,Y positions.
+    The view should be constructed out of objects. One register object show the register name and value object. A value object can have two presentations. Octal or Hex.
+    The memory view should be consists of line objects with a address-object and a number of value-objects.
+    Editing a address object should update the memory view to present the new memory contents around that address
+    */
     
   }
 };
@@ -417,7 +499,10 @@ std::vector<callbackRecord> timerqueue;
 
 int pollKeyboard () {
   int ch;
+  int savedY, savedX;
   struct callbackRecord cbr;
+  rw->updateWindow();
+  windows[activeWindow]->resetCursor();
   ch = getch();
   switch(ch) {
     case KEY_BTAB:
@@ -432,14 +517,14 @@ int pollKeyboard () {
       break; 
     case KEY_RESIZE:    
       break;  
-    case ERR:
-      break;  
+    case ERR: 
+      break; 
     default:
       windows[activeWindow]->handleKey(ch);
       break;
     
   }
-  rw->updateWindow();
+
   clock_gettime(CLOCK_MONOTONIC, &cbr.deadline);
   cbr.deadline.tv_nsec += 10000000; // 10 ms
   if(cbr.deadline.tv_nsec >= 1000000000) {
