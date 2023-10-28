@@ -138,7 +138,9 @@
   *********************************************************************/
 
 
-
+void dp2200_cpu::clear() {
+  for (int i=0; i<sizeof(memory);i++ ) memory[i]=0;
+}
 
 void dp2200_cpu::reset() {
     unsigned char i, j;

@@ -130,10 +130,15 @@ class commandWindow : public virtual Window {
     exit(0);
   }
 
-  void doLoadBoot(std::vector<Param> params) {}
 
+  void doLoadBoot(std::vector<Param> params) {}
+  void doClear(std::vector<Param> params) {
+    cpu->clear();
+  }
   void doRun(std::vector<Param> params) {}
-  void doReset(std::vector<Param> params) {}
+  void doReset(std::vector<Param> params) {
+    cpu->reset();
+  }
   void doRestart(std::vector<Param> params) {}
   void doHalt(std::vector<Param> params) {}
   void doDetach(std::vector<Param> params) {
@@ -323,9 +328,10 @@ class commandWindow : public virtual Window {
   }
 
 public:
-  commandWindow(class dp2200_cpu *) {
+  commandWindow(class dp2200_cpu * c) {
     cursorX = 1;
     cursorY = 0;
+    cpu = c;
     activeWindow = false;
     commands.push_back(
         {"HELP", "Show help information", {}, &commandWindow::doHelp});
@@ -355,6 +361,8 @@ public:
     commands.push_back({"STOP", "Stop the CPU", {}, &commandWindow::doHalt});
     commands.push_back(
         {"RUN", "Run CPU from current location", {}, &commandWindow::doRun});
+    commands.push_back(
+        {"CLEAR", "Clear memory", {}, &commandWindow::doClear});    
     win = newwin(LINES - 14, 82, 14, 0);
     innerWin = newwin(LINES - 16, 80, 15, 1);
     normalWindow();
@@ -575,11 +583,11 @@ public:
 
   void updateWindow() {
     // curs_set(0);
-
-    //updateForm(base);
-
+    if (!activeWindow)  updateForm(base);
+    //pos_form_cursor(form);
     // leaveok(win, true);
     //wrefresh(win);
+    //refresh();
   }
 
   void hightlightWindow() {
@@ -608,11 +616,11 @@ public:
     activeWindow = false;
   }
   void resetCursor() {
-    /*if (activeWindow) {
-      curs_set(2);
-      wmove(win, cursorY, cursorX);
-      wrefresh(win);
-    }*/
+    if (activeWindow) {
+    //  curs_set(2);
+    //  wmove(win, cursorY, cursorX);
+    //  wrefresh(win);
+    }
   }
   void handleKey(int key) {
     /*
@@ -778,9 +786,9 @@ int main(int argc, char *argv[]) {
   int startx, starty, width, height;
   struct timespec now, timeout;
 
-  class dp2200_cpu cpu;
-  cpu.tapeDrive[0] = new CassetteTape();
-  cpu.tapeDrive[1] = new CassetteTape();
+  class dp2200_cpu * cpu = new dp2200_cpu;
+  cpu->tapeDrive[0] = new CassetteTape();
+  cpu->tapeDrive[1] = new CassetteTape();
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);
   initscr(); /* Start curses mode 		*/
@@ -791,9 +799,9 @@ int main(int argc, char *argv[]) {
   set_escdelay(100);
   timeout(0);
   refresh();
-  dpw = new dp2200Window(&cpu);
-  r = rw = new registerWindow(&cpu);
-  cw = new commandWindow(&cpu);
+  dpw = new dp2200Window(cpu);
+  r = rw = new registerWindow(cpu);
+  cw = new commandWindow(cpu);
   windows[0] = cw;
   windows[1] = rw;
   windows[2] = dpw;
