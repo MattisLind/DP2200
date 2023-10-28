@@ -4,7 +4,7 @@ PLEASE NOTE!  THIS IS NOT WORKING AT ALL. JUST WORK IN PROGRESS.
 
 Until there is a makefile use this command to compile:
 
-```c++ main.cpp dp2200_cpu_sim.cpp -std=c++17 -lncurses  -o dp2200sim ```
+```c++ main.cpp dp2200_cpu_sim.cpp cassetteTape.cpp -g -std=c++17 -lncurses -lform  -o dp2200sim ```
 
 PLEASE NOTE! ONLY TESTED ON MACOS.
 

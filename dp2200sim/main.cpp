@@ -17,19 +17,7 @@ void printLog(const char *level, const char *fmt, ...);
 
 FILE *logfile;
 
-CassetteTape::CassetteTape() {}
 
-bool CassetteTape::openFile(std::string fileName) {
-  file = fopen(fileName.c_str(), "rw");
-  return file != NULL;
-}
-
-void CassetteTape::closeFile() { fclose(file); }
-std::string CassetteTape::getFileName() { return fileName; }
-
-void CassetteTape::loadBoot(unsigned char *address) {
-  // rewinds the tape and read first block into memory
-}
 
 class Window {
 public:
@@ -131,7 +119,9 @@ class commandWindow : public virtual Window {
   }
 
 
-  void doLoadBoot(std::vector<Param> params) {}
+  void doLoadBoot(std::vector<Param> params) {
+    cpu->tapeDrive[0]->loadBoot(cpu->memory);
+  }
   void doClear(std::vector<Param> params) {
     cpu->clear();
   }
@@ -181,10 +171,9 @@ class commandWindow : public virtual Window {
     }
 
     if (cpu->tapeDrive[0]->openFile(fileName)) {
-      wprintw(innerWin, "Failed to open file %s\n", fileName.c_str());
+      wprintw(innerWin, "Attaching file %s to drive %d\n", fileName.c_str(),drive);
     } else {
-      wprintw(innerWin, "Attaching file %s to drive %d\n", fileName.c_str(),
-              drive);
+      wprintw(innerWin, "Failed to open file %s\n", fileName.c_str());      
     }
   }
   void doStop(std::vector<Param> params) { wprintw(innerWin, "Stopping!\n"); }
@@ -583,7 +572,10 @@ public:
 
   void updateWindow() {
     // curs_set(0);
-    if (!activeWindow)  updateForm(base);
+    if (!activeWindow)  {
+      updateForm(base);
+      wrefresh(win);
+    }
     //pos_form_cursor(form);
     // leaveok(win, true);
     //wrefresh(win);

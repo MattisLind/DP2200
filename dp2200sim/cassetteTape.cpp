@@ -1,37 +1,72 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "cassetteTape.h"
 
-unsigned char * readBlock (FILE * in, int * size) {
+
+CassetteTape::CassetteTape() {}
+
+bool CassetteTape::openFile(std::string fileName) {
+  file = fopen(fileName.c_str(), "r");
+  return file != NULL;
+}
+
+void CassetteTape::closeFile() { fclose(file); }
+
+std::string CassetteTape::getFileName() { return fileName; }
+
+
+void  CassetteTape::readBlock (unsigned char * buffer, int * size) {
+  int maxSize = *size;
+  fread(size, 4, 1, file);
+  if (*size>maxSize) {
+    fread(buffer, maxSize, 1, file);
+  } else {
+    fread(buffer, *size, 1, file);
+  }
+  fread(size, 4, 1, file);
+}
+
+unsigned char * CassetteTape::readBlock (int * size) {
   unsigned char * buffer;
-  fread(size, 4, 1, in);
+  fread(size, 4, 1, file);
   buffer = (unsigned char *) malloc(*size);
-  fread(buffer, *size, 1, in);
-  fread(size, 4, 1, in);
+  fread(buffer, *size, 1, file);
+  fread(size, 4, 1, file);
   return buffer;
 }
 
-int isFileHeader(unsigned char * buffer) {
+void CassetteTape::rewind() {
+  ::rewind(file);
+}
+
+void CassetteTape::loadBoot(unsigned char *  address) {
+  int size=16384;
+  rewind();
+  readBlock(address, &size);
+}
+
+int CassetteTape::isFileHeader(unsigned char * buffer) {
   if ((buffer[0]==0201) && (buffer[1]==0176)) {
     return 1;
   } 
   return 0;
 }
 
-int isNumericRecord(unsigned char * buffer) {
+int CassetteTape::isNumericRecord(unsigned char * buffer) {
   if ((buffer[0]==0303) && (buffer[1]==0074)) {
     return 1;
   } 
   return 0;
 }
 
-int isSymbolicRecord(unsigned char * buffer) {
+int CassetteTape::isSymbolicRecord(unsigned char * buffer) {
   if ((buffer[0]==0347) && (buffer[1]==0030)) {
     return 1;
   } 
   return 0;
 }
 
-int isChecksumOK(unsigned char * buffer, int size) {
+int CassetteTape::isChecksumOK(unsigned char * buffer, int size) {
   unsigned char xorChecksum;
   unsigned char circulatedChecksum;
   int i;
@@ -49,7 +84,7 @@ int isChecksumOK(unsigned char * buffer, int size) {
   if ((xorChecksum == 0) && (circulatedChecksum == 0)) return 1;
   return 0;
 }
-
+/*
 int main (int argc, char * argv[])  {
   FILE * in;
   unsigned char * buffer;
@@ -97,3 +132,4 @@ int main (int argc, char * argv[])  {
   }
   return 0;
 } 
+*/
