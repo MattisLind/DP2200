@@ -14,7 +14,7 @@
 #include <time.h>
 
 static FORM *form;
-static WINDOW *win_body, *win_form;
+static WINDOW *win_body;
 FILE * logfile;
 
 typedef struct m {
@@ -118,7 +118,7 @@ static void driver(int ch)
 			break;
 	}
 
-	wrefresh(win_form);
+	wrefresh(win_body);
 }
 
 
@@ -137,7 +137,7 @@ void form_hook(formnode * f) {
     memory[base+indexToAddress[i].data] = value;
     fprintf(logfile, "base %04X indextToAddress[%d].data=%04X Address %02X Value %02X\n", base, i, indexToAddress[i].data, base+indexToAddress[i].data, value);
   } 
-  wrefresh(win_form);
+  wrefresh(win_body);
 }
 
 
@@ -156,10 +156,10 @@ int main(int argc, char *argv[]) {
 	win_body = newwin(24, 80, 0, 0);
 	assert(win_body != NULL);
 	box(win_body, 0, 0);
-	win_form = derwin(win_body, 20, 78, 3, 1);
-	assert(win_form != NULL);
-	box(win_form, 0, 0);
-	mvwprintw(win_body, 1, 2, "Press F5 to quit and F2 to print fields content");
+	//win_form = derwin(win_body, 20, 78, 3, 1);
+	//assert(win_form != NULL);
+	//box(win_form, 0, 0);
+	mvwprintw(win_body, 1, 2, "Press F5 to quit and F6 to print fields content");
  
   for (int i=0;i<sizeof(memory); i++) {
     memory[i] = rand()&0xff; 
@@ -219,13 +219,13 @@ int main(int argc, char *argv[]) {
 	form = new_form(f);
 	assert(form != NULL);
   set_field_term(form,form_hook);
-	set_form_win(form, win_form);
-	set_form_sub(form, derwin(win_form, 18, 76, 1, 1));
+	set_form_win(form, win_body);
+  set_form_sub(form, derwin(win_body, 16, 76, 1, 1));
 	post_form(form);
 
 	refresh();
 	wrefresh(win_body);
-	wrefresh(win_form);
+	//wrefresh(win_form);
   form_driver(form, REQ_OVL_MODE);
 
 	while ((ch = getch()) != KEY_F(5))
@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
 	free_field(fields[1]);
 	free_field(fields[2]);
 	free_field(fields[3]);
-	delwin(win_form);
+	//delwin(win_form);
 	delwin(win_body);
 	endwin();
   fclose(logfile);
