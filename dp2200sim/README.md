@@ -1,6 +1,9 @@
 # dp2200sim - a Datapoint 2200 simulator
 
-PLEASE NOTE!  THIS IS NOT WORKING AT ALL. JUST WORK IN PROGRESS.
+PLEASE NOTE!  THIS BARELY WORKS. STILL WORK IN PROGRESS. 
+At this point it can load the bootstrap from a file and step throughh instructions. Not much more.
+
+[]()
 
 Until there is a makefile use this command to compile:
 
