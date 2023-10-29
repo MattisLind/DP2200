@@ -109,7 +109,9 @@ class commandWindow : public virtual Window {
     }
   }
 
-  void doStep(std::vector<Param> params) { wprintw(innerWin, "Do STEP\n"); }
+  void doStep(std::vector<Param> params) { 
+    cpu->execute(); 
+  }
 
   void doExit(std::vector<Param> params) {
     endwin();
