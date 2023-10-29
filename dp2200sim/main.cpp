@@ -338,6 +338,8 @@ public:
     commands.push_back({"STOP", "Stop execution", {}, &commandWindow::doStop});
     commands.push_back(
         {"EXIT", "Exit the simulator", {}, &commandWindow::doExit});
+    commands.push_back(
+        {"QUIT", "Quit the simulator", {}, &commandWindow::doExit});        
     commands.push_back({"LOADBOOT",
                         "Load the bootstrap from cassette into memory",
                         {},
@@ -511,6 +513,11 @@ class registerWindow : public virtual Window {
       set_field_buffer(addressFields[i], 0, b);
       for (j = 0; j < 16; j++) {
         t = cpu->memory[startAddress + j];
+        if ((startAddress + j) == cpu->P ) {
+          set_field_back(dataFields[k], A_UNDERLINE);
+        } else {
+          set_field_back(dataFields[k], A_NORMAL);
+        }
         snprintf(b, 3, "%02X", t);
         set_field_buffer(dataFields[k], 0, b);
         k++;
@@ -525,6 +532,11 @@ class registerWindow : public virtual Window {
       set_field_buffer(addressFields[i], 0, b);
       for (int j = 0; j < 16; j++) {
         t = cpu->memory[startAddress + j];
+        if ((startAddress + j) == cpu->P ) {
+          set_field_back(dataFields[k], A_UNDERLINE);
+        } else {
+          set_field_back(dataFields[k], A_NORMAL);
+        }        
         snprintf(b, 3, "%02X", t);
         set_field_buffer(dataFields[k], 0, b);
         k++;
