@@ -11,6 +11,8 @@ Until there is a makefile use this command to compile:
 
 PLEASE NOTE! ONLY TESTED ON MACOS.
 
+The actual cpu simulator code was is based on a 8008 simultor by M. Willegal. I have heavily modified it for Datapoint 2200 and wrapped it into C++.
+
 ## Requirements
 
 This is an unsorted list of requirements. Not necessarily part of the MVP. More as a list coming from brain-storming.
