@@ -421,6 +421,11 @@ public:
 void form_hook_proxy(formnode *);
 
 
+class hookExecutor {
+  public:
+  virtual void exec(FIELD *field) = 0;  
+};
+
 class registerWindow : public virtual Window {
   int cursorX, cursorY;
   WINDOW *win;
@@ -452,6 +457,49 @@ class registerWindow : public virtual Window {
   FIELD * interruptEnabled;
   FIELD * interruptPending; 
 
+  class memoryDataHookExecutor : hookExecutor {
+    int data;
+    class registerWindow * rw;
+    public:
+    memoryDataHookExecutor(class registerWindow * r, int d) {
+      data=d;
+      rw = r;
+    }
+    void exec (FIELD *field);
+  };
+
+  class memoryAddressHookExecutor : hookExecutor {
+    int address;
+    class registerWindow * rw;
+    public:
+    memoryAddressHookExecutor(class registerWindow * r, int a) { 
+      address = a; 
+      rw = r;
+    }
+    void exec(FIELD *field);
+  };
+
+  class charPointerHookExecutor : hookExecutor {
+    unsigned char *  address;
+    class registerWindow * rw;
+    public:
+    charPointerHookExecutor(class registerWindow * r, unsigned char * a) { 
+      address = a; 
+      rw = r;
+    }
+    void exec(FIELD *field);
+  };
+
+   class shortPointerHookExecutor : hookExecutor {
+    unsigned short *  address;
+    class registerWindow * rw;
+    public:
+    shortPointerHookExecutor(class registerWindow * r, unsigned short * a) { 
+      address = a; 
+      rw = r;
+    }
+    void exec(FIELD *field);
+  };
 
   void updateForm(int startAddress) {
     int i, k = 0, j;
@@ -508,8 +556,6 @@ class registerWindow : public virtual Window {
   }
 public:
 
-  void form_hook(formnode *);
-
   FIELD * createAField(int length, int y, int x, const char * str) {
     FIELD * t;
     t = new_field(1, length, y, x, 0, 0); // HEADER - REGISTERS TEXT
@@ -519,9 +565,10 @@ public:
     return t;
   }
 
-  FIELD * createAField(int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just) {
+  FIELD * createAField(int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h) {
     FIELD * t = createAField(length, y, x, str);
     set_field_opts(t, O_VISIBLE | O_PUBLIC  | O_STATIC | f);
+    set_field_userptr(t, h);
     if (regexp != NULL) set_field_type(t, TYPE_REGEXP, regexp);
     return t;
   }
@@ -552,39 +599,35 @@ public:
     for (auto regset=0;regset < 2; regset++) {
       for (auto reg=0; reg<7; reg++) {
         createAField(2,4+reg, 3+15*regset,rName[reg]);
-        regs[regset][reg]=createAField(2,4+reg, 5+15*regset, "00", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT);
+        regs[regset][reg]=createAField(2,4+reg, 5+15*regset, "00", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new charPointerHookExecutor(this, &cpu->regSets[regset].regs[reg]));
       }
       // flags
       createAField(2, 12,3+15*regset, "P:" );
-      flagParity[regset]=createAField(1,12,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION);
+      flagParity[regset]=createAField(1,12,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new charPointerHookExecutor(this, &cpu->flagParity[regset]));
       createAField(2, 12,8+15*regset, "S:" );
-      flagSign[regset]=createAField(1,12,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION);
+      flagSign[regset]=createAField(1,12,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new charPointerHookExecutor(this, &cpu->flagSign[regset]));
       createAField(2, 13,3+15*regset, "C:" );
-      flagCarry[regset]=createAField(1,13,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION);
+      flagCarry[regset]=createAField(1,13,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new charPointerHookExecutor(this, &cpu->flagCarry[regset]));
       createAField(2, 13,8+15*regset, "Z:" );
-      flagZero[regset]=createAField(1,13,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION);
+      flagZero[regset]=createAField(1,13,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new charPointerHookExecutor(this, &cpu->flagZero[regset]));
     }
 
     createAField(2, 15,3, "P:" );
-    pc=createAField(4,15,5, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT);
+    pc=createAField(4,15,5, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new shortPointerHookExecutor(this, &cpu->P));
     
     for (auto line = 0; line < 16; line++) {
       // Add one address field
       auto tmp = new_field(1, 4, line+offset, 3, 0, 0);
       fields.push_back(tmp);
-      M m = {-1, line, -1};
-      indexToAddress.push_back(m);
+      set_field_userptr(tmp, (char *) new memoryAddressHookExecutor(this, line));
       addressFields.push_back(tmp);
       for (auto column = 0; column < 16; column++) {
-        M p = {line * 16 + column, -1, -1};
         tmp = new_field(1, 2, line+offset, 8 + 3 * column, 0, 0);
-        indexToAddress.push_back(p);
+        set_field_userptr(tmp, (char *) new memoryDataHookExecutor(this, line * 16 + column));
         fields.push_back(tmp);
         dataFields.push_back(tmp);
       }
       tmp = new_field(1, 18, line+offset, 57, 0, 0);
-      M q = {-1, -1, line};
-      indexToAddress.push_back(q);
       asciiFields.push_back(tmp);
       fields.push_back(tmp);
     }
@@ -752,24 +795,36 @@ public:
 class registerWindow *r;
 
 void form_hook_proxy(formnode * f) {
-  r->form_hook(f);
+  class hookExecutor * hE;
+  FIELD *field = current_field(f);
+  hE = (class hookExecutor * ) field_userptr(field);
+  hE->exec(field);
 }
 
-void registerWindow::form_hook(formnode *f) {
-  FIELD *field = current_field(f);
-  int i = field_index(field);
+void registerWindow::memoryAddressHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 16);
-  if (i<indexToAddress.size()) {
-    if (indexToAddress[i].address != -1) {
-      base = (value - indexToAddress[i].address * 16) & 0x3ff0;
-      updateForm(base);
-    }
-    if (indexToAddress[i].data != -1) {
-      cpu->memory[base + indexToAddress[i].data] = value;
-    }
-    wrefresh(win);
-  }
+  rw->base = (value - address * 16) & 0x3ff0;
+  rw->updateForm(rw->base);
+  wrefresh(rw->win);
+}
+
+void registerWindow::memoryDataHookExecutor::exec(FIELD *field) {
+  char *bufferString = field_buffer(field, 0);
+  int value = strtol(bufferString, NULL, 16);
+  rw->cpu->memory[rw->base + data] = value;
+}
+
+void registerWindow::charPointerHookExecutor::exec(FIELD *field) {
+  char *bufferString = field_buffer(field, 0);
+  unsigned char value = strtol(bufferString, NULL, 16);
+  *address = value;
+}
+
+void registerWindow::shortPointerHookExecutor::exec(FIELD *field) {
+  char *bufferString = field_buffer(field, 0);
+  unsigned short value = strtol(bufferString, NULL, 16);
+  *address = value;
 }
 
 
