@@ -441,6 +441,17 @@ class registerWindow : public virtual Window {
   std::vector<FIELD *> dataFields;
   std::vector<M> indexToAddress;
   std::vector<FIELD *> asciiFields;
+  std::vector<FIELD *> registerViewFields;
+  FIELD * regs[2][7];
+  FIELD * stack[16];
+  FIELD * flagParity[2];
+  FIELD * flagSign[2];
+  FIELD * flagCarry[2];
+  FIELD * flagZero[2];
+  FIELD * pc;
+  FIELD * interruptEnabled;
+  FIELD * interruptPending; 
+
 
   void updateForm(int startAddress) {
     int i, k = 0, j;
@@ -475,10 +486,45 @@ class registerWindow : public virtual Window {
       snprintf(fieldB, 19, "|%s|", asciiB);
       set_field_buffer(asciiFields[i], 0, fieldB);
     }
+    // update registers.
+    for (auto regset =0; regset<2; regset++) {
+      for (auto i=0; i<7; i++) {
+        auto f = regs[regset][i];
+        auto r = cpu->regSets[regset].regs[i];
+        snprintf(b, 3, "%02X", r);
+        set_field_buffer(f, 0, b);
+      }
+      snprintf(b, 2, "%01X", cpu->flagCarry[regset]);
+      set_field_buffer(flagCarry[regset], 0, b);
+      snprintf(b, 2, "%01X", cpu->flagZero[regset]);
+      set_field_buffer(flagZero[regset], 0, b);
+      snprintf(b, 2, "%01X", cpu->flagParity[regset]);
+      set_field_buffer(flagParity[regset], 0, b);
+      snprintf(b, 2, "%01X", cpu->flagSign[regset]);
+      set_field_buffer(flagSign[regset], 0, b);                  
+    }
+    snprintf(b, 5, "%04X", cpu->P);
+    set_field_buffer(pc, 0, b);
   }
 public:
 
   void form_hook(formnode *);
+
+  FIELD * createAField(int length, int y, int x, const char * str) {
+    FIELD * t;
+    t = new_field(1, length, y, x, 0, 0); // HEADER - REGISTERS TEXT
+    registerViewFields.push_back(t);
+    set_field_buffer(t, 0, str);
+    set_field_opts(t, O_VISIBLE | O_PUBLIC  | O_STATIC);
+    return t;
+  }
+
+  FIELD * createAField(int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just) {
+    FIELD * t = createAField(length, y, x, str);
+    set_field_opts(t, O_VISIBLE | O_PUBLIC  | O_STATIC | f);
+    if (regexp != NULL) set_field_type(t, TYPE_REGEXP, regexp);
+    return t;
+  }
 
   registerWindow(class dp2200_cpu *c) {
     cursorX = 4;  
@@ -492,23 +538,51 @@ public:
     int ch;
     FIELD **f;
     int i;
-
+    int offset=19;
+    
+    
+    FIELD * t;
     int j = 0;
+    const char * rName[]={"A:","B:","C:","D:","E:","H:","L:"};
+
+    // Registers.
+    createAField(10,2,6, "REGISTERS");
+    createAField(20,3,3,"ALPHA          BETA");
+
+    for (auto regset=0;regset < 2; regset++) {
+      for (auto reg=0; reg<7; reg++) {
+        createAField(2,4+reg, 3+15*regset,rName[reg]);
+        regs[regset][reg]=createAField(2,4+reg, 5+15*regset, "00", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT);
+      }
+      // flags
+      createAField(2, 12,3+15*regset, "P:" );
+      flagParity[regset]=createAField(1,12,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION);
+      createAField(2, 12,8+15*regset, "S:" );
+      flagSign[regset]=createAField(1,12,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION);
+      createAField(2, 13,3+15*regset, "C:" );
+      flagCarry[regset]=createAField(1,13,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION);
+      createAField(2, 13,8+15*regset, "Z:" );
+      flagZero[regset]=createAField(1,13,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION);
+    }
+
+    createAField(2, 15,3, "P:" );
+    pc=createAField(4,15,5, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT);
+    
     for (auto line = 0; line < 16; line++) {
       // Add one address field
-      auto tmp = new_field(1, 4, line, 3, 0, 0);
+      auto tmp = new_field(1, 4, line+offset, 3, 0, 0);
       fields.push_back(tmp);
       M m = {-1, line, -1};
       indexToAddress.push_back(m);
       addressFields.push_back(tmp);
       for (auto column = 0; column < 16; column++) {
         M p = {line * 16 + column, -1, -1};
-        tmp = new_field(1, 2, line, 8 + 3 * column, 0, 0);
+        tmp = new_field(1, 2, line+offset, 8 + 3 * column, 0, 0);
         indexToAddress.push_back(p);
         fields.push_back(tmp);
         dataFields.push_back(tmp);
       }
-      tmp = new_field(1, 18, line, 57, 0, 0);
+      tmp = new_field(1, 18, line+offset, 57, 0, 0);
       M q = {-1, -1, line};
       indexToAddress.push_back(q);
       asciiFields.push_back(tmp);
@@ -524,7 +598,7 @@ public:
     }
 
     for (auto it = dataFields.begin(); it < dataFields.end(); it++) {
-      set_field_buffer(*it, 0, "0000");
+      set_field_buffer(*it, 0, "00");
       set_field_opts(*it, O_VISIBLE | O_PUBLIC | O_EDIT | O_ACTIVE | O_STATIC);
       set_field_type(*it, TYPE_REGEXP, "[0-9A-Fa-f][0-9A-Fa-f]");
       set_field_just(*it, JUSTIFY_LEFT);
@@ -537,9 +611,13 @@ public:
 
     f = (FIELD **)malloc(
         (sizeof(FIELD *)) *
-        (addressFields.size() + dataFields.size() + asciiFields.size() + 1));
+        (addressFields.size() + dataFields.size() + asciiFields.size() + registerViewFields.size()+ 1));
     i = 0;
     for (auto it = fields.begin(); it < fields.end(); it++) {
+      f[i] = *it;
+      i++;
+    }
+    for (auto it = registerViewFields.begin(); it < registerViewFields.end(); it++) {
       f[i] = *it;
       i++;
     }
@@ -549,7 +627,7 @@ public:
     assert(form != NULL);
     set_field_term(form, form_hook_proxy);
     set_form_win(form, win);
-    set_form_sub(form, derwin(win, 18, 76, 1, 1));
+    set_form_sub(form, derwin(win, 40, 76, 1, 1));
     post_form(form);
     pos_form_cursor(form);
     updateForm(base);  
@@ -682,14 +760,16 @@ void registerWindow::form_hook(formnode *f) {
   int i = field_index(field);
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 16);
-  if (indexToAddress[i].address != -1) {
-    base = (value - indexToAddress[i].address * 16) & 0x3ff0;
-    updateForm(base);
+  if (i<indexToAddress.size()) {
+    if (indexToAddress[i].address != -1) {
+      base = (value - indexToAddress[i].address * 16) & 0x3ff0;
+      updateForm(base);
+    }
+    if (indexToAddress[i].data != -1) {
+      cpu->memory[base + indexToAddress[i].data] = value;
+    }
+    wrefresh(win);
   }
-  if (indexToAddress[i].data != -1) {
-    cpu->memory[base + indexToAddress[i].data] = value;
-  }
-  wrefresh(win);
 }
 
 
