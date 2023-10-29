@@ -565,6 +565,17 @@ class registerWindow : public virtual Window {
     }
     snprintf(b, 5, "%04X", cpu->P);
     set_field_buffer(pc, 0, b);
+
+    for (auto i = 0; i<16; i++) {
+      snprintf(b, 5, "%04X", cpu->stack.stk[i]);
+      set_field_buffer(stack[i], 0, b);
+      if (i == cpu->stackptr ) {
+        set_field_back(stack[i], A_UNDERLINE);
+      } else {
+        set_field_back(stack[i], A_NORMAL);
+      }   
+    }
+
   }
 public:
 
@@ -597,7 +608,7 @@ public:
     
     FIELD **f;
     int i;
-    int offset=19;
+    int offset=21;
     
     
     
@@ -606,7 +617,7 @@ public:
 
     // Registers.
     createAField(10,2,6, "REGISTERS");
-    createAField(20,3,3,"ALPHA          BETA");
+    createAField(40,3,3,"ALPHA          BETA          STACK");
 
     for (auto regset=0;regset < 2; regset++) {
       for (auto reg=0; reg<7; reg++) {
@@ -626,6 +637,9 @@ public:
 
     createAField(2, 15,3, "P:" );
     pc=createAField(4,15,5, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new shortPointerHookExecutor(this, &cpu->P));
+    for (auto i=0; i<16; i++) {
+      stack[i] = createAField(4,4+i,32, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new shortPointerHookExecutor(this, &cpu->stack.stk[i]));
+    }
     
     for (auto line = 0; line < 16; line++) {
       // Add one address field
