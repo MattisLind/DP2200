@@ -94,8 +94,6 @@ typedef struct cmd {
   void (commandWindow::*func)(std::vector<Param>);
 } Cmd;
 
-Cmd cmds[] = {
-    {"HELP", "Show help information"}, "STEP", "Step one instruction"};
 class commandWindow : public virtual Window {
   int cursorX, cursorY;
   WINDOW *win, *innerWin;
@@ -146,7 +144,7 @@ class commandWindow : public virtual Window {
   void doAttach(std::vector<Param> params) {
     std::string fileName;
     int drive;
-    FILE *tmp;
+    
     for (auto it = params.begin(); it < params.end(); it++) {
       printLog("INFO", "paramName=%s paramType=%d paramId=%d\n",
                it->paramName.c_str(), it->type, it->paramId);
@@ -582,14 +580,14 @@ public:
     cpu = c;
     octal = false;
     activeWindow = false;
-    int ch;
+    
     FIELD **f;
     int i;
     int offset=19;
     
     
-    FIELD * t;
-    int j = 0;
+    
+    
     const char * rName[]={"A:","B:","C:","D:","E:","H:","L:"};
 
     // Registers.
@@ -740,7 +738,7 @@ public:
     '?' toggle a help screen for the register window
 
     */
-    int i;
+    
 
     switch (key) {
     case 27: // ESC
@@ -844,7 +842,7 @@ std::vector<callbackRecord> timerqueue;
 
 int pollKeyboard() {
   int ch;
-  int savedY, savedX;
+  
   struct callbackRecord cbr;
   rw->updateWindow();
   windows[activeWindow]->resetCursor();
@@ -897,7 +895,7 @@ void updateTimeBuf() {
 void printLog(const char *level, const char *fmt, ...) {
   char buffer[256];
   int charsPrinted;
-  struct timeval tv;
+  
   va_list args;
   va_start(args, fmt);
   updateTimeBuf();
@@ -909,8 +907,8 @@ void printLog(const char *level, const char *fmt, ...) {
 }
 
 int main(int argc, char *argv[]) {
-  WINDOW *my_win, *win;
-  int startx, starty, width, height;
+  
+  
   struct timespec now, timeout;
 
   class dp2200_cpu * cpu = new dp2200_cpu;
