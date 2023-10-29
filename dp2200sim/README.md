@@ -3,7 +3,7 @@
 PLEASE NOTE!  THIS BARELY WORKS. STILL WORK IN PROGRESS. 
 At this point it can load the bootstrap from a file and step throughh instructions. Not much more.
 
-[]()
+![Screen shot](https://raw.githubusercontent.com/MattisLind/DP2200/main/dp2200sim/dp2200sim.png)
 
 Until there is a makefile use this command to compile:
 
