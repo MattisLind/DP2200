@@ -443,7 +443,6 @@ class registerWindow : public virtual Window {
     int address;
     int ascii;
   } M;
-  std::vector<FIELD *> fields;
   std::vector<FIELD *> addressFields;
   std::vector<FIELD *> dataFields;
   std::vector<FIELD *> asciiFields;
@@ -641,40 +640,18 @@ public:
     }
     
     for (auto line = 0; line < 16; line++) {
-      // Add one address field
-      auto tmp = new_field(1, 4, line+offset, 3, 0, 0);
-      fields.push_back(tmp);
-      set_field_userptr(tmp, (char *) new memoryAddressHookExecutor(this, line));
-      addressFields.push_back(tmp);
+      addressFields.push_back(createAField(4,line+offset, 3, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new memoryAddressHookExecutor(this, line)));
       for (auto column = 0; column < 16; column++) {
         dataFields.push_back(createAField(2,line+offset, 8 + 3 * column, "00", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new memoryDataHookExecutor(this, line * 16 + column)));
       }
-      tmp = new_field(1, 18, line+offset, 57, 0, 0);
-      asciiFields.push_back(tmp);
-      fields.push_back(tmp);
-    }
-
-    for (auto it = addressFields.begin(); it < addressFields.end(); it++) {
-      set_field_buffer(*it, 0, "0000");
-      set_field_opts(*it, O_VISIBLE | O_PUBLIC | O_EDIT | O_ACTIVE | O_STATIC);
-      set_field_type(*it, TYPE_REGEXP,
-                     "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]");
-      set_field_just(*it, JUSTIFY_LEFT);
-    }
-
-    for (auto it = asciiFields.begin(); it < asciiFields.end(); it++) {
-      set_field_buffer(*it, 0, "|................|");
-      set_field_opts(*it, O_VISIBLE | O_PUBLIC | O_STATIC);
+      asciiFields.push_back(createAField(18, line+offset,57,"|................|" ));
     }
 
     f = (FIELD **)malloc(
         (sizeof(FIELD *)) *
         (addressFields.size() + dataFields.size() + asciiFields.size() + registerViewFields.size()+ 1));
     i = 0;
-    for (auto it = fields.begin(); it < fields.end(); it++) {
-      f[i] = *it;
-      i++;
-    }
+
     for (auto it = registerViewFields.begin(); it < registerViewFields.end(); it++) {
       f[i] = *it;
       i++;
@@ -701,7 +678,7 @@ public:
   ~registerWindow() {
     unpost_form(form);
     free_form(form);
-    for (auto it = fields.begin(); it < fields.end(); it++) {
+    for (auto it = registerViewFields.begin(); it < registerViewFields.end(); it++) {
       free_field(*it);
     }
   }
