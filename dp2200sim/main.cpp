@@ -446,7 +446,6 @@ class registerWindow : public virtual Window {
   std::vector<FIELD *> fields;
   std::vector<FIELD *> addressFields;
   std::vector<FIELD *> dataFields;
-  std::vector<M> indexToAddress;
   std::vector<FIELD *> asciiFields;
   std::vector<FIELD *> registerViewFields;
   FIELD * regs[2][7];

@@ -165,7 +165,6 @@ void dp2200_cpu::reset() {
     /* Handle interrupt*/
 
     if (interruptEnabled && interruptPending) {
-      unsigned int addrL, addrH;
       interruptPending = 0;
 
       /* now bump stack to use new pc and save it */
@@ -201,7 +200,6 @@ void dp2200_cpu::reset() {
 int dp2200_cpu::immediateplus(unsigned char inst) {
     unsigned int op;
     unsigned int reg;
-    int oldflag;
     int carryzero;
     unsigned int sdata1, sdata2, result;
     unsigned int cc; /* condition code to check, if conditional operation */
