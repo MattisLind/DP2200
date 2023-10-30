@@ -405,8 +405,11 @@ public:
       int y, x;
       getyx(innerWin, y, x);
       wmove(innerWin, y, x > 1 ? x - 1 : x);
+      if (commandLine.size()>0) {
       wdelch(innerWin);
       commandLine.erase(commandLine.size() - 1, 1);
+      }
+
     }
     wrefresh(innerWin);
     getyx(innerWin, cursorY, cursorX);
