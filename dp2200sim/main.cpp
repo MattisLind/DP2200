@@ -647,10 +647,7 @@ public:
       set_field_userptr(tmp, (char *) new memoryAddressHookExecutor(this, line));
       addressFields.push_back(tmp);
       for (auto column = 0; column < 16; column++) {
-        tmp = new_field(1, 2, line+offset, 8 + 3 * column, 0, 0);
-        set_field_userptr(tmp, (char *) new memoryDataHookExecutor(this, line * 16 + column));
-        fields.push_back(tmp);
-        dataFields.push_back(tmp);
+        dataFields.push_back(createAField(2,line+offset, 8 + 3 * column, "00", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new memoryDataHookExecutor(this, line * 16 + column)));
       }
       tmp = new_field(1, 18, line+offset, 57, 0, 0);
       asciiFields.push_back(tmp);
@@ -662,13 +659,6 @@ public:
       set_field_opts(*it, O_VISIBLE | O_PUBLIC | O_EDIT | O_ACTIVE | O_STATIC);
       set_field_type(*it, TYPE_REGEXP,
                      "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]");
-      set_field_just(*it, JUSTIFY_LEFT);
-    }
-
-    for (auto it = dataFields.begin(); it < dataFields.end(); it++) {
-      set_field_buffer(*it, 0, "00");
-      set_field_opts(*it, O_VISIBLE | O_PUBLIC | O_EDIT | O_ACTIVE | O_STATIC);
-      set_field_type(*it, TYPE_REGEXP, "[0-9A-Fa-f][0-9A-Fa-f]");
       set_field_just(*it, JUSTIFY_LEFT);
     }
 
@@ -838,6 +828,8 @@ void registerWindow::memoryDataHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 16);
   rw->cpu->memory[rw->base + data] = value;
+  rw->updateForm(rw->base);
+  wrefresh(rw->win);
 }
 
 void registerWindow::charPointerHookExecutor::exec(FIELD *field) {
