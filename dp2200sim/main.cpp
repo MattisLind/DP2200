@@ -456,6 +456,7 @@ class registerWindow : public virtual Window {
   FIELD * pc;
   FIELD * interruptEnabled;
   FIELD * interruptPending; 
+  FIELD * mnemonic;
 
   class memoryDataHookExecutor : hookExecutor {
     int data;
@@ -574,6 +575,10 @@ class registerWindow : public virtual Window {
       }   
     }
 
+    // update mnemonic
+
+    set_field_buffer(mnemonic, 0, cpu->disassembleLine(asciiB, 16, false, cpu->P)); 
+
   }
 public:
 
@@ -635,6 +640,8 @@ public:
 
     createAField(2, 15,3, "P:" );
     pc=createAField(4,15,5, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new shortPointerHookExecutor(this, &cpu->P));
+    mnemonic = createAField(10, 15,10, "" );
+
     for (auto i=0; i<16; i++) {
       stack[i] = createAField(4,4+i,32, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new shortPointerHookExecutor(this, &cpu->stack.stk[i]));
     }

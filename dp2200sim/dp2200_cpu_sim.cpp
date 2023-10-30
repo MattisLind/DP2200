@@ -12,64 +12,6 @@
 #include <termios.h>
 #include "dp2200_cpu_sim.h"
 
-
-
-// mnemonic symbols for opcodes
-  /*
-  const char *mnems[] = {
-      // 00xxxxxx  load (immediate), add/subtract (immediate), increment,
-      // decrement,
-      "HALT", "HALT", "SLC", "RFC", "AD ", "---", "LA ", "RETURN", "SYNC",
-      "---", "SRC", "RFZ", "AC ", "---", "LB ", "---", "BETA", "---", "---",
-      "RFS", "SU ", "---", "LC ", "---", "ALPHA", "---", "---", "RFP", "SB ",
-      "---", "LD ", "---", "DI ", "---", "---", "RTC", "ND ", "---", "LE ",
-      "---", "EI ", "---", "---", "RTZ", "XR ", "---", "LH ", "---", "POP",
-      "---", "---", "RTS", "OR ", "---", "LL ", "---", "PUSH", "---", "---",
-      "RTP", "CP ", "---", "---", "---",
-      // 01xxxxxx jump, call, input, output
-      "JFC", "INPUT", "CFC", "---", "JMP", "---", "CALL", "---", "JFZ", "---",
-      "CFZ", "---", "---", "---", "---", "---", "JFS", "EX_ADR", "CFS",
-      "EX_STAT", "---", "EX_DATA", "---", "EX_WRITE", "JFP", "EX_COM1", "CFP",
-      "EX_COM2", "---", "EX_COM3", "---", "EX_COM4", "JTC", "---", "CTC", "---",
-      "---", "---", "---", "---", "JTZ", "EX_BEEP", "CTZ", "EX_CLICK", "---",
-      "EX_DECK1", "---", "EX_DECK2", "JTS", "EX_RBK", "CTS", "EX_WBK", "---",
-      "---", "---", "EX_BSP", "JTP", "EX_SF", "CTP", "EX_SB", "---", "EX_RWND",
-      "---", "EX_TSTOP",
-      // 10xxxxxx add/subtract (not immediate), and/or/eor/cmp (not immediate)
-      "ADA", "ADB", "ADC", "ADD", "ADE", "ADH", "ADL", "ADM", "ACA", "ACB",
-      "ACC", "ACD", "ACE", "ACH", "ACL", "ACM", "SUA", "SUB", "SUC", "SUD",
-      "SUE", "SUH", "SUL", "SUM", "SBA", "SBB", "SBC", "SBD", "SBE", "SBH",
-      "SBL", "SBM", "NDA", "NDB", "NDC", "NDD", "NDE", "NDH", "NDL", "NDM",
-      "XRA", "XRB", "XRC", "XRD", "XRE", "XRH", "XRL", "XRM", "ORA", "ORB",
-      "ORC", "ORD", "ORE", "ORH", "ORL", "ORM", "CPA", "CPB", "CPC", "CPD",
-      "CPE", "CPH", "CPL", "CPM",
-      // 11xxxxxx load (not immediate), halt
-      "NOP", "LAB", "LAC", "LAD", "LAE", "LAH", "LAL", "LAM", "LBA", "---",
-      "LBC", "LBD", "LBE", "LBH", "LBL", "LBM", "LCA", "LCB", "---", "LCD",
-      "LCE", "LCH", "LCL", "LCM", "LDA", "LDB", "LDC", "---", "LDE", "LDH",
-      "LDL", "LDM", "LEA", "LEB", "LEC", "LED", "---", "LEH", "LEL", "LEM",
-      "LHA", "LHB", "LHC", "LHD", "LHE", "---", "LHL", "LHM", "LLA", "LLB",
-      "LLC", "LLD", "LLE", "LLH", "---", "LLM", "LMA", "LMB", "LMC", "LMD",
-      "LME", "LMH", "LML", "HALT"};
-
-  // Instruktion length definitions
-  unsigned int instr_l[] = {
-      1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1,
-      1, 1, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1,
-      0, 1, 2, 1, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1,
-      //
-      3, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3,
-      1, 3, 1, 0, 1, 0, 1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3, 1,
-      3, 1, 0, 0, 0, 1, 3, 1, 3, 1, 0, 1, 0, 1,
-      //
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      //
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
-      1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
-      1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-  */
   /***************************************************************************
 
    decoded opcodes
@@ -136,6 +78,32 @@
   XXX load (bits 0-5 determine src/dest,except 0xFF = halt)
 
   *********************************************************************/
+
+
+char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, unsigned short address) {
+  unsigned char instruction = memory[address];
+  switch (instr_l[instruction]) {
+    case 0:
+    case 1:
+      snprintf(outputBuf, size, "%s", mnems[instruction]);
+    break;
+    case 2:
+      if (octal) {
+        snprintf(outputBuf, size, "%s %03o", mnems[instruction], memory[address+1]);
+      } else {
+        snprintf(outputBuf, size, "%s %02X", mnems[instruction], memory[address+1]);
+      }
+    break;
+    case 3:
+      if (octal) {
+        snprintf(outputBuf, size, "%s %05o", mnems[instruction], (memory[address+2] << 8) | memory[address+1]);
+      } else {
+        snprintf(outputBuf, size, "%s %04X", mnems[instruction], (memory[address+2] << 8) | memory[address+1]);
+      }
+    break;
+  }
+  return outputBuf;
+}
 
 
 void dp2200_cpu::clear() {
