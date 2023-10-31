@@ -6,7 +6,7 @@
 #include <form.h>
 #include <ncurses.h>
 #include <stdarg.h>
-#include <stdio.h>
+#include <cstdio>
 #include <stdlib.h>
 #include <string>
 #include <sys/time.h>
@@ -17,7 +17,10 @@ void printLog(const char *level, const char *fmt, ...);
 
 FILE *logfile;
 
+class dp2200_cpu cpu;
 
+int pollKeyboard(void);
+int cpuRunner();
 
 class Window {
 public:
@@ -125,12 +128,19 @@ class commandWindow : public virtual Window {
   void doClear(std::vector<Param> params) {
     cpu->clear();
   }
-  void doRun(std::vector<Param> params) {}
+  void doRun(std::vector<Param> params) {
+    clock_gettime(CLOCK_MONOTONIC, &cpu->totalInstructionTime);
+    cpu->running = true;
+    cpuRunner();
+  }
   void doReset(std::vector<Param> params) {
     cpu->reset();
+    cpu->running=false;
   }
   void doRestart(std::vector<Param> params) {}
-  void doHalt(std::vector<Param> params) {}
+  void doHalt(std::vector<Param> params) {
+    cpu->running = false;
+  }
   void doDetach(std::vector<Param> params) {
     int drive;
     for (auto it = params.begin(); it < params.end(); it++) {
@@ -176,7 +186,6 @@ class commandWindow : public virtual Window {
       wprintw(innerWin, "Failed to open file %s\n", fileName.c_str());      
     }
   }
-  void doStop(std::vector<Param> params) { wprintw(innerWin, "Stopping!\n"); }
   void processCommand(char ch) {
     std::vector<Cmd> filtered;
     std::vector<std::string> paramStrings;
@@ -335,7 +344,7 @@ public:
                         "Detach file from cassette drive",
                         {{"DRIVE", DRIVE, NUMBER, {.i = 0}}},
                         &commandWindow::doDetach});
-    commands.push_back({"STOP", "Stop execution", {}, &commandWindow::doStop});
+    commands.push_back({"STOP", "Stop execution", {}, &commandWindow::doHalt});
     commands.push_back(
         {"EXIT", "Exit the simulator", {}, &commandWindow::doExit});
     commands.push_back(
@@ -349,7 +358,7 @@ public:
                         {},
                         &commandWindow::doRestart});
     commands.push_back({"RESET", "Reset the CPU", {}, &commandWindow::doReset});
-    commands.push_back({"STOP", "Stop the CPU", {}, &commandWindow::doHalt});
+    commands.push_back({"HALT", "Stop the CPU", {}, &commandWindow::doHalt});
     commands.push_back(
         {"RUN", "Run CPU from current location", {}, &commandWindow::doRun});
     commands.push_back(
@@ -460,6 +469,7 @@ class registerWindow : public virtual Window {
   FIELD * interruptEnabled;
   FIELD * interruptPending; 
   FIELD * mnemonic;
+  FIELD * instructionTrace[8];
 
   class memoryDataHookExecutor : hookExecutor {
     int data;
@@ -581,7 +591,13 @@ class registerWindow : public virtual Window {
     // update mnemonic
 
     set_field_buffer(mnemonic, 0, cpu->disassembleLine(asciiB, 16, false, cpu->P)); 
+    i=0;
 
+    // update trace
+    for (auto it=cpu->instructionTrace.begin(); it<cpu->instructionTrace.end(); it++, i++) {
+      snprintf(fieldB, 18, "%04X %s", it->address, cpu->disassembleLine(asciiB, 16, false, it->data));
+      set_field_buffer(instructionTrace[i], 0, fieldB); 
+    }
   }
 public:
 
@@ -623,7 +639,7 @@ public:
 
     // Registers.
     createAField(10,2,6, "REGISTERS");
-    createAField(40,3,3,"ALPHA          BETA          STACK");
+    createAField(60,3,3,"ALPHA          BETA          STACK         TRACE");
 
     for (auto regset=0;regset < 2; regset++) {
       for (auto reg=0; reg<7; reg++) {
@@ -657,9 +673,14 @@ public:
       asciiFields.push_back(createAField(18, line+offset,57,"|................|" ));
     }
 
+    for (auto i=0; i<8; i++) {
+      instructionTrace[i] = createAField(15,4+i,46, "" );
+    }
+
+
     f = (FIELD **)malloc(
         (sizeof(FIELD *)) *
-        (addressFields.size() + dataFields.size() + asciiFields.size() + registerViewFields.size()+ 1));
+        (registerViewFields.size()+ 1));
     i = 0;
 
     for (auto it = registerViewFields.begin(); it < registerViewFields.end(); it++) {
@@ -836,7 +857,7 @@ class dp2200Window *dpw;
 class registerWindow *rw;
 class commandWindow *cw;
 
-int pollKeyboard(void);
+
 struct callbackRecord {
   int (*cb)();
   struct timespec deadline;
@@ -886,6 +907,64 @@ int pollKeyboard() {
 }
 
 
+/*struct timespec subtractTimeSpec (struct timespec a, struct timespec b, bool * negative) {
+  struct timespec diff; 
+  if ((b.tv_sec > a.tv_sec) || ((b.tv_sec == a.tv_sec) && (b.tv_nsec > a.tv_nsec) )) {
+    // b is larger do reverse subtracton and return negative tv_sec
+    *negative=true;
+    diff.tv_nsec = b.tv_nsec - a.tv_nsec;
+    diff.tv_sec = b.tv_sec - a.tv_sec;
+  } else {
+    // a is larger than b 
+    *negative=false;
+    diff.tv_nsec = a.tv_nsec - b.tv_nsec;
+    diff.tv_sec = a.tv_sec - b.tv_sec;
+  }
+  if (diff.tv_nsec < 0) {
+    diff.tv_sec--;
+    diff.tv_nsec +=1000000000;
+  }
+  return diff;
+}*/
+
+
+bool compareTimeSpec (struct timespec a, struct timespec b) {
+  if ((b.tv_sec > a.tv_sec) || ((b.tv_sec == a.tv_sec) && (b.tv_nsec > a.tv_nsec) )) {
+    printLog("INFO", "Returning false\n");
+    return false;
+  } else {
+    printLog("INFO", "Returning true\n");
+    return true;
+  }
+}
+
+bool compareCallbackRecord (struct callbackRecord a,struct callbackRecord b) {
+  return !compareTimeSpec(a.deadline, b.deadline);
+}
+
+int cpuRunner () {
+  struct timespec now;
+  struct callbackRecord cbr;
+  printLog("INFO", "cpuRunner ENTRY\n");
+  do {
+  // execute one instruction
+    if (cpu.running) {
+      if (cpu.execute()) {
+        cpu.running = false;
+        return 1;
+      } 
+    }
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    printLog("INFO", "now: %d.%d totalInstructionTime: %d.%d\n", now.tv_sec, now.tv_nsec, cpu.totalInstructionTime.tv_sec, cpu.totalInstructionTime.tv_nsec);
+  } while (compareTimeSpec(now, cpu.totalInstructionTime));
+
+  cbr.deadline = cpu.totalInstructionTime;
+  cbr.cb = cpuRunner;
+  timerqueue.push_back(cbr);
+  printLog("INFO", "cpuRunner EXIT\n");
+  return 0;
+}
+
 
 char timeBuf[sizeof "2011-10-08T07:07:09.000Z"];
 
@@ -912,14 +991,17 @@ void printLog(const char *level, const char *fmt, ...) {
   va_end(args);
 }
 
+
+
+
 int main(int argc, char *argv[]) {
   
   
   struct timespec now, timeout;
 
-  class dp2200_cpu * cpu = new dp2200_cpu;
-  cpu->tapeDrive[0] = new CassetteTape();
-  cpu->tapeDrive[1] = new CassetteTape();
+  
+  cpu.tapeDrive[0] = new CassetteTape();
+  cpu.tapeDrive[1] = new CassetteTape();
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);
   initscr(); /* Start curses mode 		*/
@@ -930,14 +1012,15 @@ int main(int argc, char *argv[]) {
   set_escdelay(100);
   timeout(0);
   refresh();
-  dpw = new dp2200Window(cpu);
-  r = rw = new registerWindow(cpu);
-  cw = new commandWindow(cpu);
+  dpw = new dp2200Window(&cpu);
+  r = rw = new registerWindow(&cpu);
+  cw = new commandWindow(&cpu);
   windows[0] = cw;
   windows[1] = rw;
   windows[2] = dpw;
   windows[activeWindow]->hightlightWindow();
   pollKeyboard();
+  //cpuRunner();
   while (1) { // event loop
     clock_gettime(CLOCK_MONOTONIC, &now);
     timeout.tv_nsec = timerqueue.front().deadline.tv_nsec - now.tv_nsec;
@@ -947,8 +1030,12 @@ int main(int argc, char *argv[]) {
       timeout.tv_sec--;
     }
     nanosleep(&timeout, NULL);
-    timerqueue.front().cb();
+
+    // need to sort the vector before taking the first one.
+    std::sort (timerqueue.begin(), timerqueue.end(), compareCallbackRecord);
+    auto callBack = timerqueue.front().cb;
     timerqueue.erase(timerqueue.begin());
+    callBack();
   }
   return 0;
 }

@@ -6,9 +6,9 @@
 //
 
 #include <stdarg.h>
-#include <stdio.h>
+#include <cstdio>
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 #include <termios.h>
 #include "dp2200_cpu_sim.h"
 
@@ -80,31 +80,35 @@
   *********************************************************************/
 
 
-char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, unsigned short address) {
-  unsigned char instruction = memory[address];
-  switch (instr_l[instruction]) {
+
+char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, unsigned char * address) {
+    unsigned char instruction = *address;
+    switch (instr_l[instruction]) {
     case 0:
     case 1:
       snprintf(outputBuf, size, "%s", mnems[instruction]);
     break;
     case 2:
       if (octal) {
-        snprintf(outputBuf, size, "%s %03o", mnems[instruction], memory[address+1]);
+        snprintf(outputBuf, size, "%s %03o", mnems[instruction], *(address+1));
       } else {
-        snprintf(outputBuf, size, "%s %02X", mnems[instruction], memory[address+1]);
+        snprintf(outputBuf, size, "%s %02X", mnems[instruction], *(address+1));
       }
     break;
     case 3:
       if (octal) {
-        snprintf(outputBuf, size, "%s %05o", mnems[instruction], (memory[address+2] << 8) | memory[address+1]);
+        snprintf(outputBuf, size, "%s %05o", mnems[instruction], (*(address+2) << 8) | *(address+1));
       } else {
-        snprintf(outputBuf, size, "%s %04X", mnems[instruction], (memory[address+2] << 8) | memory[address+1]);
+        snprintf(outputBuf, size, "%s %04X", mnems[instruction], (*(address+2) << 8) | *(address+1));
       }
     break;
   }
   return outputBuf;
 }
 
+char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, unsigned short address) {
+  return disassembleLine(outputBuf, size, octal,  &memory[address]);
+}
 
 void dp2200_cpu::clear() {
   for (int i=0; i<sizeof(memory);i++ ) memory[i]=0;
@@ -127,9 +131,9 @@ void dp2200_cpu::reset() {
 
   int dp2200_cpu::execute() {
     unsigned char inst;
-
+    int timeForInstruction;
     int halted;
-
+    struct inst i;
     /* Handle interrupt*/
 
     if (interruptEnabled && interruptPending) {
@@ -140,11 +144,22 @@ void dp2200_cpu::reset() {
       stackptr = (stackptr + 1) & 0xf;
       P = 0;
     }
-
     inst = memory[P];
+    i.data[0] = memory[P];
+    i.data[1] = memory[P+1];
+    i.data[2] = memory[P+2];
+    i.address = P;
+    if (instructionTrace.size()>=8) {
+      instructionTrace.erase(instructionTrace.begin());
+    }
+  
+    instructionTrace.push_back(i);
+    timeForInstruction = instTimeInNsNotTkn[inst];
     P++;
     P &= 0x3fff;
     fetches++;
+
+
 
     /* call into four major instruction subgroups for decoding */
 
@@ -161,6 +176,11 @@ void dp2200_cpu::reset() {
     case 3:
       halted = load(inst);
       break;
+    }
+    totalInstructionTime.tv_nsec+=timeForInstruction;
+    if (totalInstructionTime.tv_nsec >= 1000000000) {
+      totalInstructionTime.tv_nsec-=1000000000;
+      totalInstructionTime.tv_sec++;
     }
     return halted;
   }
@@ -383,6 +403,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       fetches++;
 
       if (cc) {
+        timeForInstruction =instTimeInNsTaken[inst];
         P = (addrL + (addrH << 8)) & 0x3fff;
       }
       break;
@@ -391,27 +412,33 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       switch (op) {
       case 0:
         /* INPUT */
+        return 1;
         break;
       case 1:
         /* Unimplemented */
         return 1;
       case 2:
         /* EX ADR */
+        return 1;
         break;
       case 3:
         /* EX COM1 */
+        return 1;
         break;
       case 4:
         /* Unimplemented */
         return 1;
       case 5:
         /* EX BEEP */
+        return 1;
         break;
       case 6:
         /* EX RBK */
+        return 1;
         break;
       case 7:
         /* EX SF */
+        return 1;
         break;
       }
       break;
@@ -428,6 +455,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       fetches++;
 
       if (cc) {
+        timeForInstruction =instTimeInNsTaken[inst];
         stack.stk[stackptr] = P;
         stackptr = (stackptr + 1) & 0xf;
         P = (addrL + (addrH << 8)) & 0x3fff;
@@ -444,21 +472,26 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX STATUS */
+        return 1;
         break;
       case 3:
         /* EX COM2 */
+        return 1;
         break;
       case 4:
         /* Unimplemented */
         return 1;
       case 5:
         /* EX CLICK */
+        return 1;
         break;
       case 6:
         /* EX WBK */
+        return 1;
         break;
       case 7:
         /* EX SB */
+        return 1;
         break;
       }
       break;
@@ -491,21 +524,27 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX DATA */
+        return 1;
         break;
       case 3:
         /* EX COM3 */
+        return 1;
         break;
       case 4:
         /* Unimplemented */
+        return 1;
         break;
       case 5:
         /* EX DECK1 */
+        return 1;
         break;
       case 6:
         /* Unimplemented */
+        return 1;
         break;
       case 7:
         /* EX REWND */
+        return 1;
         break;
       }
 
@@ -543,21 +582,26 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX WRITE */
+        return 1;
         break;
       case 3:
         /* EX COM4 */
+        return 1;
         break;
       case 4:
         /* Unimplemented */
         return 1;
       case 5:
         /* EX DECK2 */
+        return 1;
         break;
       case 6:
         /* EX BSP */
+        return 1;
         break;
       case 7:
         /* EX TSTOP */
+        return 1;
         break;
       }
 
