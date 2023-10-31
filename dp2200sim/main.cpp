@@ -73,7 +73,7 @@ public:
 class commandWindow;
 
 typedef enum { STRING, NUMBER, BOOL } Type;
-typedef enum { DRIVE, FILENAME } ParamId;
+typedef enum { DRIVE, FILENAME, ADDRESS } ParamId;
 
 #define PARAM_VALUE_SIZE 32
 
@@ -140,6 +140,28 @@ class commandWindow : public virtual Window {
   void doRestart(std::vector<Param> params) {}
   void doHalt(std::vector<Param> params) {
     cpu->running = false;
+  }
+  void doAddBreakpoint(std::vector<Param> params) {
+    unsigned short address;
+    for (auto it = params.begin(); it < params.end(); it++) {
+      if (it->paramId == ADDRESS) {
+        address = strtol(it->paramValue.s, NULL, 16);
+      }
+    }
+    if (cpu->addBreakpoint(address)) {
+      wprintw(innerWin, "Failed to add breakpoint at address %04X\n", address);
+    };   
+  }
+  void doRemoveBreakpoint(std::vector<Param> params) {
+    unsigned short address;
+    for (auto it = params.begin(); it < params.end(); it++) {
+      if (it->paramId == ADDRESS) {
+        address = strtol(it->paramValue.s, NULL, 16);
+      }
+    }
+    if (cpu->removeBreakpoint(address)) {
+      wprintw(innerWin, "Failed to remove breakpoint at address %04X\n", address);
+    };   
   }
   void doDetach(std::vector<Param> params) {
     int drive;
@@ -362,7 +384,11 @@ public:
     commands.push_back(
         {"RUN", "Run CPU from current location", {}, &commandWindow::doRun});
     commands.push_back(
-        {"CLEAR", "Clear memory", {}, &commandWindow::doClear});    
+        {"CLEAR", "Clear memory", {}, &commandWindow::doClear});   
+    commands.push_back(
+        {"BREAK", "Add breakpoint", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doAddBreakpoint});
+    commands.push_back(
+        {"NOBREAK", "Remove breakpoint", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doRemoveBreakpoint});        
     win = newwin(LINES - 14, 82, 14, 0);
     innerWin = newwin(LINES - 16, 80, 15, 1);
     normalWindow();
@@ -470,6 +496,7 @@ class registerWindow : public virtual Window {
   FIELD * interruptPending; 
   FIELD * mnemonic;
   FIELD * instructionTrace[8];
+  FIELD * breakpoints[8];
 
   class memoryDataHookExecutor : hookExecutor {
     int data;
@@ -598,6 +625,15 @@ class registerWindow : public virtual Window {
       snprintf(fieldB, 18, "%04X %s", it->address, cpu->disassembleLine(asciiB, 16, false, it->data));
       set_field_buffer(instructionTrace[i], 0, fieldB); 
     }
+    i=0;
+    for (auto it=cpu->breakpoints.begin(); it<cpu->breakpoints.end(); it++, i++) {
+      snprintf(fieldB, 5, "%04X", *it);
+      set_field_buffer(breakpoints[i], 0, fieldB); 
+    }
+    for (; i<8; i++) {
+      set_field_buffer(breakpoints[i], 0, "");  
+    }
+
   }
 public:
 
@@ -639,7 +675,7 @@ public:
 
     // Registers.
     createAField(10,2,6, "REGISTERS");
-    createAField(60,3,3,"ALPHA          BETA          STACK         TRACE");
+    createAField(65,3,3,"ALPHA          BETA          STACK    TRACE          BREAKPOINTS");
 
     for (auto regset=0;regset < 2; regset++) {
       for (auto reg=0; reg<7; reg++) {
@@ -674,9 +710,12 @@ public:
     }
 
     for (auto i=0; i<8; i++) {
-      instructionTrace[i] = createAField(15,4+i,46, "" );
+      instructionTrace[i] = createAField(15,4+i,41, "" );
     }
 
+    for (auto i=0; i<8; i++) {
+      breakpoints[i] = createAField(5,4+i,56, "" );
+    }
 
     f = (FIELD **)malloc(
         (sizeof(FIELD *)) *
@@ -949,6 +988,10 @@ int cpuRunner () {
   do {
   // execute one instruction
     if (cpu.running) {
+      if (std::find(cpu.breakpoints.begin(), cpu.breakpoints.end(), cpu.P)!=cpu.breakpoints.end()) {
+        cpu.running = false;
+        return 1;
+      }
       if (cpu.execute()) {
         cpu.running = false;
         return 1;

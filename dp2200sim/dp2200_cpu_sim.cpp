@@ -110,6 +110,23 @@ char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, unsi
   return disassembleLine(outputBuf, size, octal,  &memory[address]);
 }
 
+int dp2200_cpu::addBreakpoint(unsigned short address) {
+  if (breakpoints.size()>8) {
+    return 1;
+  }
+  if ( std::find(breakpoints.begin(), breakpoints.end(), address) == breakpoints.end() ) {
+    breakpoints.push_back(address);
+  }
+  return 0;
+}
+int dp2200_cpu::removeBreakpoint(unsigned short address) {
+  auto found = std::find(breakpoints.begin(), breakpoints.end(), address);
+  if ( found != breakpoints.end() ) {
+    breakpoints.erase(found);
+  }
+  return 0; 
+}
+
 void dp2200_cpu::clear() {
   for (int i=0; i<sizeof(memory);i++ ) memory[i]=0;
 }

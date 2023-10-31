@@ -71,7 +71,8 @@ public:
   };
 
   std::vector<struct inst> instructionTrace;
-
+  std::vector<unsigned short> breakpoints;
+  
   const char *mnems[256] = {
       // 00xxxxxx  load (immediate), add/subtract (immediate), increment,
       // decrement,
@@ -194,6 +195,8 @@ public:
   void clear();
   char *  disassembleLine(char * outputBuf, int size, bool octal, unsigned short address);
   char *  disassembleLine(char * outputBuf, int size, bool octal, unsigned char * address);
+  int addBreakpoint(unsigned short address);
+  int removeBreakpoint(unsigned short address);
   private:
   int immediateplus(unsigned char inst);
   int iojmpcall(unsigned char inst);
