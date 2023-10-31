@@ -29,3 +29,5 @@ Control-logic is on a board in the backplane.
 ## Simulator
 
 I decided that a simulator would be useful to have when trying to debug and then also perhaps write small programs for this machine. I found a 8008 simulator which looked quite promising and did quite some adaptations for it to to run Datapoint 2200 code. The simulator is very much work in progress and is far from finished. I.e. non-working.
+
+![Screen shot](https://raw.githubusercontent.com/MattisLind/DP2200/main/dp2200sim/dp2200sim.png)
