@@ -125,7 +125,7 @@ class commandWindow : public virtual Window {
 
 
   void doLoadBoot(std::vector<Param> params) {
-    cpu->ioCtrl->cassetteDevice->tapeDrive[0]->loadBoot(cpu->memory);
+    cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory);
   }
   void doClear(std::vector<Param> params) {
     cpu->clear();
@@ -172,9 +172,9 @@ class commandWindow : public virtual Window {
         drive = it->paramValue.i;
       }
     }
-    cpu->ioCtrl->cassetteDevice->tapeDrive[drive]->closeFile();
+    cpu->ioCtrl->cassetteDevice->closeFile(drive);
     wprintw(innerWin, "Detaching file %s to drive %d\n",
-            cpu->ioCtrl->cassetteDevice->tapeDrive[drive]->getFileName().c_str(), drive);
+            cpu->ioCtrl->cassetteDevice->getFileName(drive).c_str(), drive);
   }
 
   void doAttach(std::vector<Param> params) {
@@ -204,7 +204,7 @@ class commandWindow : public virtual Window {
       }
     }
 
-    if (cpu->ioCtrl->cassetteDevice->tapeDrive[drive]->openFile(fileName)) {
+    if (cpu->ioCtrl->cassetteDevice->openFile(drive, fileName)) {
       wprintw(innerWin, "Attaching file %s to drive %d\n", fileName.c_str(),drive);
     } else {
       wprintw(innerWin, "Failed to open file %s\n", fileName.c_str());      
@@ -1037,13 +1037,7 @@ void printLog(const char *level, const char *fmt, ...) {
 
 
 int main(int argc, char *argv[]) {
-  
-  
   struct timespec now, timeout;
-
-  
-  cpu.ioCtrl->cassetteDevice->tapeDrive[0] = new CassetteTape();
-  cpu.ioCtrl->cassetteDevice->tapeDrive[1] = new CassetteTape();
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);
   initscr(); /* Start curses mode 		*/

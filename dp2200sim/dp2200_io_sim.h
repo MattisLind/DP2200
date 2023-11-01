@@ -54,6 +54,10 @@ class IOController {
     int exSB();
     int exRewind();
     int exTStop();
+    bool openFile (int, std::string fileName);
+    void closeFile (int);
+    std::string getFileName (int);
+    void loadBoot (unsigned char * address);
     CassetteDevice();
   };
 

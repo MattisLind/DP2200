@@ -121,10 +121,10 @@ int IOController::CassetteDevice::exClick() {
   return 1;
 }
 int IOController::CassetteDevice::exDeck1() {
-  tapeDeckSelected = 1;
+  tapeDeckSelected = 0;
 }
 int IOController::CassetteDevice::exDeck2() {
-  tapeDeckSelected = 2;
+  tapeDeckSelected = 1;
 }
 int IOController::CassetteDevice::exRBK() {
   return 1;
@@ -150,6 +150,21 @@ int IOController::CassetteDevice::exTStop() {
 
 IOController::CassetteDevice::CassetteDevice () {
   tapeRunning = false;
-  tapeDeckSelected = 1;
+  tapeDeckSelected = 1;   
+  tapeDrive[0] = new CassetteTape();
+  tapeDrive[1] = new CassetteTape();
 }
 
+
+bool IOController::CassetteDevice::openFile (int drive, std::string fileName) {
+  return tapeDrive[drive]->openFile(fileName);
+}
+void IOController::CassetteDevice::closeFile (int drive) {
+  tapeDrive[drive]->closeFile();
+}
+std::string IOController::CassetteDevice::getFileName (int drive) {
+  return tapeDrive[drive]->getFileName(); 
+}
+void IOController::CassetteDevice::loadBoot (unsigned char * address) {
+  tapeDrive[0]->loadBoot(address);
+}
