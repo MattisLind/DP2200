@@ -389,8 +389,8 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       switch (op) {
       case 0:
         /* RETURN */
-        P = stack.stk[stackptr] & 0x3fff;
         stackptr = (stackptr - 1) & 0xf;
+        P = stack.stk[stackptr] & 0x3fff;
         return 0;
       default:
         /* Unimplemented */

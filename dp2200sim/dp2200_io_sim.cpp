@@ -91,6 +91,7 @@ void IOController::IODevice::exData () {
 }
 
 unsigned char IOController::IODevice::input () {
+  printLog("INFO", "status=%d statusRegister=%02X dataRegister=%02X\n", status, statusRegister, dataRegister);
   if (status) {
     return statusRegister;
   } else {
@@ -122,9 +123,11 @@ int IOController::CassetteDevice::exClick() {
 }
 int IOController::CassetteDevice::exDeck1() {
   tapeDeckSelected = 0;
+  return 0;
 }
 int IOController::CassetteDevice::exDeck2() {
   tapeDeckSelected = 1;
+  return 0;
 }
 int IOController::CassetteDevice::exRBK() {
   return 1;
@@ -145,7 +148,8 @@ int IOController::CassetteDevice::exRewind() {
   return 1;
 }
 int IOController::CassetteDevice::exTStop() {
-  return 1;
+  statusRegister |= CASSETTE_STATUS_DECK_READY;
+  return 0;
 }
 
 IOController::CassetteDevice::CassetteDevice () {
@@ -157,6 +161,7 @@ IOController::CassetteDevice::CassetteDevice () {
 
 
 bool IOController::CassetteDevice::openFile (int drive, std::string fileName) {
+  statusRegister |= (CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_CASSETTE_IN_PLACE);
   return tapeDrive[drive]->openFile(fileName);
 }
 void IOController::CassetteDevice::closeFile (int drive) {

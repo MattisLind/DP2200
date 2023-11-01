@@ -6,6 +6,13 @@
 #include "cassetteTape.h"
 
 
+#define CASSETTE_STATUS_DECK_READY 1 << 0
+#define CASSETTE_STATUS_END_OF_TAPE 1 << 1
+#define CASSETTE_STATUS_READ_READY 1 << 2
+#define CASSETTE_STATUS_WRITE_READY 1 << 3
+#define CASSETTE_STATUS_INTER_RECORD_GAP 1 << 4
+#define CASSETTE_STATUS_CASSETTE_IN_PLACE 1 << 6
+
 class IOController {
   class IODevice {
     protected:
