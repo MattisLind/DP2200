@@ -436,7 +436,8 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX ADR */
-        return 1;
+        ioAddress = regSets[setSel].r.regA;
+        ioStatus = true; 
         break;
       case 3:
         /* EX COM1 */
@@ -489,7 +490,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX STATUS */
-        return 1;
+        ioStatus = true; 
         break;
       case 3:
         /* EX COM2 */
@@ -541,7 +542,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX DATA */
-        return 1;
+        ioStatus = false;
         break;
       case 3:
         /* EX COM3 */

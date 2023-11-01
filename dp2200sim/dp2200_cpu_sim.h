@@ -72,7 +72,18 @@ public:
 
   std::vector<struct inst> instructionTrace;
   std::vector<unsigned short> breakpoints;
-  
+
+  unsigned char ioAddress;
+  bool ioStatus; // true = status on the IO bus. false = data on IO bus.
+
+  // rather than having ioAddress and ioStatus in CPU class a ioController class is handling all IO.
+  // This class handles ioStatus and ioAddress.
+  // It has methods to handle read and all the other commands.
+  // The controller instantiates 16 different device classes which inherits from a base class. 
+  // Each device instance handles all the peculiarities of the device as well as dispatching tasks to be run on the main thread
+  // when delays are needed.
+
+
   const char *mnems[256] = {
       // 00xxxxxx  load (immediate), add/subtract (immediate), increment,
       // decrement,

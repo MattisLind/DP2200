@@ -12,6 +12,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <vector>
+#include "dp2200_io_sim.h"
 
 void printLog(const char *level, const char *fmt, ...);
 
