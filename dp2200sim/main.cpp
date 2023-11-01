@@ -1,4 +1,4 @@
-#include "cassetteTape.h"
+
 #include "dp2200_cpu_sim.h"
 #include <algorithm>
 #include <assert.h>
@@ -13,6 +13,7 @@
 #include <time.h>
 #include <vector>
 #include "dp2200_io_sim.h"
+#include "cassetteTape.h"
 
 void printLog(const char *level, const char *fmt, ...);
 
@@ -124,7 +125,7 @@ class commandWindow : public virtual Window {
 
 
   void doLoadBoot(std::vector<Param> params) {
-    cpu->tapeDrive[0]->loadBoot(cpu->memory);
+    cpu->ioCtrl->cassetteDevice->tapeDrive[0]->loadBoot(cpu->memory);
   }
   void doClear(std::vector<Param> params) {
     cpu->clear();
@@ -171,9 +172,9 @@ class commandWindow : public virtual Window {
         drive = it->paramValue.i;
       }
     }
-    cpu->tapeDrive[drive]->closeFile();
+    cpu->ioCtrl->cassetteDevice->tapeDrive[drive]->closeFile();
     wprintw(innerWin, "Detaching file %s to drive %d\n",
-            cpu->tapeDrive[drive]->getFileName().c_str(), drive);
+            cpu->ioCtrl->cassetteDevice->tapeDrive[drive]->getFileName().c_str(), drive);
   }
 
   void doAttach(std::vector<Param> params) {
@@ -203,7 +204,7 @@ class commandWindow : public virtual Window {
       }
     }
 
-    if (cpu->tapeDrive[0]->openFile(fileName)) {
+    if (cpu->ioCtrl->cassetteDevice->tapeDrive[drive]->openFile(fileName)) {
       wprintw(innerWin, "Attaching file %s to drive %d\n", fileName.c_str(),drive);
     } else {
       wprintw(innerWin, "Failed to open file %s\n", fileName.c_str());      
@@ -970,10 +971,8 @@ int pollKeyboard() {
 
 bool compareTimeSpec (struct timespec a, struct timespec b) {
   if ((b.tv_sec > a.tv_sec) || ((b.tv_sec == a.tv_sec) && (b.tv_nsec > a.tv_nsec) )) {
-    printLog("INFO", "Returning false\n");
     return false;
   } else {
-    printLog("INFO", "Returning true\n");
     return true;
   }
 }
@@ -985,7 +984,6 @@ bool compareCallbackRecord (struct callbackRecord a,struct callbackRecord b) {
 int cpuRunner () {
   struct timespec now;
   struct callbackRecord cbr;
-  printLog("INFO", "cpuRunner ENTRY\n");
   do {
   // execute one instruction
     if (cpu.running) {
@@ -999,13 +997,13 @@ int cpuRunner () {
       } 
     }
     clock_gettime(CLOCK_MONOTONIC, &now);
-    printLog("INFO", "now: %d.%d totalInstructionTime: %d.%d\n", now.tv_sec, now.tv_nsec, cpu.totalInstructionTime.tv_sec, cpu.totalInstructionTime.tv_nsec);
+    //printLog("INFO", "now: %d.%d totalInstructionTime: %d.%d\n", now.tv_sec, now.tv_nsec, cpu.totalInstructionTime.tv_sec, cpu.totalInstructionTime.tv_nsec);
   } while (compareTimeSpec(now, cpu.totalInstructionTime));
 
   cbr.deadline = cpu.totalInstructionTime;
   cbr.cb = cpuRunner;
   timerqueue.push_back(cbr);
-  printLog("INFO", "cpuRunner EXIT\n");
+  //printLog("INFO", "cpuRunner EXIT\n");
   return 0;
 }
 
@@ -1044,8 +1042,8 @@ int main(int argc, char *argv[]) {
   struct timespec now, timeout;
 
   
-  cpu.tapeDrive[0] = new CassetteTape();
-  cpu.tapeDrive[1] = new CassetteTape();
+  cpu.ioCtrl->cassetteDevice->tapeDrive[0] = new CassetteTape();
+  cpu.ioCtrl->cassetteDevice->tapeDrive[1] = new CassetteTape();
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);
   initscr(); /* Start curses mode 		*/

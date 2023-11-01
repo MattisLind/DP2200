@@ -2,36 +2,95 @@
 
 #include "dp2200_io_sim.h"
 
+void printLog(const char *level, const char *fmt, ...);
 
 
-ioController::ioController () {
-  class cassetteDrive * c = new cassetteDrive();
-  //dev[0] = new cassetteDrive();
-  dev[0] = c;
+IOController::IOController () {
+  dev[0] = cassetteDevice = new CassetteDevice();
+  supportedDevices.push_back(0);
 }
 
-void ioController::exAdr (unsigned char address) {
-  ioAddress = address;
+int IOController::exAdr (unsigned char address) {
+  if (std::find(supportedDevices.begin(), supportedDevices.end(), address&0xf)==supportedDevices.end()) {
+    return 1;
+  }
+  ioAddress = address & 0xf;
   exStatus();
+  return 0;
 }
 
-void ioController::exStatus () {
+void IOController::exStatus () {
   dev[ioAddress]->exStatus();
 }
 
-void ioController::exData () {
+void IOController::exData () {
   dev[ioAddress]->exData();
 }
 
-void ioController::ioDevice::exStatus () {
+int IOController::exWrite(unsigned char data) {
+  return dev[ioAddress]->exWrite(data);
+}
+
+int IOController::exCom1(unsigned char data) {
+  return dev[ioAddress]->exCom1(data);
+}
+int IOController::exCom2(unsigned char data) {
+  return dev[ioAddress]->exCom2(data);
+}
+int IOController::exCom3(unsigned char data) {
+  return dev[ioAddress]->exCom3(data);
+}
+int IOController::exCom4(unsigned char data) {
+  return dev[ioAddress]->exCom4(data);
+}
+int IOController::exBeep() {
+  return dev[ioAddress]->exBeep();
+}
+int IOController::exClick() {
+  return dev[ioAddress]->exClick();
+}
+int IOController::exDeck1() {
+  return dev[ioAddress]->exDeck1();
+}
+int IOController::exDeck2() {
+  return dev[ioAddress]->exDeck2();
+}
+int IOController::exRBK() {
+  return dev[ioAddress]->exRBK();
+}
+int IOController::exWBK() {
+  return dev[ioAddress]->exWBK();
+}
+int IOController::exBSP() {
+  return dev[ioAddress]->exBSP();
+}
+int IOController::exSF() {
+  return dev[ioAddress]->exSF();
+}
+int IOController::exSB() {
+  return dev[ioAddress]->exSB();
+}
+int IOController::exRewind() {
+  return dev[ioAddress]->exRewind();
+}
+int IOController::exTStop() {
+  return dev[ioAddress]->exTStop();
+}
+
+unsigned char IOController::input () {
+  return dev[ioAddress]->input();
+}
+
+
+void IOController::IODevice::exStatus () {
   status = true;
 }
 
-void ioController::ioDevice::exData () {
+void IOController::IODevice::exData () {
   status = false;
 }
 
-unsigned char ioController::ioDevice::input () {
+unsigned char IOController::IODevice::input () {
   if (status) {
     return statusRegister;
   } else {
@@ -39,57 +98,58 @@ unsigned char ioController::ioDevice::input () {
   }
 }
 
-void ioController::cassetteDrive::exWrite(unsigned char data) {
-
+int IOController::CassetteDevice::exWrite(unsigned char data) {
+  return 1;
 }
 
-void ioController::cassetteDrive::exCom1(unsigned char data) {
-
+int IOController::CassetteDevice::exCom1(unsigned char data) {
+  return 1;
 }
-void ioController::cassetteDrive::exCom2(unsigned char data) {
-
+int IOController::CassetteDevice::exCom2(unsigned char data) {
+  return 1;
 }
-void ioController::cassetteDrive::exCom3(unsigned char data) {
-
+int IOController::CassetteDevice::exCom3(unsigned char data) {
+  return 1;
 }
-void ioController::cassetteDrive::exCom4(unsigned char data) {
-
+int IOController::CassetteDevice::exCom4(unsigned char data) {
+  return 1;
 }
-void ioController::cassetteDrive::exBeep() {
-
+int IOController::CassetteDevice::exBeep() {
+  return 1;
 }
-void ioController::cassetteDrive::exClick() {
-
+int IOController::CassetteDevice::exClick() {
+  return 1;
 }
-void ioController::cassetteDrive::exDeck1() {
-
+int IOController::CassetteDevice::exDeck1() {
+  tapeDeckSelected = 1;
 }
-void ioController::cassetteDrive::exDeck2() {
-
+int IOController::CassetteDevice::exDeck2() {
+  tapeDeckSelected = 2;
 }
-void ioController::cassetteDrive::exRBK() {
-
+int IOController::CassetteDevice::exRBK() {
+  return 1;
 }
-void ioController::cassetteDrive::exWBK() {
-
+int IOController::CassetteDevice::exWBK() {
+  return 1;
 }
-void ioController::cassetteDrive::exBSP() {
-
+int IOController::CassetteDevice::exBSP() {
+  return 1;
 }
-void ioController::cassetteDrive::exSF() {
-
+int IOController::CassetteDevice::exSF() {
+  return 1;
 }
-void ioController::cassetteDrive::exSB() {
-
+int IOController::CassetteDevice::exSB() {
+  return 1;
 }
-void ioController::cassetteDrive::exRewind() {
-
+int IOController::CassetteDevice::exRewind() {
+  return 1;
 }
-void ioController::cassetteDrive::exTStop() {
-
+int IOController::CassetteDevice::exTStop() {
+  return 1;
 }
 
-ioController::cassetteDrive::cassetteDrive () {
-
+IOController::CassetteDevice::CassetteDevice () {
+  tapeRunning = false;
+  tapeDeckSelected = 1;
 }
 

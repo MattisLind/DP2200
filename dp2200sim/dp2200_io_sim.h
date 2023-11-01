@@ -2,11 +2,12 @@
 #ifndef _DP2200_IO_SIM_
 #define _DP2200_IO_SIM_
 
+#include <vector>
+#include "cassetteTape.h"
 
 
-
-class ioController {
-  class ioDevice {
+class IOController {
+  class IODevice {
     protected:
     unsigned char statusRegister, dataRegister;
     bool status;
@@ -14,70 +15,74 @@ class ioController {
     unsigned char input ();
     void exStatus ();
     void exData ();
-    virtual void exWrite(unsigned char data) = 0; 
-    virtual void exCom1(unsigned char data) = 0;
-    virtual void exCom2(unsigned char data) = 0;
-    virtual void exCom3(unsigned char data) = 0;
-    virtual void exCom4(unsigned char data) = 0;
-    virtual void exBeep() = 0;
-    virtual void exClick() = 0;
-    virtual void exDeck1() = 0;
-    virtual void exDeck2() = 0;
-    virtual void exRBK() = 0;
-    virtual void exWBK() = 0;
-    virtual void exBSP() = 0;
-    virtual void exSF() = 0;
-    virtual void exSB() = 0;
-    virtual void exRewind() = 0;
-    virtual void exTStop() = 0;
+    virtual int exWrite(unsigned char data) = 0; 
+    virtual int exCom1(unsigned char data) = 0;
+    virtual int exCom2(unsigned char data) = 0;
+    virtual int exCom3(unsigned char data) = 0;
+    virtual int exCom4(unsigned char data) = 0;
+    virtual int exBeep() = 0;
+    virtual int exClick() = 0;
+    virtual int exDeck1() = 0;
+    virtual int exDeck2() = 0;
+    virtual int exRBK() = 0;
+    virtual int exWBK() = 0;
+    virtual int exBSP() = 0;
+    virtual int exSF() = 0;
+    virtual int exSB() = 0;
+    virtual int exRewind() = 0;
+    virtual int exTStop() = 0;
   };
 
-  class cassetteDrive : public virtual ioDevice  {
+  class CassetteDevice : public virtual IODevice  {
+    bool tapeRunning; 
+    int tapeDeckSelected;
     public:
-    void exWrite(unsigned char data); 
-    void exCom1(unsigned char data);
-    void exCom2(unsigned char data);
-    void exCom3(unsigned char data);
-    void exCom4(unsigned char data);
-    void exBeep();
-    void exClick();
-    void exDeck1();
-    void exDeck2();
-    void exRBK();
-    void exWBK();
-    void exBSP();
-    void exSF();
-    void exSB();
-    void exRewind();
-    void exTStop();
-    cassetteDrive();
+    CassetteTape * tapeDrive[2];
+    int exWrite(unsigned char data); 
+    int exCom1(unsigned char data);
+    int exCom2(unsigned char data);
+    int exCom3(unsigned char data);
+    int exCom4(unsigned char data);
+    int exBeep();
+    int exClick();
+    int exDeck1();
+    int exDeck2();
+    int exRBK();
+    int exWBK();
+    int exBSP();
+    int exSF();
+    int exSB();
+    int exRewind();
+    int exTStop();
+    CassetteDevice();
   };
 
-  class ioDevice * dev[16];
+  class IODevice * dev[16];
   int ioAddress; 
-
+  std::vector<unsigned char> supportedDevices;
   public:
-  ioController ();
+  class CassetteDevice * cassetteDevice;
+  IOController ();
   unsigned char input ();
-  void exAdr (unsigned char address);
+  int exAdr (unsigned char address);
   void exStatus ();
   void exData ();
-  void exWrite(unsigned char data); 
-  void exCom1(unsigned char data);
-  void exCom2(unsigned char data);
-  void exCom3(unsigned char data);
-  void exCom4(unsigned char data);
-  void exBeep();
-  void exClick();
-  void exDeck1();
-  void exDeck2();
-  void exRBK();
-  void exWBK();
-  void exBSP();
-  void exSF();
-  void exSB();
-  void exRewind();
-  void exTStop();
+  int exWrite(unsigned char data); 
+  int exCom1(unsigned char data);
+  int exCom2(unsigned char data);
+  int exCom3(unsigned char data);
+  int exCom4(unsigned char data);
+  int exBeep();
+  int exClick();
+  int exDeck1();
+  int exDeck2();
+  int exRBK();
+  int exWBK();
+  int exBSP();
+  int exSF();
+  int exSB();
+  int exRewind();
+  int exTStop();
 }; 
 
 #endif

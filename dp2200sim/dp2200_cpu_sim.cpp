@@ -12,6 +12,8 @@
 #include <termios.h>
 #include "dp2200_cpu_sim.h"
 
+void printLog(const char *level, const char *fmt, ...);
+
   /***************************************************************************
 
    decoded opcodes
@@ -429,34 +431,33 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       switch (op) {
       case 0:
         /* INPUT */
-        return 1;
+        regSets[setSel].r.regA=ioCtrl->input();
         break;
       case 1:
         /* Unimplemented */
         return 1;
-      case 2:
+      case 2: 
         /* EX ADR */
-        ioAddress = regSets[setSel].r.regA;
-        ioStatus = true; 
+        return ioCtrl->exAdr(regSets[setSel].r.regA);;
         break;
       case 3:
         /* EX COM1 */
-        return 1;
+        return ioCtrl->exCom1(regSets[setSel].r.regA);
         break;
       case 4:
         /* Unimplemented */
         return 1;
       case 5:
         /* EX BEEP */
-        return 1;
+        return ioCtrl->exBeep();
         break;
       case 6:
         /* EX RBK */
-        return 1;
+        return ioCtrl->exRBK();
         break;
       case 7:
         /* EX SF */
-        return 1;
+        return ioCtrl->exSF();
         break;
       }
       break;
@@ -490,26 +491,26 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX STATUS */
-        ioStatus = true; 
+        ioCtrl->exStatus(); 
         break;
       case 3:
         /* EX COM2 */
-        return 1;
+        return ioCtrl->exCom2(regSets[setSel].r.regA);
         break;
       case 4:
         /* Unimplemented */
         return 1;
       case 5:
         /* EX CLICK */
-        return 1;
+        return ioCtrl->exClick();
         break;
       case 6:
         /* EX WBK */
-        return 1;
+        return ioCtrl->exWBK();
         break;
       case 7:
         /* EX SB */
-        return 1;
+        return ioCtrl->exSB();
         break;
       }
       break;
@@ -542,11 +543,11 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX DATA */
-        ioStatus = false;
+        ioCtrl->exData();
         break;
       case 3:
         /* EX COM3 */
-        return 1;
+        return ioCtrl->exCom3(regSets[setSel].r.regA);
         break;
       case 4:
         /* Unimplemented */
@@ -554,7 +555,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         break;
       case 5:
         /* EX DECK1 */
-        return 1;
+        return ioCtrl->exDeck1();
         break;
       case 6:
         /* Unimplemented */
@@ -562,7 +563,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         break;
       case 7:
         /* EX REWND */
-        return 1;
+        return ioCtrl->exRewind();
         break;
       }
 
@@ -600,26 +601,26 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX WRITE */
-        return 1;
+        return ioCtrl->exWrite(regSets[setSel].r.regA);
         break;
       case 3:
         /* EX COM4 */
-        return 1;
+        return ioCtrl->exCom4(regSets[setSel].r.regA);
         break;
       case 4:
         /* Unimplemented */
         return 1;
       case 5:
         /* EX DECK2 */
-        return 1;
+        return ioCtrl->exDeck2();
         break;
       case 6:
         /* EX BSP */
-        return 1;
+        return ioCtrl->exBSP();
         break;
       case 7:
         /* EX TSTOP */
-        return 1;
+        return ioCtrl->exTStop();
         break;
       }
 
@@ -820,3 +821,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
     }
     return (cc);
   }  
+
+dp2200_cpu::dp2200_cpu() {
+  ioCtrl = new IOController ();
+}

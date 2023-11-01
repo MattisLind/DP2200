@@ -1,4 +1,7 @@
+#ifndef _DP2200_CPU_
+#define _DP2200_CPU_
 #include "cassetteTape.h"
+#include "dp2200_io_sim.h"
 #include <cstdio>
 #include <string>
 
@@ -19,7 +22,7 @@ public:
     unsigned char regL;
   };
 
-  CassetteTape * tapeDrive[2];
+  
 
   int setSel;
 
@@ -73,8 +76,7 @@ public:
   std::vector<struct inst> instructionTrace;
   std::vector<unsigned short> breakpoints;
 
-  unsigned char ioAddress;
-  bool ioStatus; // true = status on the IO bus. false = data on IO bus.
+  class IOController * ioCtrl;
 
   // rather than having ioAddress and ioStatus in CPU class a ioController class is handling all IO.
   // This class handles ioStatus and ioAddress.
@@ -208,6 +210,7 @@ public:
   char *  disassembleLine(char * outputBuf, int size, bool octal, unsigned char * address);
   int addBreakpoint(unsigned short address);
   int removeBreakpoint(unsigned short address);
+  dp2200_cpu();
   private:
   int immediateplus(unsigned char inst);
   int iojmpcall(unsigned char inst);
@@ -217,5 +220,7 @@ public:
   void setflags(int result, int carryzero);
   void setflagsinc(int result);
   void setparity(int result);
-  
+
 };
+
+#endif
