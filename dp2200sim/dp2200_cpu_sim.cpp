@@ -213,7 +213,6 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
 
     /* first check for halt */
     if ((inst & 0xfe) == 0x0) {
-      printf("halt:%2x\n", inst);
       return 1;
     }
 

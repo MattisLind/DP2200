@@ -91,7 +91,7 @@ void IOController::IODevice::exData () {
 }
 
 unsigned char IOController::IODevice::input () {
-  printLog("INFO", "status=%d statusRegister=%02X dataRegister=%02X\n", status, statusRegister, dataRegister);
+  //printLog("INFO", "status=%d statusRegister=%02X dataRegister=%02X\n", status, statusRegister, dataRegister);
   if (status) {
     return statusRegister;
   } else {
@@ -139,7 +139,8 @@ int IOController::CassetteDevice::exBSP() {
   return 1;
 }
 int IOController::CassetteDevice::exSF() {
-  return 1;
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY); // Clear ready bit
+  return 0;
 }
 int IOController::CassetteDevice::exSB() {
   return 1;

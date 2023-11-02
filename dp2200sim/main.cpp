@@ -216,7 +216,7 @@ class commandWindow : public virtual Window {
     std::size_t found, prev;
     std::string commandWord, tmp;
     bool failed = false;
-
+    printLog("INFO", "commandLine=%s\n", commandLine.c_str());
     // Trim end of string by removing any trailing spaces.
     found = commandLine.find_last_not_of(' ');
     if (found != std::string::npos) {
@@ -900,7 +900,7 @@ class commandWindow *cw;
 
 
 struct callbackRecord {
-  int (*cb)();
+  std::function<int(void)> cb;
   struct timespec deadline;
 };
 class Window *windows[3];
@@ -908,9 +908,26 @@ int activeWindow = 0;
 
 std::vector<callbackRecord> timerqueue;
 
+void addToTimerQueue(std::function<int(void)> cb, struct timespec t) {
+  struct callbackRecord c;
+  c.cb = cb;
+  c.deadline = t;
+  timerqueue.push_back(c);
+}
+
+void timeoutInNanosecs (struct timespec * t, long nanos) {
+  clock_gettime(CLOCK_MONOTONIC, t);
+  t->tv_nsec += 10000000; // 10 ms
+  if (t->tv_nsec >= 1000000000) {
+    t->tv_nsec -= 1000000000;
+    t->tv_sec++;
+  }
+}
+
+
 int pollKeyboard() {
   int ch;
-  
+  struct timespec then;
   struct callbackRecord cbr;
   rw->updateWindow();
   windows[activeWindow]->resetCursor();
@@ -934,16 +951,8 @@ int pollKeyboard() {
     windows[activeWindow]->handleKey(ch);
     break;
   }
-
-  clock_gettime(CLOCK_MONOTONIC, &cbr.deadline);
-  cbr.deadline.tv_nsec += 10000000; // 10 ms
-  if (cbr.deadline.tv_nsec >= 1000000000) {
-    cbr.deadline.tv_nsec -= 1000000000;
-    cbr.deadline.tv_sec++;
-  }
-  cbr.cb = pollKeyboard;
-  timerqueue.push_back(cbr);
-
+  timeoutInNanosecs(&then, 10000000);
+  addToTimerQueue(std::bind(&pollKeyboard), then);
   return 0;
 }
 
@@ -981,29 +990,26 @@ bool compareCallbackRecord (struct callbackRecord a,struct callbackRecord b) {
   return !compareTimeSpec(a.deadline, b.deadline);
 }
 
+
+
 int cpuRunner () {
   struct timespec now;
   struct callbackRecord cbr;
   do {
   // execute one instruction
-    if (cpu.running) {
-      if (std::find(cpu.breakpoints.begin(), cpu.breakpoints.end(), cpu.P)!=cpu.breakpoints.end()) {
-        cpu.running = false;
-        return 1;
-      }
-      if (cpu.execute()) {
-        cpu.running = false;
-        return 1;
-      } 
+    if (!cpu.running) return 1;
+    if (std::find(cpu.breakpoints.begin(), cpu.breakpoints.end(), cpu.P)!=cpu.breakpoints.end()) {
+      cpu.running = false;
+      return 1;
     }
+    if (cpu.execute()) {
+      cpu.running = false;
+      return 1;
+    } 
     clock_gettime(CLOCK_MONOTONIC, &now);
-    //printLog("INFO", "now: %d.%d totalInstructionTime: %d.%d\n", now.tv_sec, now.tv_nsec, cpu.totalInstructionTime.tv_sec, cpu.totalInstructionTime.tv_nsec);
   } while (compareTimeSpec(now, cpu.totalInstructionTime));
 
-  cbr.deadline = cpu.totalInstructionTime;
-  cbr.cb = cpuRunner;
-  timerqueue.push_back(cbr);
-  //printLog("INFO", "cpuRunner EXIT\n");
+  addToTimerQueue(std::bind(&cpuRunner), cpu.totalInstructionTime);
   return 0;
 }
 
