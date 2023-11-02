@@ -1,15 +1,14 @@
 # dp2200sim - a Datapoint 2200 simulator
 
-PLEASE NOTE!  THIS BARELY WORKS. STILL WORK IN PROGRESS.<BR> 
-At this point it can load the bootstrap from a file and step through instructions. Not much more.
+PLEASE NOTE!  STILL WORK IN PROGRESS.<BR> 
+
+It can run and stepp through programs. Breakpoint can be used. Work ongoing to support tape cassette IO.
 
 ![Screen shot](https://raw.githubusercontent.com/MattisLind/DP2200/main/dp2200sim/dp2200sim.png)
 
-Until there is a makefile use this command to compile:
+Build the simulator using make.
 
-```c++ main.cpp dp2200_cpu_sim.cpp cassetteTape.cpp dp2200_io_sim.cpp -g -std=c++17 -lncurses -lform  -o dp2200sim -Wall```
-
-PLEASE NOTE! ONLY TESTED ON MACOS.
+Tested primairly on MACOS but are said to compile on Linux as well.
 
 The actual cpu simulator code was is based on a 8008 simultor by M. Willegal. I have heavily modified it for Datapoint 2200 and wrapped it into C++.
 
