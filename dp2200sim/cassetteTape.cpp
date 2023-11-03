@@ -105,6 +105,7 @@ void CassetteTape::readByte(std::function<void(unsigned char)> cb) {
     state = TAPE_DATA;
     //tapeGapCb(false);
     readBytes=0;
+    tapeGapCb(true);
     timeout = 70000000;
     timeoutInNanosecs(&then, timeout);
     printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
