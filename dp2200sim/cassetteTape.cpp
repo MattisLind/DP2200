@@ -2,8 +2,16 @@
 #include <stdlib.h>
 #include "cassetteTape.h"
 
+void printLog(const char *level, const char *fmt, ...);
 
-CassetteTape::CassetteTape() {}
+void addToTimerQueue(std::function<int(void)>, struct timespec);
+
+void timeoutInNanosecs (struct timespec *, long);
+
+CassetteTape::CassetteTape(std::function<void(bool)> cb) {
+  state=TAPE_GAP;
+  tapeGapCb = cb;
+}
 
 bool CassetteTape::openFile(std::string fileName) {
   file = fopen(fileName.c_str(), "r");
@@ -24,6 +32,7 @@ void  CassetteTape::readBlock (unsigned char * buffer, int * size) {
     fread(buffer, *size, 1, file);
   }
   fread(size, 4, 1, file);
+  state=TAPE_GAP;
 }
 
 unsigned char * CassetteTape::readBlock (int * size) {
@@ -36,6 +45,7 @@ unsigned char * CassetteTape::readBlock (int * size) {
 }
 
 void CassetteTape::rewind() {
+  state=TAPE_GAP;
   ::rewind(file);
 }
 
@@ -84,52 +94,50 @@ int CassetteTape::isChecksumOK(unsigned char * buffer, int size) {
   if ((xorChecksum == 0) && (circulatedChecksum == 0)) return 1;
   return 0;
 }
-/*
-int main (int argc, char * argv[])  {
-  FILE * in;
-  unsigned char * buffer;
-  int startingAddress;
-  int size;
-  in = fopen(argv[1], "r");
-  if (in == NULL) {
-    exit(1);
-  }
-  while (!feof(in)) {
-    buffer = readBlock(in, &size);
-    if (isFileHeader(buffer)) {
-      printf("This is a FileHeader. ");
-      if (size != 4) {
-        printf("The size of this block is incorrect. It is %d bytes rather than 4 bytes. ", size);
-      }
-      printf("The filenumber is %d. ", 0xff&buffer[2]);
-      if ((0xff&buffer[2])!=(0xff&(~buffer[3]))) {
-        printf("The inverted filenumber is incorrect: %d should have been %d.", 0xff&buffer[3], 0xff&(~buffer[2]));
-      }
-      if (buffer[2]==127) {
-        printf("This is the end of tape marker. Files beyond this point is probably damaged.");
-      }
-      printf("\n");
-    } else if (isNumericRecord(buffer)) {
-      printf("This is a numeric record with %d bytes. ", size);
-      if (!isChecksumOK(buffer, size)) {
-        printf("The checksum is NOT OK.");
-      }
-      startingAddress = (buffer[4] << 8) | buffer[5];
-      printf ("Load address for this block is %05o. ", startingAddress);
-      if ((buffer[4] != (0xFF&~buffer[6])) || (buffer[5] != (0xFF&~buffer[7]))) {
-        printf("Loading address corrupted.");
-      }
-      printf("\n");
 
-    } else if (isSymbolicRecord(buffer)) {
-      printf("This is a symbolic record with %d bytes. ", size);
-      printf("\n");
-    } else {
-      // something else - should be the first block which is the boot block - 
-      printf("This is something else. Only the first boot block should be like this. ");
-      printf("\n");
-    }
+
+void CassetteTape::readByte(std::function<void(unsigned char)> cb) {
+  long timeout;
+  struct timespec then;
+  if (state == TAPE_GAP) {
+    fread(&currentBlockSize, 4, 1, file);  
+    printLog("INFO", "readByte next block is %d bytes long\n", currentBlockSize);
+    state = TAPE_DATA;
+    //tapeGapCb(false);
+    readBytes=0;
+    timeout = 70000000;
+    timeoutInNanosecs(&then, timeout);
+    printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
+    addToTimerQueue([ct=this, tcb = tapeGapCb]()->int {tcb(false);ct->timeoutReadByteHandler(); return 0;}, then);
+  } else {
+    timeout = 2800000;
+    timeoutInNanosecs(&then, timeout);
+    printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
+    addToTimerQueue([ct=this]()->int {ct->timeoutReadByteHandler(); return 0;}, then);
   }
+  readCb = cb;
+  //addToTimerQueue(std::bind(&CassetteTape::timeoutReadByteHandler, this), then);
+  //addToTimerQueue([ct=this, tcb = tapeGapCb]()->int {tcb(false);ct->timeoutReadByteHandler(); }, then);
+}
+
+//void CassetteTape::timeoutReadByteHandler(std::function<int(void))> cb) {
+int CassetteTape::timeoutReadByteHandler() {
+  unsigned char data;
+  struct timespec then;
+  long timeout=1000000;
+  fread(&data, 1, 1, file);
+  readBytes++;
+  printLog("INFO", "Read one byte = %02X. Now we have read %d bytes out of %d bytes\n", data, readBytes, currentBlockSize);
+  if (readBytes >= currentBlockSize) {
+    int dummy;
+    state = TAPE_GAP;
+    //tapeGapCb(true); // Need to set tapeGap after some time. Wait a ms and then set it!
+    timeoutInNanosecs(&then, timeout);
+    printLog("INFO", "Adding a tapeGapCb to set tape gap  in %d nanoseconds\n", timeout);
+    addToTimerQueue([cb=tapeGapCb]()->int { cb(true); return 0; }, then);
+    fread(&dummy, 4, 1, file); // read end of record size marker 
+    printLog("INFO", "timeoutReadByteHandler read end of record size marker = %d \n", dummy);
+  }
+  readCb(data);
   return 0;
-} 
-*/
+}

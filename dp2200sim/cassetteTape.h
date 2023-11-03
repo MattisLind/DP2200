@@ -3,12 +3,23 @@
 #include <string>
 
 
+
+
 class CassetteTape {
+
+  enum { TAPE_GAP, TAPE_DATA } state;
+  
   FILE * file;
   std::string fileName;
+  int currentBlockSize;
+  //int timeoutReadByteHandler (std::function<void(unsigned char)>); 
+  int timeoutReadByteHandler ();
+  int readBytes;
+  std::function<void(unsigned char)> readCb;
+  std::function<void(bool)> tapeGapCb;
   public:
 
-  CassetteTape();
+  CassetteTape(std::function<void(bool)> );
 
   bool openFile (std::string fileName);
   void closeFile ();
@@ -31,6 +42,8 @@ class CassetteTape {
   int isSymbolicRecord(unsigned char * buffer);
 
   int isChecksumOK(unsigned char * buffer, int size);
+
+  void readByte(std::function<void(unsigned char)>);
 };
 
 #endif

@@ -90,11 +90,13 @@ void IOController::IODevice::exData () {
   status = false;
 }
 
-unsigned char IOController::IODevice::input () {
+unsigned char IOController::CassetteDevice::input () {
   //printLog("INFO", "status=%d statusRegister=%02X dataRegister=%02X\n", status, statusRegister, dataRegister);
   if (status) {
     return statusRegister;
   } else {
+    statusRegister &= ~(CASSETTE_STATUS_READ_READY);
+    tapeDrive[tapeDeckSelected]->readByte(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
     return dataRegister;
   }
 }
@@ -139,7 +141,8 @@ int IOController::CassetteDevice::exBSP() {
   return 1;
 }
 int IOController::CassetteDevice::exSF() {
-  statusRegister &= ~(CASSETTE_STATUS_DECK_READY); // Clear ready bit
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
+  tapeDrive[tapeDeckSelected]->readByte(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
   return 0;
 }
 int IOController::CassetteDevice::exSB() {
@@ -149,15 +152,21 @@ int IOController::CassetteDevice::exRewind() {
   return 1;
 }
 int IOController::CassetteDevice::exTStop() {
-  statusRegister |= CASSETTE_STATUS_DECK_READY;
+  statusRegister |= (CASSETTE_STATUS_DECK_READY);
   return 0;
+}
+
+void IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister( unsigned char data) {
+  statusRegister |= (CASSETTE_STATUS_READ_READY);
+  dataRegister = data;
+  printLog("INFO", "Updated statusRegister to %02X and dataRegister to %02X.\n", statusRegister, dataRegister); 
 }
 
 IOController::CassetteDevice::CassetteDevice () {
   tapeRunning = false;
   tapeDeckSelected = 1;   
-  tapeDrive[0] = new CassetteTape();
-  tapeDrive[1] = new CassetteTape();
+  tapeDrive[0] = new CassetteTape(std::bind(&IOController::CassetteDevice::updateTapGapFlag, this, std::placeholders::_1));
+  tapeDrive[1] = new CassetteTape(std::bind(&IOController::CassetteDevice::updateTapGapFlag, this, std::placeholders::_1));
 }
 
 
@@ -173,4 +182,13 @@ std::string IOController::CassetteDevice::getFileName (int drive) {
 }
 void IOController::CassetteDevice::loadBoot (unsigned char * address) {
   tapeDrive[0]->loadBoot(address);
+}
+
+void IOController::CassetteDevice::updateTapGapFlag(bool gap) {
+  printLog("INFO", "Setting tap gap to %d\n", gap);
+  if (gap) {
+    statusRegister |= (CASSETTE_STATUS_INTER_RECORD_GAP);
+  } else {
+    statusRegister &= ~(CASSETTE_STATUS_INTER_RECORD_GAP);
+  }
 }

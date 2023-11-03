@@ -150,6 +150,7 @@ void dp2200_cpu::reset() {
 
   int dp2200_cpu::execute() {
     unsigned char inst;
+    char buffer[32]; 
     int timeForInstruction;
     int halted;
     struct inst i;
@@ -174,6 +175,8 @@ void dp2200_cpu::reset() {
   
     instructionTrace.push_back(i);
     timeForInstruction = instTimeInNsNotTkn[inst];
+    disassembleLine(buffer, 32, false, P);
+    
     P++;
     P &= 0x3fff;
     fetches++;
@@ -201,6 +204,7 @@ void dp2200_cpu::reset() {
       totalInstructionTime.tv_nsec-=1000000000;
       totalInstructionTime.tv_sec++;
     }
+    printLog("TRACE", "%04X %s -> %s | A=%02X B=%02X C=%02X D=%02X E=%02X H=%02X L=%02X C=%1d Z=%1d P=%1d S=%1d | A=%02X B=%02X C=%02X D=%02X E=%02X H=%02X L=%02X C=%1d Z=%1d P=%1d S=%1d \n", i.address, buffer, setSel==0?"ALPHA":"BETA", regSets[0].r.regA,regSets[0].r.regB,regSets[0].r.regC,regSets[0].r.regD,regSets[0].r.regE,regSets[0].r.regH,regSets[0].r.regL,flagCarry[0], flagZero[0], flagParity[0], flagSign[0], regSets[1].r.regA,regSets[1].r.regB,regSets[1].r.regC,regSets[1].r.regD,regSets[1].r.regE,regSets[1].r.regH,regSets[1].r.regL, flagCarry[1], flagZero[1], flagParity[1], flagSign[1]);
     return halted;
   }
 
@@ -292,8 +296,8 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
     case 3: /* conditional return */
       cc = chkconditional(inst);
       if (cc) {
-        P = stack.stk[stackptr] & 0x3fff;
         stackptr = (stackptr - 1) & 0xf;
+        P = stack.stk[stackptr] & 0x3fff;
       }
       break;
     case 4: /* math with immediate operands */

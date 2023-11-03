@@ -19,7 +19,7 @@ class IOController {
     unsigned char statusRegister, dataRegister;
     bool status;
     public:
-    unsigned char input ();
+    virtual unsigned char input () = 0;
     void exStatus ();
     void exData ();
     virtual int exWrite(unsigned char data) = 0; 
@@ -43,8 +43,10 @@ class IOController {
   class CassetteDevice : public virtual IODevice  {
     bool tapeRunning; 
     int tapeDeckSelected;
+    void updateTapGapFlag(bool);
     public:
     CassetteTape * tapeDrive[2];
+    unsigned char input ();
     int exWrite(unsigned char data); 
     int exCom1(unsigned char data);
     int exCom2(unsigned char data);
@@ -66,6 +68,7 @@ class IOController {
     std::string getFileName (int);
     void loadBoot (unsigned char * address);
     CassetteDevice();
+    void updateDataRegisterAndSetStatusRegister( unsigned char);
   };
 
   class IODevice * dev[16];
