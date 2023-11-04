@@ -17,6 +17,8 @@ class CassetteTape {
   int readBytes;
   std::function<void(unsigned char)> readCb;
   std::function<void(bool)> tapeGapCb;
+  std::vector<class callbackRecord *>outStandingCallbacks;
+  void removeFromOutstandCallbacks (class callbackRecord *);
   public:
 
   CassetteTape(std::function<void(bool)> );

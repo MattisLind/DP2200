@@ -4,7 +4,7 @@
 
 void printLog(const char *level, const char *fmt, ...);
 
-void addToTimerQueue(std::function<int(class callbackRecord *)>, struct timespec);
+class callbackRecord * addToTimerQueue(std::function<int(class callbackRecord *)>, struct timespec);
 
 void timeoutInNanosecs (struct timespec *, long);
 
@@ -95,6 +95,12 @@ int CassetteTape::isChecksumOK(unsigned char * buffer, int size) {
   return 0;
 }
 
+void CassetteTape::removeFromOutstandCallbacks(class callbackRecord * c) {
+  auto it = std::find(outStandingCallbacks.begin(), outStandingCallbacks.end(), c);
+  if (it != outStandingCallbacks.end()) {
+    outStandingCallbacks.erase(it);
+  }
+}
 
 void CassetteTape::readByte(std::function<void(unsigned char)> cb) {
   long timeout;
@@ -109,12 +115,12 @@ void CassetteTape::readByte(std::function<void(unsigned char)> cb) {
     timeout = 70000000;
     timeoutInNanosecs(&then, timeout);
     printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
-    addToTimerQueue([ct=this, tcb = tapeGapCb](class callbackRecord *)->int {tcb(false);ct->timeoutReadByteHandler(); return 0;}, then);
+    outStandingCallbacks.push_back( addToTimerQueue([ct=this, tcb = tapeGapCb](class callbackRecord * c)->int {ct->removeFromOutstandCallbacks(c); tcb(false);ct->timeoutReadByteHandler(); return 0;}, then));
   } else {
     timeout = 2800000;
     timeoutInNanosecs(&then, timeout);
     printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
-    addToTimerQueue([ct=this](class callbackRecord *)->int {ct->timeoutReadByteHandler(); return 0;}, then);
+    outStandingCallbacks.push_back( addToTimerQueue([ct=this](class callbackRecord * c)->int {ct->removeFromOutstandCallbacks(c);ct->timeoutReadByteHandler(); return 0;}, then));
   }
   readCb = cb;
   //addToTimerQueue(std::bind(&CassetteTape::timeoutReadByteHandler, this), then);
@@ -135,7 +141,7 @@ int CassetteTape::timeoutReadByteHandler() {
     //tapeGapCb(true); // Need to set tapeGap after some time. Wait a ms and then set it!
     timeoutInNanosecs(&then, timeout);
     printLog("INFO", "Adding a tapeGapCb to set tape gap  in %d nanoseconds\n", timeout);
-    addToTimerQueue([cb=tapeGapCb](class callbackRecord *)->int { cb(true); return 0; }, then);
+    outStandingCallbacks.push_back(addToTimerQueue([ct=this,cb=tapeGapCb](class callbackRecord * c)->int {ct->removeFromOutstandCallbacks(c); cb(true); return 0; }, then));
     fread(&dummy, 4, 1, file); // read end of record size marker 
     printLog("INFO", "timeoutReadByteHandler read end of record size marker = %d \n", dummy);
   }
