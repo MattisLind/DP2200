@@ -909,11 +909,12 @@ int activeWindow = 0;
 
 std::vector<callbackRecord *> timerqueue;
 
-void addToTimerQueue(std::function<int(void)> cb, struct timespec t) {
+class callbackRecord * addToTimerQueue(std::function<int(void)> cb, struct timespec t) {
   class callbackRecord * c = new callbackRecord;
   c->cb = cb;
   c->deadline = t;
   timerqueue.push_back(c);
+  return c;
 }
 
 void timeoutInNanosecs (struct timespec * t, long nanos) {
@@ -953,7 +954,7 @@ int pollKeyboard() {
     break;
   }
   timeoutInNanosecs(&then, 10000000);
-  addToTimerQueue(std::bind(&pollKeyboard), then);
+  addToTimerQueue([]()->int { pollKeyboard(); return 0; }, then);
   return 0;
 }
 
@@ -1010,7 +1011,7 @@ int cpuRunner () {
     clock_gettime(CLOCK_MONOTONIC, &now);
   } while (compareTimeSpec(now, cpu.totalInstructionTime));
 
-  addToTimerQueue(std::bind(&cpuRunner), cpu.totalInstructionTime);
+  addToTimerQueue([]()->int { cpuRunner(); return 0; }, cpu.totalInstructionTime);
   return 0;
 }
 
