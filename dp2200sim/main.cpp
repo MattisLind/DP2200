@@ -899,19 +899,20 @@ class registerWindow *rw;
 class commandWindow *cw;
 
 
-struct callbackRecord {
+class callbackRecord {
+  public:
   std::function<int(void)> cb;
   struct timespec deadline;
 };
 class Window *windows[3];
 int activeWindow = 0;
 
-std::vector<callbackRecord> timerqueue;
+std::vector<callbackRecord *> timerqueue;
 
 void addToTimerQueue(std::function<int(void)> cb, struct timespec t) {
-  struct callbackRecord c;
-  c.cb = cb;
-  c.deadline = t;
+  class callbackRecord * c = new callbackRecord;
+  c->cb = cb;
+  c->deadline = t;
   timerqueue.push_back(c);
 }
 
@@ -986,8 +987,8 @@ bool compareTimeSpec (struct timespec a, struct timespec b) {
   }
 }
 
-bool compareCallbackRecord (struct callbackRecord a,struct callbackRecord b) {
-  return !compareTimeSpec(a.deadline, b.deadline);
+bool compareCallbackRecord (class callbackRecord * a,class callbackRecord * b) {
+  return !compareTimeSpec(a->deadline, b->deadline);
 }
 
 
@@ -1065,8 +1066,8 @@ int main(int argc, char *argv[]) {
   //cpuRunner();
   while (1) { // event loop
     clock_gettime(CLOCK_MONOTONIC, &now);
-    timeout.tv_nsec = timerqueue.front().deadline.tv_nsec - now.tv_nsec;
-    timeout.tv_sec = timerqueue.front().deadline.tv_sec - now.tv_sec;
+    timeout.tv_nsec = timerqueue.front()->deadline.tv_nsec - now.tv_nsec;
+    timeout.tv_sec = timerqueue.front()->deadline.tv_sec - now.tv_sec;
     if (timeout.tv_nsec < 0) {
       timeout.tv_nsec += 1000000000;
       timeout.tv_sec--;
@@ -1075,7 +1076,8 @@ int main(int argc, char *argv[]) {
 
     // need to sort the vector before taking the first one.
     std::sort (timerqueue.begin(), timerqueue.end(), compareCallbackRecord);
-    auto callBack = timerqueue.front().cb;
+    auto callBack = timerqueue.front()->cb;
+    delete timerqueue.front();
     timerqueue.erase(timerqueue.begin());
     callBack();
   }
