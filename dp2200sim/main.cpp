@@ -901,7 +901,7 @@ class commandWindow *cw;
 
 class callbackRecord {
   public:
-  std::function<int(void)> cb;
+  std::function<int(class callbackRecord *)> cb;
   struct timespec deadline;
 };
 class Window *windows[3];
@@ -909,7 +909,7 @@ int activeWindow = 0;
 
 std::vector<callbackRecord *> timerqueue;
 
-class callbackRecord * addToTimerQueue(std::function<int(void)> cb, struct timespec t) {
+class callbackRecord * addToTimerQueue(std::function<int(class callbackRecord *)> cb, struct timespec t) {
   class callbackRecord * c = new callbackRecord;
   c->cb = cb;
   c->deadline = t;
@@ -954,7 +954,7 @@ int pollKeyboard() {
     break;
   }
   timeoutInNanosecs(&then, 10000000);
-  addToTimerQueue([]()->int { pollKeyboard(); return 0; }, then);
+  addToTimerQueue([](class callbackRecord *)->int { pollKeyboard(); return 0; }, then);
   return 0;
 }
 
@@ -1011,7 +1011,7 @@ int cpuRunner () {
     clock_gettime(CLOCK_MONOTONIC, &now);
   } while (compareTimeSpec(now, cpu.totalInstructionTime));
 
-  addToTimerQueue([]()->int { cpuRunner(); return 0; }, cpu.totalInstructionTime);
+  addToTimerQueue([](class callbackRecord *)->int { cpuRunner(); return 0; }, cpu.totalInstructionTime);
   return 0;
 }
 
@@ -1078,9 +1078,10 @@ int main(int argc, char *argv[]) {
     // need to sort the vector before taking the first one.
     std::sort (timerqueue.begin(), timerqueue.end(), compareCallbackRecord);
     auto callBack = timerqueue.front()->cb;
+    class callbackRecord * timerRecord = timerqueue.front();
     delete timerqueue.front();
     timerqueue.erase(timerqueue.begin());
-    callBack();
+    callBack(timerRecord);
   }
   return 0;
 }

@@ -4,7 +4,7 @@
 
 void printLog(const char *level, const char *fmt, ...);
 
-void addToTimerQueue(std::function<int(void)>, struct timespec);
+void addToTimerQueue(std::function<int(class callbackRecord *)>, struct timespec);
 
 void timeoutInNanosecs (struct timespec *, long);
 
@@ -109,12 +109,12 @@ void CassetteTape::readByte(std::function<void(unsigned char)> cb) {
     timeout = 70000000;
     timeoutInNanosecs(&then, timeout);
     printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
-    addToTimerQueue([ct=this, tcb = tapeGapCb]()->int {tcb(false);ct->timeoutReadByteHandler(); return 0;}, then);
+    addToTimerQueue([ct=this, tcb = tapeGapCb](class callbackRecord *)->int {tcb(false);ct->timeoutReadByteHandler(); return 0;}, then);
   } else {
     timeout = 2800000;
     timeoutInNanosecs(&then, timeout);
     printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
-    addToTimerQueue([ct=this]()->int {ct->timeoutReadByteHandler(); return 0;}, then);
+    addToTimerQueue([ct=this](class callbackRecord *)->int {ct->timeoutReadByteHandler(); return 0;}, then);
   }
   readCb = cb;
   //addToTimerQueue(std::bind(&CassetteTape::timeoutReadByteHandler, this), then);
@@ -135,7 +135,7 @@ int CassetteTape::timeoutReadByteHandler() {
     //tapeGapCb(true); // Need to set tapeGap after some time. Wait a ms and then set it!
     timeoutInNanosecs(&then, timeout);
     printLog("INFO", "Adding a tapeGapCb to set tape gap  in %d nanoseconds\n", timeout);
-    addToTimerQueue([cb=tapeGapCb]()->int { cb(true); return 0; }, then);
+    addToTimerQueue([cb=tapeGapCb](class callbackRecord *)->int { cb(true); return 0; }, then);
     fread(&dummy, 4, 1, file); // read end of record size marker 
     printLog("INFO", "timeoutReadByteHandler read end of record size marker = %d \n", dummy);
   }
