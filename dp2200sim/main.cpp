@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <stdlib.h>
 #include <string>
+#include <cstring>
 #include <sys/time.h>
 #include <time.h>
 #include <vector>
@@ -265,7 +266,7 @@ class commandWindow : public virtual Window {
         int y, x;
         getyx(innerWin, y, x);
         wmove(innerWin, y, 1);
-        wprintw(innerWin, filtered[0].command.c_str());
+        wprintw(innerWin, "%s", filtered[0].command.c_str());
         commandLine = filtered[0].command;
       } else if (filtered.size() > 1) {
         wprintw(innerWin, "\n");
@@ -494,8 +495,8 @@ class registerWindow : public virtual Window {
   FIELD * flagCarry[2];
   FIELD * flagZero[2];
   FIELD * pc;
-  FIELD * interruptEnabled;
-  FIELD * interruptPending; 
+  //FIELD * interruptEnabled;
+  //FIELD * interruptPending; 
   FIELD * mnemonic;
   FIELD * instructionTrace[8];
   FIELD * breakpoints[8];
@@ -930,7 +931,7 @@ void timeoutInNanosecs (struct timespec * t, long nanos) {
 int pollKeyboard() {
   int ch;
   struct timespec then;
-  struct callbackRecord cbr;
+  class callbackRecord cbr;
   rw->updateWindow();
   windows[activeWindow]->resetCursor();
   ch = getch();
@@ -996,7 +997,7 @@ bool compareCallbackRecord (class callbackRecord * a,class callbackRecord * b) {
 
 int cpuRunner () {
   struct timespec now;
-  struct callbackRecord cbr;
+  class callbackRecord cbr;
   do {
   // execute one instruction
     if (!cpu.running) return 1;
@@ -1041,7 +1042,12 @@ void printLog(const char *level, const char *fmt, ...) {
   va_end(args);
 }
 
-
+void removeTimerCallback(class callbackRecord * c) {
+  auto it = std::find(timerqueue.begin(), timerqueue.end(), c);
+  if (it != timerqueue.end()) {
+    timerqueue.erase(it);
+  }
+}
 
 
 int main(int argc, char *argv[]) {

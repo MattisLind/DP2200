@@ -130,7 +130,7 @@ int dp2200_cpu::removeBreakpoint(unsigned short address) {
 }
 
 void dp2200_cpu::clear() {
-  for (int i=0; i<sizeof(memory);i++ ) memory[i]=0;
+  for (unsigned long i=0; i<sizeof(memory);i++ ) memory[i]=0;
 }
 
 void dp2200_cpu::reset() {

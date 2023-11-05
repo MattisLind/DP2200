@@ -3,6 +3,7 @@
 #include "cassetteTape.h"
 
 void printLog(const char *level, const char *fmt, ...);
+void removeTimerCallback(class callbackRecord * c);
 
 class callbackRecord * addToTimerQueue(std::function<int(class callbackRecord *)>, struct timespec);
 
@@ -60,6 +61,13 @@ int CassetteTape::isFileHeader(unsigned char * buffer) {
     return 1;
   } 
   return 0;
+}
+
+void CassetteTape::stopTapeMotion() {
+  printLog("INFO", "Number of outstanding timers to clear = %d \n", outStandingCallbacks.size());
+  for (auto it=outStandingCallbacks.begin(); it < outStandingCallbacks.end(); it++) {
+    removeTimerCallback(*it);
+  }
 }
 
 int CassetteTape::isNumericRecord(unsigned char * buffer) {

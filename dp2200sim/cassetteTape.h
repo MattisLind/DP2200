@@ -1,6 +1,8 @@
 #ifndef _CASSETTE_TAPE_
 #define _CASSETTE_TAPE_
 #include <string>
+#include <functional>
+#include <vector>
 
 
 
@@ -32,6 +34,7 @@ class CassetteTape {
 
   void loadBoot (unsigned char * address);
 
+  void stopTapeMotion();
 
   void readBlock (unsigned char * address,  int * size);
 

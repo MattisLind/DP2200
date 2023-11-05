@@ -138,7 +138,8 @@ int IOController::CassetteDevice::exWBK() {
   return 1;
 }
 int IOController::CassetteDevice::exBSP() {
-  return 1;
+  statusRegister |= (CASSETTE_STATUS_INTER_RECORD_GAP);
+  return 0;
 }
 int IOController::CassetteDevice::exSF() {
   statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
@@ -152,6 +153,7 @@ int IOController::CassetteDevice::exRewind() {
   return 1;
 }
 int IOController::CassetteDevice::exTStop() {
+  tapeDrive[tapeDeckSelected]->stopTapeMotion();
   statusRegister |= (CASSETTE_STATUS_DECK_READY);
   return 0;
 }
