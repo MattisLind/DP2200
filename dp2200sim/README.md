@@ -3,6 +3,7 @@
 PLEASE NOTE!  STILL WORK IN PROGRESS.<BR> 
 
 It can run and stepp through programs. Breakpoint can be used. Work ongoing to support tape cassette IO.
+At this point it is able to load the first program into memory and it starts executing it and halts because keyboard / crt IO is not implemented. I consider this as major leap forward!
 
 ![Screen shot](https://raw.githubusercontent.com/MattisLind/DP2200/main/dp2200sim/dp2200sim.png)
 
