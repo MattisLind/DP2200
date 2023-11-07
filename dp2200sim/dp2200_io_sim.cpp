@@ -96,7 +96,7 @@ unsigned char IOController::CassetteDevice::input () {
     return statusRegister;
   } else {
     statusRegister &= ~(CASSETTE_STATUS_READ_READY);
-    tapeDrive[tapeDeckSelected]->readByte(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
+    //tapeDrive[tapeDeckSelected]->readByte(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
     return dataRegister;
   }
 }

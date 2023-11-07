@@ -774,7 +774,6 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
     dest = (inst >> 3) & 0x7;
 
     if (src == 0x7 && dest == 0x7) {
-      printf("halt:%2x\n", inst);
       return 1;
     }
     if (src == 0x7) {

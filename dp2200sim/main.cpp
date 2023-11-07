@@ -132,9 +132,9 @@ class commandWindow : public virtual Window {
     cpu->clear();
   }
   void doRun(std::vector<Param> params) {
-    clock_gettime(CLOCK_MONOTONIC, &cpu->totalInstructionTime);
+    cpu->totalInstructionTime.tv_nsec=0;
+    cpu->totalInstructionTime.tv_sec=0;
     cpu->running = true;
-    cpuRunner();
   }
   void doReset(std::vector<Param> params) {
     cpu->reset();
@@ -910,17 +910,11 @@ int activeWindow = 0;
 
 std::vector<callbackRecord *> timerqueue;
 
-class callbackRecord * addToTimerQueue(std::function<int(class callbackRecord *)> cb, struct timespec t) {
-  class callbackRecord * c = new callbackRecord;
-  c->cb = cb;
-  c->deadline = t;
-  timerqueue.push_back(c);
-  return c;
-}
+
 
 void timeoutInNanosecs (struct timespec * t, long nanos) {
-  clock_gettime(CLOCK_MONOTONIC, t);
-  t->tv_nsec += 10000000; // 10 ms
+  *t = cpu.totalInstructionTime;
+  t->tv_nsec += nanos;
   if (t->tv_nsec >= 1000000000) {
     t->tv_nsec -= 1000000000;
     t->tv_sec++;
@@ -930,8 +924,6 @@ void timeoutInNanosecs (struct timespec * t, long nanos) {
 
 int pollKeyboard() {
   int ch;
-  struct timespec then;
-  class callbackRecord cbr;
   rw->updateWindow();
   windows[activeWindow]->resetCursor();
   ch = getch();
@@ -954,22 +946,20 @@ int pollKeyboard() {
     windows[activeWindow]->handleKey(ch);
     break;
   }
-  timeoutInNanosecs(&then, 10000000);
-  addToTimerQueue([](class callbackRecord *)->int { pollKeyboard(); return 0; }, then);
   return 0;
 }
 
 
-/*struct timespec subtractTimeSpec (struct timespec a, struct timespec b, bool * negative) {
+struct timespec subtractTimeSpec (struct timespec a, struct timespec b, bool * negative=NULL) {
   struct timespec diff; 
   if ((b.tv_sec > a.tv_sec) || ((b.tv_sec == a.tv_sec) && (b.tv_nsec > a.tv_nsec) )) {
     // b is larger do reverse subtracton and return negative tv_sec
-    *negative=true;
+    if (negative!=NULL) *negative=true;
     diff.tv_nsec = b.tv_nsec - a.tv_nsec;
     diff.tv_sec = b.tv_sec - a.tv_sec;
   } else {
     // a is larger than b 
-    *negative=false;
+    if (negative!=NULL) *negative=false;
     diff.tv_nsec = a.tv_nsec - b.tv_nsec;
     diff.tv_sec = a.tv_sec - b.tv_sec;
   }
@@ -978,10 +968,11 @@ int pollKeyboard() {
     diff.tv_nsec +=1000000000;
   }
   return diff;
-}*/
+}
 
-
+// returns true if a >= b false otherwise
 bool compareTimeSpec (struct timespec a, struct timespec b) {
+  
   if ((b.tv_sec > a.tv_sec) || ((b.tv_sec == a.tv_sec) && (b.tv_nsec > a.tv_nsec) )) {
     return false;
   } else {
@@ -993,29 +984,14 @@ bool compareCallbackRecord (class callbackRecord * a,class callbackRecord * b) {
   return !compareTimeSpec(a->deadline, b->deadline);
 }
 
-
-
-int cpuRunner () {
-  struct timespec now;
-  class callbackRecord cbr;
-  do {
-  // execute one instruction
-    if (!cpu.running) return 1;
-    if (std::find(cpu.breakpoints.begin(), cpu.breakpoints.end(), cpu.P)!=cpu.breakpoints.end()) {
-      cpu.running = false;
-      return 1;
-    }
-    if (cpu.execute()) {
-      cpu.running = false;
-      return 1;
-    } 
-    clock_gettime(CLOCK_MONOTONIC, &now);
-  } while (compareTimeSpec(now, cpu.totalInstructionTime));
-
-  addToTimerQueue([](class callbackRecord *)->int { cpuRunner(); return 0; }, cpu.totalInstructionTime);
-  return 0;
+class callbackRecord * addToTimerQueue(std::function<int(class callbackRecord *)> cb, struct timespec t) {
+  class callbackRecord * c = new callbackRecord;
+  c->cb = cb;
+  c->deadline = t;
+  timerqueue.push_back(c);
+  std::sort (timerqueue.begin(), timerqueue.end(), compareCallbackRecord); 
+  return c;
 }
-
 
 char timeBuf[sizeof "2011-10-08T07:07:09.000Z"];
 
@@ -1049,9 +1025,30 @@ void removeTimerCallback(class callbackRecord * c) {
   }
 }
 
+void addTimeSpec(struct timespec * after, struct timespec * before, long increment ) {
+  after->tv_nsec = before->tv_nsec + increment;
+  after->tv_sec = before->tv_sec;
+  if (after->tv_nsec>1000000000) {
+    after->tv_sec++;
+    after->tv_nsec -= 1000000000;
+  }
+}
+
+bool nowIsLessThan(struct timespec * after) {
+  struct timespec now;
+  clock_gettime(CLOCK_MONOTONIC, &now);
+  return !compareTimeSpec(now, *after);
+}
+
+char * getCpuTimeStr (char * buffer, int size) {
+  snprintf(buffer, size, "%10ld.%10ld", cpu.totalInstructionTime.tv_sec, cpu.totalInstructionTime.tv_nsec);
+  return buffer;
+}
 
 int main(int argc, char *argv[]) {
-  struct timespec now, timeout;
+  struct timespec now,before, after, diff;
+  char buffer[100];
+  float yield=50.0;
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);
   initscr(); /* Start curses mode 		*/
@@ -1069,25 +1066,40 @@ int main(int argc, char *argv[]) {
   windows[1] = rw;
   windows[2] = dpw;
   windows[activeWindow]->hightlightWindow();
-  pollKeyboard();
   //cpuRunner();
   while (1) { // event loop
-    clock_gettime(CLOCK_MONOTONIC, &now);
-    timeout.tv_nsec = timerqueue.front()->deadline.tv_nsec - now.tv_nsec;
-    timeout.tv_sec = timerqueue.front()->deadline.tv_sec - now.tv_sec;
-    if (timeout.tv_nsec < 0) {
-      timeout.tv_nsec += 1000000000;
-      timeout.tv_sec--;
+    clock_gettime(CLOCK_MONOTONIC, &before);
+    addTimeSpec(&after, &before, (long) (yield/100 * 10000000));
+    while (cpu.running && nowIsLessThan(&after)) {
+      // Run instructions
+      if (cpu.execute()) {
+        cpu.running = false;
+      } 
+      printLog("INFO", "%s\n", getCpuTimeStr(buffer, 100));
+      if (std::find(cpu.breakpoints.begin(), cpu.breakpoints.end(), cpu.P)!=cpu.breakpoints.end()) {
+        cpu.running = false;
+      } 
+      printLog("INFO", "%s size=%d \n", getCpuTimeStr(buffer, 100), timerqueue.size());
+      if (timerqueue.size()>0 && compareTimeSpec(timerqueue.front()->deadline, cpu.totalInstructionTime)) {
+        printLog("INFO", "Not executing callback %s top=%10ld.%10ld \n", getCpuTimeStr(buffer, 100), timerqueue.front()->deadline.tv_sec, timerqueue.front()->deadline.tv_nsec);
+        continue;
+      }
+      if (timerqueue.size() == 0) continue;
+      printLog("INFO", "Executing callback %s top=%10ld.%10ld \n", getCpuTimeStr(buffer, 100), timerqueue.front()->deadline.tv_sec, timerqueue.front()->deadline.tv_nsec);
+      auto callBack = timerqueue.front()->cb;
+      class callbackRecord * timerRecord = timerqueue.front();
+      delete timerqueue.front();
+      timerqueue.erase(timerqueue.begin());
+      callBack(timerRecord);
     }
-    nanosleep(&timeout, NULL);
+    pollKeyboard();
+    addTimeSpec(&after, &before, 10000000); // 10 ms
 
-    // need to sort the vector before taking the first one.
-    std::sort (timerqueue.begin(), timerqueue.end(), compareCallbackRecord);
-    auto callBack = timerqueue.front()->cb;
-    class callbackRecord * timerRecord = timerqueue.front();
-    delete timerqueue.front();
-    timerqueue.erase(timerqueue.begin());
-    callBack(timerRecord);
+    // calculate time between after and now 
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    diff = subtractTimeSpec(after, now); 
+    // call nanosleep to sleep this amount
+    nanosleep(&diff, NULL);
   }
   return 0;
 }
