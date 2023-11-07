@@ -96,7 +96,11 @@ unsigned char IOController::CassetteDevice::input () {
     return statusRegister;
   } else {
     statusRegister &= ~(CASSETTE_STATUS_READ_READY);
-    tapeDrive[tapeDeckSelected]->readByte(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
+     // This only works if we really want to have the data
+     // In the BSP case it happens that itwaits for the tape drive to the get to the tape gap and stop and don't care about the data and will not do any INPUT from the data register.
+     // Reading need to take place on a timer regardless of any trigger.
+     // When a read has been initiated another shall be initiated directly by the timer routine.
+     // tapeDrive[tapeDeckSelected]->readByte(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
     return dataRegister;
   }
 }
@@ -132,22 +136,36 @@ int IOController::CassetteDevice::exDeck2() {
   return 0;
 }
 int IOController::CassetteDevice::exRBK() {
-  return 1;
+  tapeDrive[tapeDeckSelected]->setTapeDirectionForward(true);
+  tapeDrive[tapeDeckSelected]->setStopAttBlockGap(true);
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
+  tapeDrive[tapeDeckSelected]->readByte(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
+  return 0;
 }
 int IOController::CassetteDevice::exWBK() {
   return 1;
 }
 int IOController::CassetteDevice::exBSP() {
-  statusRegister |= (CASSETTE_STATUS_INTER_RECORD_GAP);
+  tapeDrive[tapeDeckSelected]->setTapeDirectionForward(false);
+  tapeDrive[tapeDeckSelected]->setStopAttBlockGap(true);
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
+  tapeDrive[tapeDeckSelected]->readByteBackwards(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
+
   return 0;
 }
 int IOController::CassetteDevice::exSF() {
+  tapeDrive[tapeDeckSelected]->setTapeDirectionForward(true);
+  tapeDrive[tapeDeckSelected]->setStopAttBlockGap(false);
   statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
   tapeDrive[tapeDeckSelected]->readByte(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
   return 0;
 }
 int IOController::CassetteDevice::exSB() {
-  return 1;
+  tapeDrive[tapeDeckSelected]->setTapeDirectionForward(false);
+  tapeDrive[tapeDeckSelected]->setStopAttBlockGap(false);
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
+  tapeDrive[tapeDeckSelected]->readByteBackwards(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
+  return 0;
 }
 int IOController::CassetteDevice::exRewind() {
   return 1;

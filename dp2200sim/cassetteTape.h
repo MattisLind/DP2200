@@ -16,7 +16,10 @@ class CassetteTape {
   int currentBlockSize;
   //int timeoutReadByteHandler (std::function<void(unsigned char)>); 
   int timeoutReadByteHandler ();
+  int timeoutReadByteBackwardsHandler ();
   int readBytes;
+  bool tapeMovesForward;
+  bool stopAtTapeGap;
   std::function<void(unsigned char)> readCb;
   std::function<void(bool)> tapeGapCb;
   std::vector<class callbackRecord *>outStandingCallbacks;
@@ -49,6 +52,9 @@ class CassetteTape {
   int isChecksumOK(unsigned char * buffer, int size);
 
   void readByte(std::function<void(unsigned char)>);
+  void readByteBackwards(std::function<void(unsigned char)>);
+  void setTapeDirectionForward (bool);
+  void setStopAttBlockGap(bool);
 };
 
 #endif

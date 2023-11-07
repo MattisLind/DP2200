@@ -910,7 +910,18 @@ int activeWindow = 0;
 
 std::vector<callbackRecord *> timerqueue;
 
+void printTimerqueue(const char * s) {
+  char buf[100];
+  int n=0;
+  for (auto it=timerqueue.begin(); it<timerqueue.end() && n < 100; it++) {
+    n+=snprintf(buf+n,100,"Deadline=%ld.%ld", (*it)->deadline.tv_sec, (*it)->deadline.tv_nsec);
+  }
+  buf[n]=0;
+  printLog("INFO", "%s -> Size=%d %s\n",s, timerqueue.size(), buf);
+}
+
 class callbackRecord * addToTimerQueue(std::function<int(class callbackRecord *)> cb, struct timespec t) {
+  //printTimerqueue("addToTimerQueue");
   class callbackRecord * c = new callbackRecord;
   c->cb = cb;
   c->deadline = t;
@@ -920,7 +931,7 @@ class callbackRecord * addToTimerQueue(std::function<int(class callbackRecord *)
 
 void timeoutInNanosecs (struct timespec * t, long nanos) {
   clock_gettime(CLOCK_MONOTONIC, t);
-  t->tv_nsec += 10000000; // 10 ms
+  t->tv_nsec += nanos; // 10 ms
   if (t->tv_nsec >= 1000000000) {
     t->tv_nsec -= 1000000000;
     t->tv_sec++;
@@ -1010,8 +1021,9 @@ int cpuRunner () {
       return 1;
     } 
     clock_gettime(CLOCK_MONOTONIC, &now);
+    //printLog("INFO", "executed one instruction\n");
   } while (compareTimeSpec(now, cpu.totalInstructionTime));
-
+  //printLog("INFO", "Calling addToTimerQueue\n");
   addToTimerQueue([](class callbackRecord *)->int { cpuRunner(); return 0; }, cpu.totalInstructionTime);
   return 0;
 }
@@ -1083,6 +1095,7 @@ int main(int argc, char *argv[]) {
 
     // need to sort the vector before taking the first one.
     std::sort (timerqueue.begin(), timerqueue.end(), compareCallbackRecord);
+    //printTimerqueue("Sorted timerqueue");
     auto callBack = timerqueue.front()->cb;
     class callbackRecord * timerRecord = timerqueue.front();
     delete timerqueue.front();
