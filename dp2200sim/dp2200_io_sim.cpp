@@ -1,13 +1,22 @@
 
 
 #include "dp2200_io_sim.h"
+#include "dp2200Window.h"
+#include "RegisterWindow.h"
+
+extern class dp2200Window * dpw;
+extern class registerWindow * rw;
+
+
 
 void printLog(const char *level, const char *fmt, ...);
 
 
 IOController::IOController () {
   dev[0] = cassetteDevice = new CassetteDevice();
+  dev[1] = screenKeyboardDevice = new ScreenKeyboardDevice();
   supportedDevices.push_back(0);
+  supportedDevices.push_back(1);
 }
 
 int IOController::exAdr (unsigned char address) {
@@ -193,4 +202,86 @@ void IOController::CassetteDevice::updateTapGapFlag(bool gap) {
   } else {
     statusRegister &= ~(CASSETTE_STATUS_INTER_RECORD_GAP);
   }
+}
+
+unsigned char IOController::ScreenKeyboardDevice::input () {
+  if (status) {
+    return statusRegister;
+  } else {
+    //statusRegister &= ~(CASSETTE_STATUS_READ_READY);
+    return dataRegister;
+  }
+}
+int IOController::ScreenKeyboardDevice::exWrite(unsigned char data) {
+  return 1;
+} 
+int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
+  // 
+  if (data & SCRNKBD_COM1_ERASE_EOF) {
+    return dpw->eraseFromCursorToEndOfFrame();  
+  }
+  if (data & SCRNKBD_COM1_ERASE_EOL) {
+    return dpw->eraseFromCursorToEndOfLine(); 
+  }
+  if (data & SCRNKBD_COM1_ROLL) {
+    return dpw->rollScreenOneLine();
+  }
+  if (data & SCRNKBD_COM1_CURSOR_ONOFF) {
+    return dpw->showCursor(true);
+  } else {
+    return dpw->showCursor(false);
+  }
+  if (data & SCRNKBD_COM1_KDB_LIGHT) {
+    return rw->setKeyboardLight(true);
+  } else {
+    return rw->setKeyboardLight(false);
+  }
+  if (data & SCRNKBD_COM1_DISP_LIGHT) {
+    return rw->setDisplayLight(true);
+  } else {
+    return rw->setDisplayLight(false);
+  }
+  return 0;
+}
+int IOController::ScreenKeyboardDevice::exCom2(unsigned char data){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exCom3(unsigned char data){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exCom4(unsigned char data){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exBeep(){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exClick(){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exDeck1(){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exDeck2(){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exRBK(){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exWBK(){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exBSP(){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exSF(){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exSB(){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exRewind(){
+  return 1;
+}
+int IOController::ScreenKeyboardDevice::exTStop(){
+  return 1;
 }
