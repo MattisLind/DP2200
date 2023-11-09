@@ -213,7 +213,7 @@ unsigned char IOController::ScreenKeyboardDevice::input () {
   }
 }
 int IOController::ScreenKeyboardDevice::exWrite(unsigned char data) {
-  return 1;
+  return dpw->writeCharacter(data);
 } 
 int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
   // 
@@ -244,10 +244,10 @@ int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
   return 0;
 }
 int IOController::ScreenKeyboardDevice::exCom2(unsigned char data){
-  return 1;
+  return dpw->setCursorX(data);
 }
 int IOController::ScreenKeyboardDevice::exCom3(unsigned char data){
-  return 1;
+  return dpw->setCursorY(data);
 }
 int IOController::ScreenKeyboardDevice::exCom4(unsigned char data){
   return 1;
@@ -284,4 +284,8 @@ int IOController::ScreenKeyboardDevice::exRewind(){
 }
 int IOController::ScreenKeyboardDevice::exTStop(){
   return 1;
+}
+
+IOController::ScreenKeyboardDevice::ScreenKeyboardDevice() {
+  statusRegister = (SCRNKBD_STATUS_CRT_READY);
 }

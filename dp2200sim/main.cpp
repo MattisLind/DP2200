@@ -31,13 +31,6 @@ int cpuRunner();
 
 class commandWindow;
 
-
-
-
-
-
-
-
 class registerWindow *r;
 
 void form_hook_proxy(formnode * f) {

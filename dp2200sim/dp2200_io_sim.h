@@ -4,6 +4,7 @@
 
 #include <vector>
 #include "cassetteTape.h"
+#include "dp2200Window.h"
 
 
 #define CASSETTE_STATUS_DECK_READY 1 << 0
@@ -13,12 +14,20 @@
 #define CASSETTE_STATUS_INTER_RECORD_GAP 1 << 4
 #define CASSETTE_STATUS_CASSETTE_IN_PLACE 1 << 6
 
+#define SCRNKBD_STATUS_CRT_READY 1 << 0
+#define SCRNKBD_STATUS_KBD_READY 1 << 1
+#define SCRNKBD_STATUS_KEYBOAD_BUTTON_PRESSED 1 << 2
+#define SCRNKBD_STATUS_DISPLAY_BUTTON_PRESSED 1 << 3
+
+
 #define SCRNKBD_COM1_ERASE_EOL 1 << 1
 #define SCRNKBD_COM1_ERASE_EOF 1 << 2
 #define SCRNKBD_COM1_ROLL 1 << 3
 #define SCRNKBD_COM1_CURSOR_ONOFF 1 << 4
 #define SCRNKBD_COM1_KDB_LIGHT 1 << 5
 #define SCRNKBD_COM1_DISP_LIGHT 1 << 6
+
+extern class dp2200Window * dpw;
 
 class IOController {
   class IODevice {
@@ -97,6 +106,7 @@ class IOController {
     int exSB();
     int exRewind();
     int exTStop();
+    ScreenKeyboardDevice();
   };
 
   class IODevice * dev[16];

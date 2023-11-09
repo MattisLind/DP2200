@@ -6,6 +6,7 @@
 #include <string>
 
 class dp2200_cpu {
+  
 public:
   // Define Registerset
   enum Reg { A, B, C, D, E, H, L };
@@ -77,6 +78,7 @@ public:
   std::vector<unsigned short> breakpoints;
 
   class IOController * ioCtrl;
+  bool traceEnabled = false;
 
   // rather than having ioAddress and ioStatus in CPU class a ioController class is handling all IO.
   // This class handles ioStatus and ioAddress.
