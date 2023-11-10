@@ -141,22 +141,36 @@ int IOController::CassetteDevice::exDeck2() {
   return 0;
 }
 int IOController::CassetteDevice::exRBK() {
-  return 1;
+  tapeDrive[tapeDeckSelected]->setTapeDirectionForward(true);
+  tapeDrive[tapeDeckSelected]->setStopAttBlockGap(true);
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
+  tapeDrive[tapeDeckSelected]->readByte(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
+  return 0;
 }
 int IOController::CassetteDevice::exWBK() {
   return 1;
 }
 int IOController::CassetteDevice::exBSP() {
-  statusRegister |= (CASSETTE_STATUS_INTER_RECORD_GAP);
+  tapeDrive[tapeDeckSelected]->setTapeDirectionForward(false);
+  tapeDrive[tapeDeckSelected]->setStopAttBlockGap(true);
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
+  tapeDrive[tapeDeckSelected]->readByteBackwards(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
+
   return 0;
 }
 int IOController::CassetteDevice::exSF() {
+  tapeDrive[tapeDeckSelected]->setTapeDirectionForward(true);
+  tapeDrive[tapeDeckSelected]->setStopAttBlockGap(false);
   statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
   tapeDrive[tapeDeckSelected]->readByte(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
   return 0;
 }
 int IOController::CassetteDevice::exSB() {
-  return 1;
+  tapeDrive[tapeDeckSelected]->setTapeDirectionForward(false);
+  tapeDrive[tapeDeckSelected]->setStopAttBlockGap(false);
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
+  tapeDrive[tapeDeckSelected]->readByteBackwards(std::bind(&IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister, this, std::placeholders::_1));
+  return 0;
 }
 int IOController::CassetteDevice::exRewind() {
   return 1;
@@ -176,8 +190,8 @@ void IOController::CassetteDevice::updateDataRegisterAndSetStatusRegister( unsig
 IOController::CassetteDevice::CassetteDevice () {
   tapeRunning = false;
   tapeDeckSelected = 1;   
-  tapeDrive[0] = new CassetteTape(std::bind(&IOController::CassetteDevice::updateTapGapFlag, this, std::placeholders::_1));
-  tapeDrive[1] = new CassetteTape(std::bind(&IOController::CassetteDevice::updateTapGapFlag, this, std::placeholders::_1));
+  tapeDrive[0] = new CassetteTape(std::bind(&IOController::CassetteDevice::updateTapGapFlag, this, std::placeholders::_1), std::bind(&IOController::CassetteDevice::updateReadyFlag, this, std::placeholders::_1));
+  tapeDrive[1] = new CassetteTape(std::bind(&IOController::CassetteDevice::updateTapGapFlag, this, std::placeholders::_1), std::bind(&IOController::CassetteDevice::updateReadyFlag, this, std::placeholders::_1));
 }
 
 
@@ -203,6 +217,17 @@ void IOController::CassetteDevice::updateTapGapFlag(bool gap) {
     statusRegister &= ~(CASSETTE_STATUS_INTER_RECORD_GAP);
   }
 }
+
+void IOController::CassetteDevice::updateReadyFlag(bool gap) {
+  printLog("INFO", "Setting tap gap to %d\n", gap);
+  if (gap) {
+    statusRegister |= (CASSETTE_STATUS_DECK_READY);
+  } else {
+    statusRegister &= ~(CASSETTE_STATUS_DECK_READY);
+  }
+}
+
+
 
 unsigned char IOController::ScreenKeyboardDevice::input () {
   if (status) {

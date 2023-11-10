@@ -60,6 +60,7 @@ class IOController {
     bool tapeRunning; 
     int tapeDeckSelected;
     void updateTapGapFlag(bool);
+    void updateReadyFlag(bool);
     public:
     CassetteTape * tapeDrive[2];
     unsigned char input ();

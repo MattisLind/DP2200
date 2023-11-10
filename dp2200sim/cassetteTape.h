@@ -22,11 +22,12 @@ class CassetteTape {
   bool stopAtTapeGap;
   std::function<void(unsigned char)> readCb;
   std::function<void(bool)> tapeGapCb;
+  std::function<void(bool)> deckReadyCb;
   std::vector<class callbackRecord *>outStandingCallbacks;
   void removeFromOutstandCallbacks (class callbackRecord *);
   public:
 
-  CassetteTape(std::function<void(bool)> );
+  CassetteTape(std::function<void(bool)>, std::function<void(bool)> );
 
   bool openFile (std::string fileName);
   void closeFile ();

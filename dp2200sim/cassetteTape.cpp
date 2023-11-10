@@ -9,9 +9,10 @@ class callbackRecord * addToTimerQueue(std::function<int(class callbackRecord *)
 
 void timeoutInNanosecs (struct timespec *, long);
 
-CassetteTape::CassetteTape(std::function<void(bool)> cb) {
+CassetteTape::CassetteTape(std::function<void(bool)> cb, std::function<void(bool)> rcb) {
   state=TAPE_GAP;
   tapeGapCb = cb;
+  deckReadyCb = rcb;
 }
 
 bool CassetteTape::openFile(std::string fileName) {
@@ -122,12 +123,12 @@ void CassetteTape::readByte(std::function<void(unsigned char)> cb) {
     //tapeGapCb(false);
     readBytes=0;
     //tapeGapCb(true);
-    timeout = 700000000;
+    timeout = 70000000;
     timeoutInNanosecs(&then, timeout);
     printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
     outStandingCallbacks.push_back( addToTimerQueue([ct=this, tcb = tapeGapCb](class callbackRecord * c)->int {printLog("INFO", "70ms tapeGapCb(true) timeout ENTRY\n");ct->removeFromOutstandCallbacks(c); tcb(false);ct->timeoutReadByteHandler(); printLog("INFO", "70ms tapeGapCb(true) timeout EXIT\n");return 0;}, then));
   } else {
-    timeout = 28000000;
+    timeout = 2800000;
     timeoutInNanosecs(&then, timeout);
     printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
     outStandingCallbacks.push_back( addToTimerQueue([ct=this](class callbackRecord * c)->int {ct->removeFromOutstandCallbacks(c);ct->timeoutReadByteHandler(); return 0;}, then));
@@ -156,6 +157,7 @@ int CassetteTape::timeoutReadByteHandler() {
     printLog("INFO", "timeoutReadByteHandler read end of record size marker = %d \n", dummy);
     if (stopAtTapeGap) {
       stopTapeMotion();
+      deckReadyCb(true);
     } else {
       readByte(readCb);
     }
@@ -217,11 +219,12 @@ int CassetteTape::timeoutReadByteBackwardsHandler() {
     printLog("INFO", "timeoutReadByteHandler read end of record size marker = %d \n", dummy);
     if (stopAtTapeGap) {
       stopTapeMotion();
+      deckReadyCb(true);
     } else {
-      readByte(readCb);
+      readByteBackwards(readCb);
     }
   } else {
-    readByte(readCb);
+    readByteBackwards(readCb);
   }
   data = (data & 0x80) >> 7 | (data & 0x40) >> 5 | (data & 0x20) >> 3 | (data & 0x10) >> 1 | (data & 0x8) << 1 | (data & 0x4) << 3 | (data & 0x2) << 5 | (data & 0x1) <<7;
   readCb(data); // data has to be reversed bit order for backwards reading!

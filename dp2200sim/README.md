@@ -2,10 +2,13 @@
 
 PLEASE NOTE!  STILL WORK IN PROGRESS.<BR> 
 
-It can run and stepp through programs. Breakpoint can be used. Work ongoing to support tape cassette IO.
-At this point it is able to load the first program into memory and it starts executing it and halts because keyboard / crt IO is not implemented. I consider this as major leap forward!
+It can run and step through programs. Breakpoint can be used. 
+At this point it is able to load the first program into memory and it starts the simple CTOS 3.2 operating system and give a ready prompt.
 
-![Screen shot](https://raw.githubusercontent.com/MattisLind/DP2200/main/dp2200sim/dp2200sim.png)
+More work on getting the keyboard to give input is now required.
+
+
+[![Watch the video](https://i.imgur.com/vSpatoKh.png)](https://youtu.be/QHUuPtVpjNc)
 
 Build the simulator using make.
 
