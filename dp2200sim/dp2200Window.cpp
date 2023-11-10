@@ -2,7 +2,8 @@
 #include <form.h>
 #include <ncurses.h>
 
-dp2200Window::dp2200Window(class dp2200_cpu *) {
+dp2200Window::dp2200Window(class dp2200_cpu * c) {
+  cpu = c;
   cursorX = 0;
   cursorY = 0;
   win = newwin(14, 82, 0, 0);
@@ -42,7 +43,18 @@ void dp2200Window::handleKey(int key) {
   case KEY_F(6):
     rw->setDisplayButton(!rw->getDisplayButton());
     break;
+  case 0x0a:
+    cpu->ioCtrl->screenKeyboardDevice->updateKbd(0x0d);
+    break;
   default:
+    if (key >= 0x41 && key <=0x5A) {
+      key |= 0x20;
+    } 
+    if (key >= 0x61 && key <=0x7A) {
+      key &= ~(0x20);
+    } 
+    printLog("INFO", "Got key %03o %02X\n", key, key);
+    cpu->ioCtrl->screenKeyboardDevice->updateKbd(key);
     break;
   }
 
@@ -57,12 +69,12 @@ void dp2200Window::resetCursor() {
 }
 int dp2200Window::eraseFromCursorToEndOfFrame() {
   printLog("INFO", "Erasing from X=%d, Y=%d to end of frame\n", cursorX, cursorY);
-  for (int i=cursorX; i<81;i++) {
+  for (int i=cursorX; i<80;i++) {
     waddch(innerWin, ' ');
   }
   for (int i=cursorY+1; i <12; i++) {
     wmove(innerWin, i, 1);
-    for (int j=1; j<80; j++) {
+    for (int j=0; j<80; j++) {
       waddch(innerWin, ' ');
     }
   }

@@ -3,6 +3,7 @@
 
 #include "Window.h"
 #include <ncurses.h>
+#include <functional>
 #include "RegisterWindow.h"
 
 extern class registerWindow * rw;
@@ -13,6 +14,7 @@ class dp2200Window : public virtual Window {
   bool cursorEnabled=false;
   WINDOW *win, *innerWin;
   bool activeWindow;
+  class dp2200_cpu * cpu;
 
 public:
   dp2200Window(class dp2200_cpu *);
@@ -27,6 +29,7 @@ public:
   int setCursorX(int);
   int setCursorY(int);
   int writeCharacter(int);
+  void setHandleKeyCallback(std::function<void(unsigned char)>);
 };
 
 #endif

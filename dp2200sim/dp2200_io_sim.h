@@ -108,6 +108,7 @@ class IOController {
     int exRewind();
     int exTStop();
     ScreenKeyboardDevice();
+    void updateKbd(int);
   };
 
   class IODevice * dev[16];

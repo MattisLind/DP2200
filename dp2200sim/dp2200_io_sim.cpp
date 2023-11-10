@@ -233,7 +233,7 @@ unsigned char IOController::ScreenKeyboardDevice::input () {
   if (status) {
     return statusRegister;
   } else {
-    //statusRegister &= ~(CASSETTE_STATUS_READ_READY);
+    statusRegister &= ~(SCRNKBD_STATUS_KBD_READY);
     return dataRegister;
   }
 }
@@ -278,10 +278,11 @@ int IOController::ScreenKeyboardDevice::exCom4(unsigned char data){
   return 1;
 }
 int IOController::ScreenKeyboardDevice::exBeep(){
-  return 1;
+  beep();
+  return 0;
 }
 int IOController::ScreenKeyboardDevice::exClick(){
-  return 1;
+  return 0;
 }
 int IOController::ScreenKeyboardDevice::exDeck1(){
   return 1;
@@ -309,6 +310,11 @@ int IOController::ScreenKeyboardDevice::exRewind(){
 }
 int IOController::ScreenKeyboardDevice::exTStop(){
   return 1;
+}
+
+void IOController::ScreenKeyboardDevice::updateKbd(int key) {
+  dataRegister = key;
+  statusRegister |= (SCRNKBD_STATUS_KBD_READY);
 }
 
 IOController::ScreenKeyboardDevice::ScreenKeyboardDevice() {
