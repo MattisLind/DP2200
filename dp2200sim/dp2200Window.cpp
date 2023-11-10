@@ -46,15 +46,114 @@ void dp2200Window::handleKey(int key) {
   case 0x0a:
     cpu->ioCtrl->screenKeyboardDevice->updateKbd(0x0d);
     break;
-  default:
-    if (key >= 0x41 && key <=0x5A) {
-      key |= 0x20;
-    } 
-    if (key >= 0x61 && key <=0x7A) {
-      key &= ~(0x20);
-    } 
-    printLog("INFO", "Got key %03o %02X\n", key, key);
+  case 0x1b:
+    cpu->ioCtrl->screenKeyboardDevice->updateKbd(0x30);
+    break;
+  case 0060:
+  case 0061:
+  case 0062:
+  case 0063:
+  case 0064:
+  case 0065:
+  case 0066:
+  case 0067:
+  case 0070:
+  case 0071:
+  case 0040:
+  case 0041:
+  case 0042:
+  case 0043:
+  case 0044:
+  case 0045:
+  case 0046:
+  case 0047:
+  case 0050:
+  case 0051:
+  case 0052:
+  case 0053:
+  case 0054:
+  case 0055:
+  case 0056:
+  case 0057:
+  case 0072:
+  case 0073:
+  case 0074:
+  case 0075:
+  case 0076:
+  case 0077:
+  case 0133:
+  case 0176:
+  case 0135:
+  case 0136:
+  case 0137:
+  case 0100:
+  case 0173:
+  case 0134:
+  case 0140:
+  case 0174:
+  case 0175:
     cpu->ioCtrl->screenKeyboardDevice->updateKbd(key);
+    break;
+  case 0101:
+  case 0102:
+  case 0103:
+  case 0104:
+  case 0105:
+  case 0106:
+  case 0107:
+  case 0110:
+  case 0111:
+  case 0112:
+  case 0113:
+  case 0114:
+  case 0115:
+  case 0116:
+  case 0117:
+  case 0120:
+  case 0121:
+  case 0122:
+  case 0123:
+  case 0124:
+  case 0125:
+  case 0126:
+  case 0127:
+  case 0130:
+  case 0131:
+  case 0132:
+    key |= 0x20;
+    cpu->ioCtrl->screenKeyboardDevice->updateKbd(key);
+    break;
+  case 0141:
+  case 0142:
+  case 0143:
+  case 0144:
+  case 0145:
+  case 0146:
+  case 0147:
+  case 0150:
+  case 0151:
+  case 0152:
+  case 0153:
+  case 0154:
+  case 0155:
+  case 0156:
+  case 0157:
+  case 0160:
+  case 0161:
+  case 0162:
+  case 0163:
+  case 0164:
+  case 0165:
+  case 0166:
+  case 0167:
+  case 0170:
+  case 0171:
+  case 0172:
+    key &= ~0x20;
+    cpu->ioCtrl->screenKeyboardDevice->updateKbd(key);
+    break;  
+  default:
+    printLog("INFO", "Unhandled key=%c %d %02X %03o\n", key, key, key, key);
     break;
   }
 
