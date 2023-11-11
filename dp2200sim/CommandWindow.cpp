@@ -19,6 +19,20 @@ void commandWindow::doExit(std::vector<Param> params) {
 }
 
 
+void commandWindow::doYield(std::vector<Param> params) { 
+  int value=0;
+  for (auto it = params.begin(); it < params.end(); it++) {
+    if (it->paramId == VALUE) {
+      value = it->paramValue.i;
+    }
+  }
+  if (value <0 || value >100) {
+    wprintw(innerWin, "doYield Failed to add breakpoint at address %04X\n", value);
+  } else {
+    yield =(float) value;
+  };   
+}
+
 void commandWindow::doLoadBoot(std::vector<Param> params) {
   cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory);
 }
@@ -295,7 +309,9 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
   commands.push_back(
       {"NOBREAK", "Remove breakpoint", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doRemoveBreakpoint});  
   commands.push_back({"TRACE", "Enable trace logging", {}, &commandWindow::doTrace});    
-  commands.push_back({"NOTRACE", "Disable trace logging", {}, &commandWindow::doNoTrace});         
+  commands.push_back({"NOTRACE", "Disable trace logging", {}, &commandWindow::doNoTrace});  
+  commands.push_back(
+      {"YIELD", "The amount of CPU time consumed byt the simulator.", {{"VALUE", VALUE, NUMBER, {.i = 100}}}, &commandWindow::doYield});         
   win = newwin(LINES - 14, 82, 14, 0);
   innerWin = newwin(LINES - 16, 80, 15, 1);
   normalWindow();

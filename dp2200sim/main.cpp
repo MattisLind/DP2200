@@ -21,7 +21,7 @@
 #include "RegisterWindow.h"
 
 void printLog(const char *level, const char *fmt, ...);
-
+float yield=100.0;
 FILE *logfile;
 
 class dp2200_cpu cpu;
@@ -222,7 +222,7 @@ char * getCpuTimeStr (char * buffer, int size) {
 int main(int argc, char *argv[]) {
   struct timespec now,before, after, diff;
   //char buffer[100];
-  float yield=100.0;
+  
   bool negative;
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);

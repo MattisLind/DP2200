@@ -9,9 +9,10 @@
 #include "dp2200_cpu_sim.h"
 
 typedef enum { STRING, NUMBER, BOOL } Type;
-typedef enum { DRIVE, FILENAME, ADDRESS, ENABLED } ParamId;
+typedef enum { DRIVE, FILENAME, ADDRESS, ENABLED, VALUE } ParamId;
 class commandWindow;
 void printLog(const char *level, const char *fmt, ...);
+extern float yield;
 
 #define PARAM_VALUE_SIZE 32
 
@@ -62,6 +63,7 @@ class commandWindow : public virtual Window {
   void doAttach(std::vector<Param> params);
   void doTrace(std::vector<Param> params);
   void doNoTrace(std::vector<Param> params);
+  void doYield(std::vector<Param> params);
   void processCommand(char ch);
 
 public:

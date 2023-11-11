@@ -100,7 +100,7 @@ void IOController::IODevice::exData () {
 }
 
 unsigned char IOController::CassetteDevice::input () {
-  printLog("INFO", "input: status=%d statusRegister=%02X dataRegister=%02X\n", status, statusRegister, dataRegister);
+  //printLog("INFO", "input: status=%d statusRegister=%02X dataRegister=%02X\n", status, statusRegister, dataRegister);
   if (status) {
     return statusRegister;
   } else {
