@@ -14,20 +14,12 @@ class CassetteTape {
   FILE * file;
   std::string fileName;
   int currentBlockSize;
-  //int timeoutReadByteHandler (std::function<void(unsigned char)>); 
-  int timeoutReadByteHandler ();
-  int timeoutReadByteBackwardsHandler ();
   int readBytes;
-  bool tapeMovesForward;
   bool stopAtTapeGap;
-  std::function<void(unsigned char)> readCb;
-  std::function<void(bool)> tapeGapCb;
-  std::function<void(bool)> deckReadyCb;
-  std::vector<class callbackRecord *>outStandingCallbacks;
-  void removeFromOutstandCallbacks (class callbackRecord *);
+
   public:
 
-  CassetteTape(std::function<void(bool)>, std::function<void(bool)> );
+  CassetteTape();
 
   bool openFile (std::string fileName);
   void closeFile ();
@@ -52,10 +44,9 @@ class CassetteTape {
 
   int isChecksumOK(unsigned char * buffer, int size);
 
-  void readByte(std::function<void(unsigned char)>);
-  void readByteBackwards(std::function<void(unsigned char)>);
-  void setTapeDirectionForward (bool);
-  void setStopAttBlockGap(bool);
+  void readByte(bool direction, unsigned char * data);
+
+  bool isTapeOverGap();
 };
 
 #endif

@@ -6,6 +6,11 @@
 #include "cassetteTape.h"
 #include "dp2200Window.h"
 
+class callbackRecord * addToTimerQueue(std::function<int(class callbackRecord *)>, struct timespec);
+void timeoutInNanosecs (struct timespec *, long);
+void removeTimerCallback(class callbackRecord * c);
+
+
 
 #define CASSETTE_STATUS_DECK_READY 1 << 0
 #define CASSETTE_STATUS_END_OF_TAPE 1 << 1
@@ -61,6 +66,12 @@ class IOController {
     int tapeDeckSelected;
     void updateTapGapFlag(bool);
     void updateReadyFlag(bool);
+    bool forward;
+    bool stopAtGap;
+    void readFromTape ();
+    std::vector<class callbackRecord *>outStandingCallbacks;
+    void removeFromOutstandCallbacks (class callbackRecord *);
+    void removeAllCallbacks();
     public:
     CassetteTape * tapeDrive[2];
     unsigned char input ();
