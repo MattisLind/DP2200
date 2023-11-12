@@ -24,16 +24,16 @@ bool  CassetteTape::readBlock (unsigned char * buffer, int * size) {
   int maxSize = *size;
   int count;
   count = fread(size, 4, 1, file);
-  if (count != 4) return false;
+  if (count != 1) return false;
   if (*size>maxSize) {
-    count = fread(buffer, maxSize, 1, file);
+    count = fread(buffer, 1, maxSize, file);
     if (count != maxSize) return false;
   } else {
-    count = fread(buffer, *size, 1, file);
+    count = fread(buffer, 1, *size, file);
     if (count != *size) return false;
   }
   count = fread(size, 4, 1, file);
-  if (count != 4) return false;
+  if (count != 1) return false;
   state=TAPE_GAP;
   return true;
 }
@@ -49,8 +49,7 @@ bool CassetteTape::loadBoot(unsigned char *  address) {
   int size=16384;
   if (file==NULL) return false;
   rewind();
-  readBlock(address, &size);
-  return true;
+  return readBlock(address, &size);
 }
 
 int CassetteTape::isFileHeader(unsigned char * buffer) {
