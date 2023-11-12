@@ -2,10 +2,10 @@
 
 
 void commandWindow::doHelp(std::vector<Param> params) {
-  wprintw(innerWin, "All commands can be shorted until they becaome ambigous. For example A for ATTACH");
-  wprintw(innerWin, "Some commands take parameters. Also parameters may be shortened.");
-  wprintw(innerWin, "An equal sign delimits the parameter and the parameter value.");
-  wprintw(innerWin, "Example AT F=file - Attach file <file> to drive 0.");
+  wprintw(innerWin, "All commands can be shorted until they becaome ambigous. \nFor example A for ATTACH.\n");
+  wprintw(innerWin, "Some commands take parameters. Also parameters may be shortened.\n");
+  wprintw(innerWin, "An equal sign delimits the parameter and the parameter value.\n");
+  wprintw(innerWin, "Example AT F=file - Attach file <file> to drive 0.\n");
   for (std::vector<Cmd>::const_iterator it = commands.begin();
         it != commands.end(); it++) {
     wprintw(innerWin, "%s - %s\n", it->command.c_str(), it->help.c_str());
@@ -283,12 +283,12 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
   commands.push_back(
       {"STEP", "Step one instruction", {}, &commandWindow::doStep});
   commands.push_back({"ATTACH",
-                      "Attach file to cassette drive. Parameter FILE= specify the file to attach. Parameter DRIVE= specify the drive used. Default drive is 0.",
+                      "Attach file to cassette drive. \n  Parameter FILE specify the file to attach.\nParameter DRIVE= specify the drive used. Default drive is 0.",
                       {{"DRIVE", DRIVE, NUMBER, {.i = 0}},
                         {"FILENAME", FILENAME, STRING, {.s = {'\0'}}}},
                       &commandWindow::doAttach});
   commands.push_back({"DETACH",
-                      "Detach file from cassette drive. Parameter DRIVE= specify the drive used. Default drive is 0.",
+                      "Detach file from cassette drive. \n  Parameter DRIVE specify the drive used. Default drive is 0.",
                       {{"DRIVE", DRIVE, NUMBER, {.i = 0}}},
                       &commandWindow::doDetach});
   commands.push_back({"STOP", "Stop execution", {}, &commandWindow::doHalt});
@@ -311,13 +311,13 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
   commands.push_back(
       {"CLEAR", "Clear memory", {}, &commandWindow::doClear});   
   commands.push_back(
-      {"BREAK", "Add breakpoint. Parameter ADDRESS= is used for specifying the address of the breakpoint.", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doAddBreakpoint});
+      {"BREAK", "Add breakpoint. \n  Parameter ADDRESS is used for specifying the address of the breakpoint.", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doAddBreakpoint});
   commands.push_back(
-      {"NOBREAK", "Remove breakpoint. Parameter ADDRESS= is used for specifying the address of the breakpoint.", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doRemoveBreakpoint});  
+      {"NOBREAK", "Remove breakpoint. \n  Parameter ADDRESS is used for specifying the address of the breakpoint.", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doRemoveBreakpoint});  
   commands.push_back({"TRACE", "Enable trace logging", {}, &commandWindow::doTrace});    
   commands.push_back({"NOTRACE", "Disable trace logging", {}, &commandWindow::doNoTrace});  
   commands.push_back(
-      {"YIELD", "The amount of CPU time consumed byt the simulator. VALUE= parameter specify the amount. Value between 0 and 100.", {{"VALUE", VALUE, NUMBER, {.i = 100}}}, &commandWindow::doYield});         
+      {"YIELD", "The amount of CPU time consumed byt the simulator. \n  VALUE parameter specify the amount. Value between 0 and 100.", {{"VALUE", VALUE, NUMBER, {.i = 100}}}, &commandWindow::doYield});         
   win = newwin(LINES - 14, 82, 14, 0);
   innerWin = newwin(LINES - 16, 80, 15, 1);
   normalWindow();
