@@ -19,6 +19,8 @@
 #include "Window.h"
 #include "CommandWindow.h"
 #include "RegisterWindow.h"
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 void printLog(const char *level, const char *fmt, ...);
 float yield=100.0;
@@ -222,10 +224,15 @@ char * getCpuTimeStr (char * buffer, int size) {
 int main(int argc, char *argv[]) {
   struct timespec now,before, after, diff;
   //char buffer[100];
-  
+  struct winsize w;
   bool negative;
+  ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);
+  if ((w.ws_col < 167) || (w.ws_row < 46)) {
+    fprintf(stderr, "Too small screen. Increase terminal window to be bigger than 167 x 46. Current screen size is %d x %d\n", w.ws_col, w.ws_row);
+    exit(1);
+  }
   initscr(); /* Start curses mode 		*/
   raw();     /* Line buffering disabled, Pass on everything to me 		*/
   keypad(stdscr, TRUE); /* I need that nifty F1 	*/
