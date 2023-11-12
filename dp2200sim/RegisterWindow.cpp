@@ -161,7 +161,7 @@ FORM * registerWindow::createHexForm () {
   FIELD **f;
   int i;
   int offset=21;
-  // Registers.
+  FORM *form;
   createAField(10,2,6, "REGISTERS");
   createAField(65,3,3,"ALPHA          BETA          STACK    TRACE          BREAKPOINTS");
 
@@ -225,7 +225,10 @@ FORM * registerWindow::createHexForm () {
   }
   f[i] = NULL;
 
-  return  new_form(f);
+  form = new_form(f);
+  set_field_term(form, form_hook_proxy);
+  form_driver(form, REQ_OVL_MODE);
+  return form;
 }
 
 registerWindow::registerWindow(class dp2200_cpu *c) {
@@ -240,12 +243,10 @@ registerWindow::registerWindow(class dp2200_cpu *c) {
   activeWindow = false;
   
   form = createHexForm ();
-  
-  set_field_term(form, form_hook_proxy);
+
   set_form_win(form, win);
   set_form_sub(form, derwin(win, 44, 76, 1, 1));
   post_form(form);
-  form_driver(form, REQ_OVL_MODE);
 
   updateForm(base);  
   wmove(win, cursorY, cursorX);
