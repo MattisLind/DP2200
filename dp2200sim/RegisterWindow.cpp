@@ -245,15 +245,10 @@ registerWindow::registerWindow(class dp2200_cpu *c) {
   set_form_win(form, win);
   set_form_sub(form, derwin(win, 44, 76, 1, 1));
   post_form(form);
-  pos_form_cursor(form);
-  updateForm(base);  
-  pos_form_cursor(form);
-  wmove(win, cursorY, cursorX);
-  pos_form_cursor(form);
-  refresh();
-  wrefresh(win);
   form_driver(form, REQ_OVL_MODE);
-  hightlightWindow();
+
+  updateForm(base);  
+  wmove(win, cursorY, cursorX);
   normalWindow();
 }
 registerWindow::~registerWindow() {
@@ -265,15 +260,10 @@ registerWindow::~registerWindow() {
 }
 
 void registerWindow::updateWindow() {
-  // curs_set(0);
   if (!activeWindow)  {
     updateForm(base);
     wrefresh(win);
   }
-  //pos_form_cursor(form);
-  // leaveok(win, true);
-  //wrefresh(win);
-  //refresh();
 }
 
 void registerWindow::hightlightWindow() {
