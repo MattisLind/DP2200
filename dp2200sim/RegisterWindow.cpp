@@ -156,23 +156,11 @@ FIELD * registerWindow::createAField(int length, int y, int x, const char * str,
   return t;
 }
 
-registerWindow::registerWindow(class dp2200_cpu *c) {
-  cursorX = 4;  
-  cursorY = 1;
-  win = newwin(LINES, COLS - 82, 0, 82);
-  normalWindow();
-  wrefresh(win);
-  cpu = c;
-  octal = false;
-  activeWindow = false;
-  
+FORM * registerWindow::createHexForm () {
+  const char * rName[]={"A:","B:","C:","D:","E:","H:","L:"};
   FIELD **f;
   int i;
   int offset=21;
-  
-  
-  const char * rName[]={"A:","B:","C:","D:","E:","H:","L:"};
-
   // Registers.
   createAField(10,2,6, "REGISTERS");
   createAField(65,3,3,"ALPHA          BETA          STACK    TRACE          BREAKPOINTS");
@@ -237,8 +225,22 @@ registerWindow::registerWindow(class dp2200_cpu *c) {
   }
   f[i] = NULL;
 
-  form = new_form(f);
-  assert(form != NULL);
+  return  new_form(f);
+}
+
+registerWindow::registerWindow(class dp2200_cpu *c) {
+
+  cursorX = 4;  
+  cursorY = 1;
+  win = newwin(LINES, COLS - 82, 0, 82);
+  normalWindow();
+  wrefresh(win);
+  cpu = c;
+  octal = false;
+  activeWindow = false;
+  
+  form = createHexForm ();
+  
   set_field_term(form, form_hook_proxy);
   set_form_win(form, win);
   set_form_sub(form, derwin(win, 44, 76, 1, 1));

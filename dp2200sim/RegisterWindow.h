@@ -29,6 +29,7 @@ class registerWindow : public virtual Window {
   bool displayLightStatus=false;
   bool keyboardButtonStatus=false;
   bool displayButtonStatus=false;
+  FORM * createHexForm();
 
   int base = 0;
   typedef struct m {
