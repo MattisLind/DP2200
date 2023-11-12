@@ -24,12 +24,18 @@ class registerWindow : public virtual Window {
   class dp2200_cpu *cpu;
   bool octal;
   bool activeWindow;
-  FORM *form;
+  FORM *formHex;
+  FORM *formOctal;
   bool keyboardLightStatus=false;
   bool displayLightStatus=false;
   bool keyboardButtonStatus=false;
   bool displayButtonStatus=false;
   FORM * createHexForm();
+  FORM * createOctalForm();
+  FIELD * createAField(std::__1::vector<FIELD *> * , int length, int y, int x, const char * str);
+
+  FIELD * createAField(std::__1::vector<FIELD *> *, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h) ;
+
 
   int base = 0;
   typedef struct m {
@@ -57,6 +63,29 @@ class registerWindow : public virtual Window {
   FIELD * displayButtonField;
   FIELD * keyboardLightField;
   FIELD * keyboardButtonField;
+
+
+  std::vector<FIELD *> octalAddressFields;
+  std::vector<FIELD *> octalDataFields;
+  std::vector<FIELD *> octakAsciiFields;
+  std::vector<FIELD *> octalRegisterViewFields;
+  FIELD * octlRegs[2][7];
+  FIELD * octalStack[16];
+  FIELD * octalFlagParity[2];
+  FIELD * octalFlagSign[2];
+  FIELD * octalFlagCarry[2];
+  FIELD * octalFlagZero[2];
+  FIELD * octalPc;
+  //FIELD * interruptEnabled;
+  //FIELD * interruptPending; 
+  FIELD * octalMnemonic;
+  FIELD * octalInstructionTrace[8];
+  FIELD * octalBreakpoints[8];
+  FIELD * octalDisplayLightField;
+  FIELD * octalDisplayButtonField;
+  FIELD * octalKeyboardLightField;
+  FIELD * octalKeyboardButtonField;
+
 
   class memoryDataHookExecutor : hookExecutor {
     int data;
@@ -93,9 +122,6 @@ class registerWindow : public virtual Window {
   void updateForm(int startAddress);
 public:
 
-  FIELD * createAField(int length, int y, int x, const char * str);
-
-  FIELD * createAField(int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h) ;
 
   registerWindow(class dp2200_cpu *c);
   ~registerWindow();
