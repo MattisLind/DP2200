@@ -250,6 +250,7 @@ registerWindow::registerWindow(class dp2200_cpu *c) {
 
   updateForm(base);  
   wmove(win, cursorY, cursorX);
+  pos_form_cursor(form);
   normalWindow();
 }
 registerWindow::~registerWindow() {
