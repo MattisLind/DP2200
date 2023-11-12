@@ -20,36 +20,37 @@ void CassetteTape::closeFile() { fclose(file); }
 std::string CassetteTape::getFileName() { return fileName; }
 
 
-void  CassetteTape::readBlock (unsigned char * buffer, int * size) {
+bool  CassetteTape::readBlock (unsigned char * buffer, int * size) {
   int maxSize = *size;
-  fread(size, 4, 1, file);
+  int count;
+  count = fread(size, 4, 1, file);
+  if (count != 4) return false;
   if (*size>maxSize) {
-    fread(buffer, maxSize, 1, file);
+    count = fread(buffer, maxSize, 1, file);
+    if (count != maxSize) return false;
   } else {
-    fread(buffer, *size, 1, file);
+    count = fread(buffer, *size, 1, file);
+    if (count != *size) return false;
   }
-  fread(size, 4, 1, file);
+  count = fread(size, 4, 1, file);
+  if (count != 4) return false;
   state=TAPE_GAP;
+  return true;
 }
 
-unsigned char * CassetteTape::readBlock (int * size) {
-  unsigned char * buffer;
-  fread(size, 4, 1, file);
-  buffer = (unsigned char *) malloc(*size);
-  fread(buffer, *size, 1, file);
-  fread(size, 4, 1, file);
-  return buffer;
-}
+
 
 void CassetteTape::rewind() {
   state=TAPE_GAP;
   ::rewind(file);
 }
 
-void CassetteTape::loadBoot(unsigned char *  address) {
+bool CassetteTape::loadBoot(unsigned char *  address) {
   int size=16384;
+  if (file==NULL) return false;
   rewind();
   readBlock(address, &size);
+  return true;
 }
 
 int CassetteTape::isFileHeader(unsigned char * buffer) {
@@ -149,122 +150,3 @@ void CassetteTape::readByte(bool forward, unsigned char * data) {
     *data = (*data & 0x80) >> 7 | (*data & 0x40) >> 5 | (*data & 0x20) >> 3 | (*data & 0x10) >> 1 | (*data & 0x8) << 1 | (*data & 0x4) << 3 | (*data & 0x2) << 5 | (*data & 0x1) <<7;
   }  
 }
-/*
-void CassetteTape::readByte(std::function<void(unsigned char)> cb) {
-  long timeout;
-  struct timespec then;
-  if (state == TAPE_GAP) {
-    fread(&currentBlockSize, 4, 1, file);  
-    printLog("INFO", "readByte next block is %d bytes long\n", currentBlockSize);
-    state = TAPE_DATA;
-    //tapeGapCb(false);
-    readBytes=0;
-    //tapeGapCb(true);
-    timeout = 70000000;
-    timeoutInNanosecs(&then, timeout);
-    printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
-    outStandingCallbacks.push_back( addToTimerQueue([ct=this, tcb = tapeGapCb](class callbackRecord * c)->int {printLog("INFO", "70ms tapeGapCb(true) timeout ENTRY\n");ct->removeFromOutstandCallbacks(c); tcb(false);ct->timeoutReadByteHandler(); printLog("INFO", "70ms tapeGapCb(true) timeout EXIT\n");return 0;}, then));
-  } else {
-    timeout = 2800000;
-    timeoutInNanosecs(&then, timeout);
-    printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
-    outStandingCallbacks.push_back( addToTimerQueue([ct=this](class callbackRecord * c)->int {ct->removeFromOutstandCallbacks(c);ct->timeoutReadByteHandler(); return 0;}, then));
-  }
-  readCb = cb;
-  //addToTimerQueue(std::bind(&CassetteTape::timeoutReadByteHandler, this), then);
-  //addToTimerQueue([ct=this, tcb = tapeGapCb]()->int {tcb(false);ct->timeoutReadByteHandler(); }, then);
-}
-
-//void CassetteTape::timeoutReadByteHandler(std::function<int(void))> cb) {
-int CassetteTape::timeoutReadByteHandler() {
-  unsigned char data;
-  struct timespec then;
-  long timeout=1000000;
-  fread(&data, 1, 1, file);
-  readBytes++;
-  printLog("INFO", "Read one byte = %02X. Now we have read %d bytes out of %d bytes\n", data, readBytes, currentBlockSize);
-  if (readBytes >= currentBlockSize) {
-    int dummy;
-    state = TAPE_GAP;
-    //tapeGapCb(true); // Need to set tapeGap after some time. Wait a ms and then set it!
-    timeoutInNanosecs(&then, timeout);
-    printLog("INFO", "Adding a tapeGapCb to set tape gap  in %d nanoseconds\n", timeout);
-    outStandingCallbacks.push_back(addToTimerQueue([ct=this,cb=tapeGapCb](class callbackRecord * c)->int {printLog("INFO", "1ms tapeGapCb(true) timeout ENTRY\n"); ct->removeFromOutstandCallbacks(c); cb(true); printLog("INFO", "1ms tapeGapCb(true) timeout EXIT\n");return 0; }, then));
-    fread(&dummy, 4, 1, file); // read end of record size marker 
-    printLog("INFO", "timeoutReadByteHandler read end of record size marker = %d \n", dummy);
-    if (stopAtTapeGap) {
-      stopTapeMotion();
-      deckReadyCb(true);
-    } else {
-      readByte(readCb);
-    }
-  } else {
-    readByte(readCb);
-  }
-  readCb(data);
-  return 0;
-}
-
-void CassetteTape::readByteBackwards(std::function<void(unsigned char)> cb) {
-  long timeout;
-  struct timespec then;
-  if (state == TAPE_GAP) {
-    fseek(file, -4, SEEK_CUR);
-    fread(&currentBlockSize, 4, 1, file); 
-    fseek(file, -4, SEEK_CUR);
-    printLog("INFO", "readByteBackwards next block is %d bytes long\n", currentBlockSize);
-    state = TAPE_DATA;
-    //tapeGapCb(false);
-    readBytes=currentBlockSize;
-    //tapeGapCb(true);
-    timeout = 70000000;
-    timeoutInNanosecs(&then, timeout);
-    printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
-    outStandingCallbacks.push_back( addToTimerQueue([ct=this, tcb = tapeGapCb](class callbackRecord * c)->int {ct->removeFromOutstandCallbacks(c); tcb(false);ct->timeoutReadByteBackwardsHandler(); return 0;}, then));
-  } else {
-    timeout = 2800000;
-    timeoutInNanosecs(&then, timeout);
-    printLog("INFO", "Adding a readByteHandler to handle read in %d nanoseconds\n", timeout);
-    outStandingCallbacks.push_back( addToTimerQueue([ct=this](class callbackRecord * c)->int {ct->removeFromOutstandCallbacks(c);ct->timeoutReadByteBackwardsHandler(); return 0;}, then));
-  }
-  readCb = cb;
-  //addToTimerQueue(std::bind(&CassetteTape::timeoutReadByteHandler, this), then);
-  //addToTimerQueue([ct=this, tcb = tapeGapCb]()->int {tcb(false);ct->timeoutReadByteHandler(); }, then);
-}
-
-
-int CassetteTape::timeoutReadByteBackwardsHandler() {
-  unsigned char data;
-  struct timespec then;
-  long timeout=1000000;
-  fseek(file, -1, SEEK_CUR);
-  fread(&data, 1, 1, file);
-  fseek(file, -1, SEEK_CUR);
-  readBytes--;
-  printLog("INFO", "Read one byte = %02X. Now we have read %d bytes out of %d bytes\n", data, readBytes, currentBlockSize);
-  if (readBytes <= 0) {
-    int dummy;
-    state = TAPE_GAP;
-    //tapeGapCb(true); // Need to set tapeGap after some time. Wait a ms and then set it!
-    // TODO! Make sure we stop tape and set tape deck ready at the same time. if this was a BSP command which stops when it got to a tape gape. Have flag that says stopAtTapeGap...
-    timeoutInNanosecs(&then, timeout);
-    printLog("INFO", "Adding a tapeGapCb to set tape gap  in %d nanoseconds\n", timeout);
-    outStandingCallbacks.push_back(addToTimerQueue([ct=this,cb=tapeGapCb](class callbackRecord * c)->int {ct->removeFromOutstandCallbacks(c); cb(true); return 0; }, then));
-    fseek(file, -4, SEEK_CUR);
-    fread(&dummy, 4, 1, file); // read end of record size marker 
-    fseek(file, -4, SEEK_CUR);
-    printLog("INFO", "timeoutReadByteHandler read end of record size marker = %d \n", dummy);
-    if (stopAtTapeGap) {
-      stopTapeMotion();
-      deckReadyCb(true);
-    } else {
-      readByteBackwards(readCb);
-    }
-  } else {
-    readByteBackwards(readCb);
-  }
-  data = (data & 0x80) >> 7 | (data & 0x40) >> 5 | (data & 0x20) >> 3 | (data & 0x10) >> 1 | (data & 0x8) << 1 | (data & 0x4) << 3 | (data & 0x2) << 5 | (data & 0x1) <<7;
-  readCb(data); // data has to be reversed bit order for backwards reading!
-  return 0;
-}
-*/

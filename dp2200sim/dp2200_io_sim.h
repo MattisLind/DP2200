@@ -94,7 +94,7 @@ class IOController {
     bool openFile (int, std::string fileName);
     void closeFile (int);
     std::string getFileName (int);
-    void loadBoot (unsigned char * address);
+    bool loadBoot (unsigned char * address);
     CassetteDevice();
     void updateDataRegisterAndSetStatusRegister( unsigned char);
   };

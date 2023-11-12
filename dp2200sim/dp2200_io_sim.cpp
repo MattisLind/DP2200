@@ -279,8 +279,8 @@ void IOController::CassetteDevice::closeFile (int drive) {
 std::string IOController::CassetteDevice::getFileName (int drive) {
   return tapeDrive[drive]->getFileName(); 
 }
-void IOController::CassetteDevice::loadBoot (unsigned char * address) {
-  tapeDrive[0]->loadBoot(address);
+bool IOController::CassetteDevice::loadBoot (unsigned char * address) {
+  return tapeDrive[0]->loadBoot(address);
 }
 
 void IOController::CassetteDevice::updateTapGapFlag(bool gap) {

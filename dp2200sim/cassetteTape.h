@@ -28,11 +28,11 @@ class CassetteTape {
 
   std::string getFileName ();
 
-  void loadBoot (unsigned char * address);
+  bool loadBoot (unsigned char * address);
 
   void stopTapeMotion();
 
-  void readBlock (unsigned char * address,  int * size);
+  bool readBlock (unsigned char * address,  int * size);
 
   unsigned char * readBlock (int * size); 
 

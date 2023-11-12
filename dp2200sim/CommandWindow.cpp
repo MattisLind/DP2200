@@ -27,14 +27,16 @@ void commandWindow::doYield(std::vector<Param> params) {
     }
   }
   if (value <0 || value >100) {
-    wprintw(innerWin, "doYield Failed to add breakpoint at address %04X\n", value);
+    wprintw(innerWin, "Value out of range %d. Should be between 0 and 100.\n", value);
   } else {
     yield =(float) value;
   };   
 }
 
 void commandWindow::doLoadBoot(std::vector<Param> params) {
-  cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory);
+  if (!cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory)) {
+    wprintw(innerWin, "Unable to load bootstrap into memory.\n");
+  }
 }
 void commandWindow::doClear(std::vector<Param> params) {
   cpu->clear();
