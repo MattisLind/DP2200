@@ -227,7 +227,6 @@ FORM * registerWindow::createHexForm () {
 
   frm = new_form(f);
   set_field_term(frm, form_hook_proxy);
-  form_driver(frm, REQ_OVL_MODE);
   return frm;
 }
 
@@ -247,7 +246,7 @@ registerWindow::registerWindow(class dp2200_cpu *c) {
   set_form_win(form, win);
   set_form_sub(form, derwin(win, 44, 76, 1, 1));
   post_form(form);
-
+  form_driver(form, REQ_OVL_MODE);
   updateForm(base);  
   wmove(win, cursorY, cursorX);
   pos_form_cursor(form);
