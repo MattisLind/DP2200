@@ -12,6 +12,8 @@
 void form_hook_proxy(formnode *);
 void printLog(const char *level, const char *fmt, ...);
 
+extern class dp2200_cpu cpu;
+
 class hookExecutor {
   public:
   virtual void exec(FIELD *field) = 0;  
@@ -19,9 +21,83 @@ class hookExecutor {
 
 
 class registerWindow : public virtual Window {
+
+  class Form {
+
+
+
+    virtual void updateForm() = 0;
+    protected:
+
+    class memoryDataHookExecutor : hookExecutor {
+      int data;
+      class registerWindow::Form * rw;
+      public:
+      memoryDataHookExecutor(class registerWindow::Form * r, int d);
+      void exec (FIELD *field);
+    };
+
+    class memoryAddressHookExecutor : hookExecutor {
+      int address;
+      class registerWindow::Form * rw;
+      public:
+      memoryAddressHookExecutor(class registerWindow::Form * r, int a);
+      void exec(FIELD *field);
+    };
+
+    class charPointerHookExecutor : hookExecutor {
+      unsigned char *  address;
+      class registerWindow::Form * rw;
+      public:
+      charPointerHookExecutor(class registerWindow::Form * r, unsigned char * a);
+      void exec(FIELD *field);
+    };
+
+    class shortPointerHookExecutor : hookExecutor {
+      unsigned short *  address;
+      class registerWindow::Form * rw;
+      public:
+      shortPointerHookExecutor(class registerWindow::Form * r, unsigned short * a);
+      void exec(FIELD *field);
+    };    
+    FIELD * createAField(std::__1::vector<FIELD *> * fields, int length, int y, int x, const char * str);
+    FIELD * createAField(std::__1::vector<FIELD *> * fields, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h);
+  };
+
+  class HexForm : public virtual Form {
+    int base = 0;
+    std::vector<FIELD *> addressFields;
+    std::vector<FIELD *> dataFields;
+    std::vector<FIELD *> asciiFields;
+    std::vector<FIELD *> registerViewFields;
+    FIELD * regs[2][7];
+    FIELD * stack[16];
+    FIELD * flagParity[2];
+    FIELD * flagSign[2];
+    FIELD * flagCarry[2];
+    FIELD * flagZero[2];
+    FIELD * pc;
+    //FIELD * interruptEnabled;
+    //FIELD * interruptPending; 
+    FIELD * mnemonic;
+    FIELD * instructionTrace[8];
+    FIELD * breakpoints[8];
+    FIELD * displayLightField;
+    FIELD * displayButtonField;
+    FIELD * keyboardLightField;
+    FIELD * keyboardButtonField;
+    public:
+    void updateForm();
+  };
+
+  class OctalForm : public virtual Form {
+    int base = 0;
+    void updateForm();
+  };
+
   int cursorX, cursorY;
   WINDOW *win;
-  class dp2200_cpu *cpu;
+  //class dp2200_cpu *cpu;
   bool octal;
   bool activeWindow;
   FORM *formHex;
@@ -37,89 +113,18 @@ class registerWindow : public virtual Window {
   FIELD * createAField(std::__1::vector<FIELD *> *, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h) ;
 
 
-  int base = 0;
+
   typedef struct m {
     int data;
     int address;
     int ascii;
   } M;
-  std::vector<FIELD *> addressFields;
-  std::vector<FIELD *> dataFields;
-  std::vector<FIELD *> asciiFields;
-  std::vector<FIELD *> registerViewFields;
-  FIELD * regs[2][7];
-  FIELD * stack[16];
-  FIELD * flagParity[2];
-  FIELD * flagSign[2];
-  FIELD * flagCarry[2];
-  FIELD * flagZero[2];
-  FIELD * pc;
-  //FIELD * interruptEnabled;
-  //FIELD * interruptPending; 
-  FIELD * mnemonic;
-  FIELD * instructionTrace[8];
-  FIELD * breakpoints[8];
-  FIELD * displayLightField;
-  FIELD * displayButtonField;
-  FIELD * keyboardLightField;
-  FIELD * keyboardButtonField;
 
 
-  std::vector<FIELD *> octalAddressFields;
-  std::vector<FIELD *> octalDataFields;
-  std::vector<FIELD *> octakAsciiFields;
-  std::vector<FIELD *> octalRegisterViewFields;
-  FIELD * octlRegs[2][7];
-  FIELD * octalStack[16];
-  FIELD * octalFlagParity[2];
-  FIELD * octalFlagSign[2];
-  FIELD * octalFlagCarry[2];
-  FIELD * octalFlagZero[2];
-  FIELD * octalPc;
-  //FIELD * interruptEnabled;
-  //FIELD * interruptPending; 
-  FIELD * octalMnemonic;
-  FIELD * octalInstructionTrace[8];
-  FIELD * octalBreakpoints[8];
-  FIELD * octalDisplayLightField;
-  FIELD * octalDisplayButtonField;
-  FIELD * octalKeyboardLightField;
-  FIELD * octalKeyboardButtonField;
 
-
-  class memoryDataHookExecutor : hookExecutor {
-    int data;
-    class registerWindow * rw;
-    public:
-    memoryDataHookExecutor(class registerWindow * r, int d);
-    void exec (FIELD *field);
-  };
-
-  class memoryAddressHookExecutor : hookExecutor {
-    int address;
-    class registerWindow * rw;
-    public:
-    memoryAddressHookExecutor(class registerWindow * r, int a);
-    void exec(FIELD *field);
-  };
-
-  class charPointerHookExecutor : hookExecutor {
-    unsigned char *  address;
-    class registerWindow * rw;
-    public:
-    charPointerHookExecutor(class registerWindow * r, unsigned char * a);
-    void exec(FIELD *field);
-  };
-
-   class shortPointerHookExecutor : hookExecutor {
-    unsigned short *  address;
-    class registerWindow * rw;
-    public:
-    shortPointerHookExecutor(class registerWindow * r, unsigned short * a);
-    void exec(FIELD *field);
-  };
 
   void updateForm(int startAddress);
+  void updateFormOctal(int startAddress);
 public:
 
 

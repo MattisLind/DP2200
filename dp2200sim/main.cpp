@@ -42,7 +42,7 @@ void form_hook_proxy(formnode * f) {
   hE->exec(field);
 }
 
-void registerWindow::memoryAddressHookExecutor::exec(FIELD *field) {
+void registerWindow::Form::memoryAddressHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 16);
   rw->base = (value - address * 16) & 0x3ff0;
@@ -50,21 +50,21 @@ void registerWindow::memoryAddressHookExecutor::exec(FIELD *field) {
   wrefresh(rw->win);
 }
 
-void registerWindow::memoryDataHookExecutor::exec(FIELD *field) {
+void registerWindow::Form::memoryDataHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 16);
-  rw->cpu->memory[rw->base + data] = value;
+  cpu.memory[rw->base + data] = value;
   rw->updateForm(rw->base);
   wrefresh(rw->win);
 }
 
-void registerWindow::charPointerHookExecutor::exec(FIELD *field) {
+void registerWindow::Form::charPointerHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   unsigned char value = strtol(bufferString, NULL, 16);
   *address = value;
 }
 
-void registerWindow::shortPointerHookExecutor::exec(FIELD *field) {
+void registerWindow::Form::shortPointerHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   unsigned short value = strtol(bufferString, NULL, 16);
   *address = value;
