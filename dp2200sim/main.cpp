@@ -43,21 +43,41 @@ class commandWindow;
 void form_hook_proxy(formnode * f) {
   class hookExecutor * hE;
   FIELD *field = current_field(f);
+  printLog("INFO", "form_hook_proxy ENTRY\n");
   hE = (class hookExecutor * ) field_userptr(field);
   if (hE!= NULL) hE->exec(field);
 }
 
-void registerWindow::Form::memoryAddressHookExecutor::exec(FIELD *field) {
+void registerWindow::Form::hexMemoryAddressHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 16);
+  printLog("INFO", "memoryAddressHookExecutor string=%s value=%d\n", bufferString, value);
   cpu.startAddress = (value - address * 16) & 0x3ff0;
   rwf->updateForm();
   wrefresh(r->win);
 }
 
-void registerWindow::Form::memoryDataHookExecutor::exec(FIELD *field) {
+void registerWindow::Form::hexMemoryDataHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 16);
+  cpu.memory[cpu.startAddress + data] = value;
+  rwf->updateForm();
+  wrefresh(r->getWin());
+}
+
+
+void registerWindow::Form::octalMemoryAddressHookExecutor::exec(FIELD *field) {
+  char *bufferString = field_buffer(field, 0);
+  int value = strtol(bufferString, NULL, 8);
+  printLog("INFO", "memoryAddressHookExecutor string=%s value=%d\n", bufferString, value);
+  cpu.startAddress = (value - address * 16) & 0x3ff0;
+  rwf->updateForm();
+  wrefresh(r->win);
+}
+
+void registerWindow::Form::octalMemoryDataHookExecutor::exec(FIELD *field) {
+  char *bufferString = field_buffer(field, 0);
+  int value = strtol(bufferString, NULL, 8);
   cpu.memory[cpu.startAddress + data] = value;
   rwf->updateForm();
   wrefresh(r->getWin());

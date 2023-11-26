@@ -29,21 +29,37 @@ class registerWindow : public virtual Window {
 
     protected:
     
-    class memoryDataHookExecutor : hookExecutor {
+    class hexMemoryDataHookExecutor : hookExecutor {
       int data;
       class registerWindow::Form * rwf;
       public:
-      memoryDataHookExecutor(class registerWindow::Form * r, int d);
+      hexMemoryDataHookExecutor(class registerWindow::Form * r, int d);
       void exec (FIELD *field);
     };
 
-    class memoryAddressHookExecutor : hookExecutor {
+    class hexMemoryAddressHookExecutor : hookExecutor {
       int address;
       class registerWindow::Form * rwf;
       public:
-      memoryAddressHookExecutor(class registerWindow::Form * r, int a);
+      hexMemoryAddressHookExecutor(class registerWindow::Form * r, int a);
       void exec(FIELD *field);
     };
+
+    class octalMemoryDataHookExecutor : hookExecutor {
+      int data;
+      class registerWindow::Form * rwf;
+      public:
+      octalMemoryDataHookExecutor(class registerWindow::Form * r, int d);
+      void exec (FIELD *field);
+    };
+
+    class octalMemoryAddressHookExecutor : hookExecutor {
+      int address;
+      class registerWindow::Form * rwf;
+      public:
+      octalMemoryAddressHookExecutor(class registerWindow::Form * r, int a);
+      void exec(FIELD *field);
+    };    
 
     class charPointerHookExecutor : hookExecutor {
       unsigned char *  address;

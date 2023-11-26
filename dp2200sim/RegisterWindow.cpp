@@ -1,11 +1,21 @@
 #include "RegisterWindow.h"
 
-registerWindow::Form::memoryDataHookExecutor::memoryDataHookExecutor(class registerWindow::Form * r, int d) {
+registerWindow::Form::hexMemoryDataHookExecutor::hexMemoryDataHookExecutor(class registerWindow::Form * r, int d) {
   data=d;
   rwf = r;
 }
 
-registerWindow::Form::memoryAddressHookExecutor::memoryAddressHookExecutor(class registerWindow::Form * r, int a) { 
+registerWindow::Form::hexMemoryAddressHookExecutor::hexMemoryAddressHookExecutor(class registerWindow::Form * r, int a) { 
+  address = a; 
+  rwf = r;
+}
+
+registerWindow::Form::octalMemoryDataHookExecutor::octalMemoryDataHookExecutor(class registerWindow::Form * r, int d) {
+  data=d;
+  rwf = r;
+}
+
+registerWindow::Form::octalMemoryAddressHookExecutor::octalMemoryAddressHookExecutor(class registerWindow::Form * r, int a) { 
   address = a; 
   rwf = r;
 }
@@ -312,9 +322,9 @@ registerWindow::OctalForm::OctalForm () {
   }
   
   for (auto line = 0; line < 16; line++) {
-    addressFields.push_back(createAField(&registerViewFields,5,line+offset, 3, "00000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new memoryAddressHookExecutor(this, line)));
+    addressFields.push_back(createAField(&registerViewFields,5,line+offset, 3, "00000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalMemoryAddressHookExecutor(this, line)));
     for (auto column = 0; column < 16; column++) {
-      dataFields.push_back(createAField(&registerViewFields,3,line+offset, 9 + 4 * column, "000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7]", JUSTIFY_LEFT, (char *) new memoryDataHookExecutor(this, line * 16 + column)));
+      dataFields.push_back(createAField(&registerViewFields,3,line+offset, 9 + 4 * column, "000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalMemoryDataHookExecutor(this, line * 16 + column)));
     }
     asciiFields.push_back(createAField(&registerViewFields,18, line+offset,74,"|................|" ));
   }
@@ -389,9 +399,9 @@ registerWindow::HexForm::HexForm () {
   }
   
   for (auto line = 0; line < 16; line++) {
-    addressFields.push_back(createAField(&registerViewFields,4,line+offset, 3, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new memoryAddressHookExecutor(this, line)));
+    addressFields.push_back(createAField(&registerViewFields,4,line+offset, 3, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexMemoryAddressHookExecutor(this, line)));
     for (auto column = 0; column < 16; column++) {
-      dataFields.push_back(createAField(&registerViewFields,2,line+offset, 8 + 3 * column, "00", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new memoryDataHookExecutor(this, line * 16 + column)));
+      dataFields.push_back(createAField(&registerViewFields,2,line+offset, 8 + 3 * column, "00", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexMemoryDataHookExecutor(this, line * 16 + column)));
     }
     asciiFields.push_back(createAField(&registerViewFields,18, line+offset,57,"|................|" ));
   }
@@ -470,7 +480,7 @@ registerWindow::registerWindow(class dp2200_cpu *c) {
   set_form_win(formOctal->getForm(), win);
   set_form_sub(formOctal->getForm(), derwin(win, 44, 95, 1, 1));
   post_form(currentForm->getForm());
-  form_driver(formHex->getForm(), REQ_OVL_MODE);
+  form_driver(currentForm->getForm(), REQ_OVL_MODE);
 
   formHex->updateForm(); 
   formOctal->updateForm();
@@ -553,10 +563,12 @@ void registerWindow::handleKey(int key) {
       unpost_form(currentForm->getForm());
       currentForm = formOctal;
       post_form(currentForm->getForm());
+      form_driver(currentForm->getForm(), REQ_OVL_MODE);
     } else {
       unpost_form(currentForm->getForm());
       currentForm = formHex;
       post_form(currentForm->getForm());
+      form_driver(currentForm->getForm(), REQ_OVL_MODE);
     }
     currentForm->updateForm();
     //updateFormOctal();
