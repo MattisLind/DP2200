@@ -44,7 +44,7 @@ void form_hook_proxy(formnode * f) {
   class hookExecutor * hE;
   FIELD *field = current_field(f);
   hE = (class hookExecutor * ) field_userptr(field);
-  hE->exec(field);
+  if (hE!= NULL) hE->exec(field);
 }
 
 void registerWindow::Form::memoryAddressHookExecutor::exec(FIELD *field) {

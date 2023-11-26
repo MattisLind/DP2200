@@ -64,6 +64,8 @@ class commandWindow : public virtual Window {
   void doTrace(std::vector<Param> params);
   void doNoTrace(std::vector<Param> params);
   void doYield(std::vector<Param> params);
+  void doHex(std::vector<Param> params);
+  void doOct(std::vector<Param> params);  
   void processCommand(char ch);
 
 public:

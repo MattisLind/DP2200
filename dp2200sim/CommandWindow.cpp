@@ -22,6 +22,13 @@ void commandWindow::doExit(std::vector<Param> params) {
   exit(0);
 }
 
+void commandWindow::doOct(std::vector<Param> params) {
+  rw->octal = true;
+}
+
+void commandWindow::doHex(std::vector<Param> params) {
+  rw->octal=false;
+}
 
 void commandWindow::doYield(std::vector<Param> params) { 
   int value=0;
@@ -315,7 +322,10 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
   commands.push_back(
       {"NOBREAK", "Remove breakpoint. \n  Parameter ADDRESS is used for specifying the address of the breakpoint.", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doRemoveBreakpoint});  
   commands.push_back({"TRACE", "Enable trace logging", {}, &commandWindow::doTrace});    
-  commands.push_back({"NOTRACE", "Disable trace logging", {}, &commandWindow::doNoTrace});  
+  commands.push_back({"NOTRACE", "Disable trace logging", {}, &commandWindow::doNoTrace}); 
+  commands.push_back({"HEXADECIMAL", "Show in hexadecimal notation.\nAlso possible to toggle in the register view by pressing 'o'.", {}, &commandWindow::doHex});  
+  commands.push_back({"OCTAL", "Show in Octal notation.\nAlso possible to toggle in the register view by pressing 'o'.", {}, &commandWindow::doOct});  
+
   commands.push_back(
       {"YIELD", "The amount of CPU time consumed byt the simulator. \n  VALUE parameter specify the amount. Value between 0 and 100.", {{"VALUE", VALUE, NUMBER, {.i = 100}}}, &commandWindow::doYield});         
   win = newwin(LINES - 14, 82, 14, 0);
