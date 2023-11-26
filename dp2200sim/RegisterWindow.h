@@ -61,21 +61,39 @@ class registerWindow : public virtual Window {
       void exec(FIELD *field);
     };    
 
-    class charPointerHookExecutor : hookExecutor {
+    class hexCharPointerHookExecutor : hookExecutor {
       unsigned char *  address;
       class registerWindow::Form * rwf;
       public:
-      charPointerHookExecutor(class registerWindow::Form * r, unsigned char * a);
+      hexCharPointerHookExecutor(class registerWindow::Form * r, unsigned char * a);
       void exec(FIELD *field);
     };
 
-    class shortPointerHookExecutor : hookExecutor {
+    class hexShortPointerHookExecutor : hookExecutor {
       unsigned short *  address;
       class registerWindow::Form * rwf;
       public:
-      shortPointerHookExecutor(class registerWindow::Form * r, unsigned short * a);
+      hexShortPointerHookExecutor(class registerWindow::Form * r, unsigned short * a);
       void exec(FIELD *field);
     };    
+
+    class octalCharPointerHookExecutor : hookExecutor {
+      unsigned char *  address;
+      class registerWindow::Form * rwf;
+      public:
+      octalCharPointerHookExecutor(class registerWindow::Form * r, unsigned char * a);
+      void exec(FIELD *field);
+    };
+
+    class octalShortPointerHookExecutor : hookExecutor {
+      unsigned short *  address;
+      class registerWindow::Form * rwf;
+      public:
+      octalShortPointerHookExecutor(class registerWindow::Form * r, unsigned short * a);
+      void exec(FIELD *field);
+    };  
+
+
     FIELD * createAField(std::vector<FIELD *> * fields, int length, int y, int x, const char * str);
     FIELD * createAField(std::vector<FIELD *> * fields, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h);
     public:

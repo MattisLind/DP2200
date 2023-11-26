@@ -83,18 +83,29 @@ void registerWindow::Form::octalMemoryDataHookExecutor::exec(FIELD *field) {
   wrefresh(r->getWin());
 }
 
-void registerWindow::Form::charPointerHookExecutor::exec(FIELD *field) {
+void registerWindow::Form::hexCharPointerHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   unsigned char value = strtol(bufferString, NULL, 16);
   *address = value;
 }
 
-void registerWindow::Form::shortPointerHookExecutor::exec(FIELD *field) {
+void registerWindow::Form::hexShortPointerHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   unsigned short value = strtol(bufferString, NULL, 16);
   *address = value;
 }
 
+void registerWindow::Form::octalCharPointerHookExecutor::exec(FIELD *field) {
+  char *bufferString = field_buffer(field, 0);
+  unsigned char value = strtol(bufferString, NULL, 8);
+  *address = value;
+}
+
+void registerWindow::Form::octalShortPointerHookExecutor::exec(FIELD *field) {
+  char *bufferString = field_buffer(field, 0);
+  unsigned short value = strtol(bufferString, NULL, 8);
+  *address = value;
+}
 
 
 
@@ -251,7 +262,7 @@ int main(int argc, char *argv[]) {
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);
-  if ((w.ws_col < 167) || (w.ws_row < 46)) {
+  if ((w.ws_col < 179) || (w.ws_row < 46)) {
     fprintf(stderr, "Too small screen. Increase terminal window to be bigger than 167 x 46. Current screen size is %d x %d\n", w.ws_col, w.ws_row);
     exit(1);
   }
