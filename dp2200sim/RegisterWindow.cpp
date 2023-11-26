@@ -305,7 +305,7 @@ registerWindow::OctalForm::OctalForm () {
   int offset=21;
 
   createAField(&registerViewFields, 10,2,6, "REGISTERS");
-  createAField(&registerViewFields,65,3,3,"ALPHA          BETA          STACK    TRACE          BREAKPOINTS");
+  createAField(&registerViewFields,66,3,3,"ALPHA          BETA          STACK    TRACE            BREAKPOINTS");
 
   for (auto regset=0;regset < 2; regset++) {
     for (auto reg=0; reg<7; reg++) {
@@ -349,11 +349,11 @@ registerWindow::OctalForm::OctalForm () {
   keyboardButtonField = createAField(&registerViewFields,strlen(keyboardButtonText), 40 , 25, keyboardButtonText);    
   
   for (auto i=0; i<8; i++) {
-    instructionTrace[i] = createAField(&registerViewFields,18,4+i,41, "" );
+    instructionTrace[i] = createAField(&registerViewFields,20,4+i,41, "" );
   }
 
   for (auto i=0; i<8; i++) {
-    breakpoints[i] = createAField(&registerViewFields,5,4+i,56, "" );
+    breakpoints[i] = createAField(&registerViewFields,5,4+i,58, "" );
   }
   
 
@@ -569,21 +569,7 @@ void registerWindow::handleKey(int key) {
   case 'o':
   case 'O':
     octal = !octal;
-    if (octal) {
-      unpost_form(currentForm->getForm());
-      currentForm = formOctal;
-      post_form(currentForm->getForm());
-      form_driver(currentForm->getForm(), REQ_OVL_MODE);
-    } else {
-      unpost_form(currentForm->getForm());
-      currentForm = formHex;
-      post_form(currentForm->getForm());
-      form_driver(currentForm->getForm(), REQ_OVL_MODE);
-    }
-    currentForm->updateForm();
-    //updateFormOctal();
-    refresh(); 
-    wrefresh(win);
+    setOctal(octal);
     break;
   case KEY_DOWN:
     form_driver(currentForm->getForm(), REQ_DOWN_FIELD);
@@ -655,5 +641,22 @@ bool registerWindow::getDisplayButton() {
 
 bool registerWindow::getKeyboardButton() {
   return cpu.keyboardButtonStatus;
+}
+
+void registerWindow::setOctal(bool octal) {
+  if (octal) {
+    unpost_form(currentForm->getForm());
+    currentForm = formOctal;
+    post_form(currentForm->getForm());
+    form_driver(currentForm->getForm(), REQ_OVL_MODE);
+  } else {
+    unpost_form(currentForm->getForm());
+    currentForm = formHex;
+    post_form(currentForm->getForm());
+    form_driver(currentForm->getForm(), REQ_OVL_MODE);
+  }
+  currentForm->updateForm();
+  refresh(); 
+  wrefresh(win); 
 }
 

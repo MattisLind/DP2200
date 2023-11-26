@@ -198,6 +198,7 @@ public:
   int setDisplayButton(bool);
   bool getDisplayButton();
   bool getKeyboardButton();
+  void setOctal(bool);
 };
 
 #endif

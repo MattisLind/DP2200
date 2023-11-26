@@ -24,10 +24,12 @@ void commandWindow::doExit(std::vector<Param> params) {
 
 void commandWindow::doOct(std::vector<Param> params) {
   rw->octal = true;
+  rw->setOctal(rw->octal);
 }
 
 void commandWindow::doHex(std::vector<Param> params) {
   rw->octal=false;
+  rw->setOctal(rw->octal);  
 }
 
 void commandWindow::doYield(std::vector<Param> params) { 
@@ -77,7 +79,11 @@ void commandWindow::doAddBreakpoint(std::vector<Param> params) {
   unsigned short address=0;
   for (auto it = params.begin(); it < params.end(); it++) {
     if (it->paramId == ADDRESS) {
-      address = strtol(it->paramValue.s, NULL, 16);
+      if (rw->octal) {
+        address = strtol(it->paramValue.s, NULL, 8);
+      } else {
+        address = strtol(it->paramValue.s, NULL, 16);  
+      }
     }
   }
   if (cpu->addBreakpoint(address)) {
@@ -88,7 +94,11 @@ void commandWindow::doRemoveBreakpoint(std::vector<Param> params) {
   unsigned short address=0;
   for (auto it = params.begin(); it < params.end(); it++) {
     if (it->paramId == ADDRESS) {
-      address = strtol(it->paramValue.s, NULL, 16);
+      if (rw->octal) {
+        address = strtol(it->paramValue.s, NULL, 8);
+      } else {
+        address = strtol(it->paramValue.s, NULL, 16);  
+      }
     }
   }
   if (cpu->removeBreakpoint(address)) {
