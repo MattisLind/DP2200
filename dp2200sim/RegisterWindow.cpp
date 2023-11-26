@@ -144,7 +144,7 @@ void registerWindow::HexForm::updateForm() {
 
 
 
-FIELD * registerWindow::Form::createAField(std::__1::vector<FIELD *> * fields, int length, int y, int x, const char * str) {
+FIELD * registerWindow::Form::createAField(std::vector<FIELD *> * fields, int length, int y, int x, const char * str) {
   FIELD * t;
   t = new_field(1, length, y, x, 0, 0); // HEADER - REGISTERS TEXT
   fields->push_back(t);
@@ -153,7 +153,7 @@ FIELD * registerWindow::Form::createAField(std::__1::vector<FIELD *> * fields, i
   return t;
 }
 
-FIELD * registerWindow::Form::createAField(std::__1::vector<FIELD *> * fields, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h) {
+FIELD * registerWindow::Form::createAField(std::vector<FIELD *> * fields, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h) {
   FIELD * t = createAField(fields, length, y, x, str);
   set_field_opts(t, O_VISIBLE | O_PUBLIC  | O_STATIC | f);
   set_field_userptr(t, h);
