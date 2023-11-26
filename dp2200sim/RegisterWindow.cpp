@@ -2,22 +2,22 @@
 
 registerWindow::Form::memoryDataHookExecutor::memoryDataHookExecutor(class registerWindow::Form * r, int d) {
   data=d;
-  rw = r;
+  rwf = r;
 }
 
 registerWindow::Form::memoryAddressHookExecutor::memoryAddressHookExecutor(class registerWindow::Form * r, int a) { 
   address = a; 
-  rw = r;
+  rwf = r;
 }
 
 registerWindow::Form::charPointerHookExecutor::charPointerHookExecutor(class registerWindow::Form * r, unsigned char * a) { 
   address = a; 
-  rw = r;
+  rwf = r;
 }
 
 registerWindow::Form::shortPointerHookExecutor::shortPointerHookExecutor(class registerWindow::Form * r, unsigned short * a) { 
   address = a; 
-  rw = r;
+  rwf = r;
 }
 
 void registerWindow::OctalForm::updateForm() {
@@ -28,12 +28,12 @@ void registerWindow::HexForm::updateForm() {
   char b[5];
   unsigned char t;
   char asciiB[17], fieldB[19];
-  for (i = 0; i < 16 && startAddress < 0x4000; startAddress += 16, i++) {
-    snprintf(b, 5, "%04X", startAddress);
+  for (i = 0; i < 16 && cpu.startAddress < 0x4000; cpu.startAddress += 16, i++) {
+    snprintf(b, 5, "%04X", cpu.startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (j = 0; j < 16; j++) {
-      t = cpu.memory[startAddress + j];
-      if ((startAddress + j) == cpu.P ) {
+      t = cpu.memory[cpu.startAddress + j];
+      if ((cpu.startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {
         set_field_back(dataFields[k], A_NORMAL);
@@ -47,12 +47,12 @@ void registerWindow::HexForm::updateForm() {
     snprintf(fieldB, 19, "|%s|", asciiB);
     set_field_buffer(asciiFields[i], 0, fieldB);
   }
-  for (; i < 16; startAddress += 16, i++) {
-    snprintf(b, 5, "%04X", startAddress);
+  for (; i < 16; cpu.startAddress += 16, i++) {
+    snprintf(b, 5, "%04X", cpu.startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (int j = 0; j < 16; j++) {
-      t = cpu.memory[startAddress + j];
-      if ((startAddress + j) == cpu.P ) {
+      t = cpu.memory[cpu.startAddress + j];
+      if ((cpu.startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {
         set_field_back(dataFields[k], A_NORMAL);
@@ -115,25 +115,25 @@ void registerWindow::HexForm::updateForm() {
     set_field_buffer(breakpoints[i], 0, "");  
   }
 
-  if (keyboardLightStatus) {
+  if (cpu.keyboardLightStatus) {
     set_field_back(keyboardLightField, A_STANDOUT);
   } else {
     set_field_back(keyboardLightField, A_NORMAL);
   }
 
-  if (displayLightStatus) {
+  if (cpu.displayLightStatus) {
     set_field_back(displayLightField, A_STANDOUT);
   } else {
     set_field_back(displayLightField, A_NORMAL);
   }
 
-  if (keyboardButtonStatus) {
+  if (cpu.keyboardButtonStatus) {
     set_field_back(keyboardButtonField, A_STANDOUT);
   } else {
     set_field_back(keyboardButtonField, A_NORMAL);
   }  
 
-  if (displayButtonStatus) {
+  if (cpu.displayButtonStatus) {
     set_field_back(displayButtonField, A_STANDOUT);
   } else {
     set_field_back(displayButtonField, A_NORMAL);
@@ -168,7 +168,7 @@ registerWindow::HexForm::HexForm () {
   FIELD **f;
   int i;
   int offset=21;
-  FORM *frm;
+
   createAField(&registerViewFields, 10,2,6, "REGISTERS");
   createAField(&registerViewFields,65,3,3,"ALPHA          BETA          STACK    TRACE          BREAKPOINTS");
 
@@ -243,6 +243,14 @@ registerWindow::HexForm::~HexForm () {
   }
 }
 
+FORM * registerWindow::HexForm::getForm() {
+  return frm;
+}
+
+registerWindow::HexForm * registerWindow::createHexForm () {
+  return new registerWindow::HexForm();
+}
+
 registerWindow::registerWindow(class dp2200_cpu *c) {
 
   cursorX = 4;  
@@ -254,31 +262,31 @@ registerWindow::registerWindow(class dp2200_cpu *c) {
   activeWindow = false;
   
   formHex = createHexForm ();
-  formOctal = createHexForm ();
+  //formOctal = createHexForm ();
 
 
-  set_form_win(formHex, win);
-  set_form_sub(formHex, derwin(win, 44, 76, 1, 1));
-  set_form_win(formOctal, win);
-  set_form_sub(formOctal, derwin(win, 44, 76, 1, 1));
-  post_form(formHex);
-  form_driver(formHex, REQ_OVL_MODE);
+  set_form_win(formHex->getForm(), win);
+  set_form_sub(formHex->getForm(), derwin(win, 44, 76, 1, 1));
+  //set_form_win(formOctal, win);
+  //set_form_sub(formOctal, derwin(win, 44, 76, 1, 1));
+  post_form(formHex->getForm());
+  form_driver(formHex->getForm(), REQ_OVL_MODE);
 
-  updateForm(base); 
-  updateFormOctal(base); 
+  formHex->updateForm(); 
+  //updateFormOctal(); 
   wmove(win, cursorY, cursorX);
-  pos_form_cursor(formHex);
+  pos_form_cursor(formHex->getForm());
   normalWindow();
 }
 registerWindow::~registerWindow() {
-  unpost_form(formHex);
-  free_form(formHex);
+  unpost_form(formHex->getForm());
+  free_form(formHex->getForm());
 }
 
 void registerWindow::updateWindow() {
   if (!activeWindow)  {
-    updateForm(base);
-    updateFormOctal(base);
+    formHex->updateForm();
+    //updateFormOctal();
     wrefresh(win);
   }
 }
@@ -290,15 +298,15 @@ void registerWindow::hightlightWindow() {
   box(win, 0, 0);
   mvwprintw(win, 0, 1, "REGISTER WINDOW");
   wattrset(win, 0);
-  pos_form_cursor(formHex);
+  pos_form_cursor(formHex->getForm());
   wmove(win, cursorY, cursorX);
   printLog("INFO", "cursorY=%d cursorX=%d\n", cursorY, cursorX);
   refresh();  
   wrefresh(win);
   activeWindow = true;
-  pos_form_cursor(formHex);
-  updateForm(base);
-  updateFormOctal(base);
+  pos_form_cursor(formHex->getForm());
+  formHex->updateForm();
+  //updateFormOctal();
 }
 void registerWindow::normalWindow() {
   printLog("INFO", "registerWindow::normalWindow()");
@@ -316,6 +324,12 @@ void registerWindow::resetCursor() {
   //  wrefresh(win);
   }
 }
+
+WINDOW * registerWindow::getWin() {
+  return win;
+}
+
+
 void registerWindow::handleKey(int key) {
   /*
   '?' toggle a help screen for the register window
@@ -325,62 +339,62 @@ void registerWindow::handleKey(int key) {
 
   switch (key) {
   case 27: // ESC
-    updateForm(base);
-    updateFormOctal(base);
+    formHex->updateForm();
+    //updateFormOctal();
     break;
   case 'o':
   case 'O':
     octal = !octal;
     if (octal) {
-      unpost_form(formHex);
-      post_form(formOctal);
+      unpost_form(formHex->getForm());
+      //post_form(formOctal);
     } else {
-      unpost_form(formOctal);
-      post_form(formHex);
+      //unpost_form(formOctal);
+      post_form(formHex->getForm());
     }
-    updateForm(base);
-    updateFormOctal(base);
+    formHex->updateForm();
+    //updateFormOctal();
     refresh(); 
     wrefresh(win);
     break;
   case KEY_DOWN:
-    form_driver(formHex, REQ_DOWN_FIELD);
-    form_driver(formHex, REQ_BEG_FIELD);
+    form_driver(formHex->getForm(), REQ_DOWN_FIELD);
+    form_driver(formHex->getForm(), REQ_BEG_FIELD);
     break;
 
   case KEY_UP:
-    form_driver(formHex, REQ_UP_FIELD);
-    form_driver(formHex, REQ_BEG_FIELD);
+    form_driver(formHex->getForm(), REQ_UP_FIELD);
+    form_driver(formHex->getForm(), REQ_BEG_FIELD);
     break;
 
   case KEY_LEFT:
-    form_driver(formHex, REQ_LEFT_FIELD);
+    form_driver(formHex->getForm(), REQ_LEFT_FIELD);
     break;
 
   case KEY_RIGHT:
-    form_driver(formHex, REQ_RIGHT_FIELD);
+    form_driver(formHex->getForm(), REQ_RIGHT_FIELD);
     break;
 
   // Delete the char before cursor
   case KEY_BACKSPACE:
   case 127:
-    form_driver(formHex, REQ_DEL_PREV);
+    form_driver(formHex->getForm(), REQ_DEL_PREV);
     break;
 
   // Delete the char under the cursor
   case KEY_DC:
-    form_driver(formHex, REQ_DEL_CHAR);
+    form_driver(formHex->getForm(), REQ_DEL_CHAR);
     break;
 
   case '\n':
-    form_driver(formHex, REQ_NEXT_FIELD);
-    form_driver(formHex, REQ_PREV_FIELD);
+    form_driver(formHex->getForm(), REQ_NEXT_FIELD);
+    form_driver(formHex->getForm(), REQ_PREV_FIELD);
     break;
 
   default:
     if ((key >= '0' && key <= '9') || (key >= 'A' && key <= 'F') ||
         (key >= 'a' && key <= 'f')) {
-      form_driver(formHex, toupper(key));
+      form_driver(formHex->getForm(), toupper(key));
     }
     break;
   }
@@ -389,29 +403,29 @@ void registerWindow::handleKey(int key) {
 }
 
 int registerWindow::setDisplayLight(bool value) {
-  displayLightStatus=value;
+  cpu.displayLightStatus=value;
   return 0; 
 }
 int registerWindow::setKeyboardLight(bool value) {
-  keyboardLightStatus=value;
+  cpu.keyboardLightStatus=value;
   return 0;
 }
 
 int registerWindow::setKeyboardButton(bool value) {
-  keyboardButtonStatus = value;
+  cpu.keyboardButtonStatus = value;
   return 0;
 }
 
 int registerWindow::setDisplayButton(bool value) {
-  displayButtonStatus = value;
+  cpu.displayButtonStatus = value;
   return 0;
 }
 
 bool registerWindow::getDisplayButton() {
-  return displayButtonStatus;
+  return cpu.displayButtonStatus;
 }
 
 bool registerWindow::getKeyboardButton() {
-  return keyboardButtonStatus;
+  return cpu.keyboardButtonStatus;
 }
 

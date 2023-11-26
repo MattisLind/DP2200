@@ -31,7 +31,7 @@ class registerWindow : public virtual Window {
 
     class memoryDataHookExecutor : hookExecutor {
       int data;
-      class registerWindow::Form * rw;
+      class registerWindow::Form * rwf;
       public:
       memoryDataHookExecutor(class registerWindow::Form * r, int d);
       void exec (FIELD *field);
@@ -39,7 +39,7 @@ class registerWindow : public virtual Window {
 
     class memoryAddressHookExecutor : hookExecutor {
       int address;
-      class registerWindow::Form * rw;
+      class registerWindow::Form * rwf;
       public:
       memoryAddressHookExecutor(class registerWindow::Form * r, int a);
       void exec(FIELD *field);
@@ -47,7 +47,7 @@ class registerWindow : public virtual Window {
 
     class charPointerHookExecutor : hookExecutor {
       unsigned char *  address;
-      class registerWindow::Form * rw;
+      class registerWindow::Form * rwf;
       public:
       charPointerHookExecutor(class registerWindow::Form * r, unsigned char * a);
       void exec(FIELD *field);
@@ -55,17 +55,16 @@ class registerWindow : public virtual Window {
 
     class shortPointerHookExecutor : hookExecutor {
       unsigned short *  address;
-      class registerWindow::Form * rw;
+      class registerWindow::Form * rwf;
       public:
       shortPointerHookExecutor(class registerWindow::Form * r, unsigned short * a);
       void exec(FIELD *field);
     };    
-    FIELD * createAField(std::__1::vector<FIELD *> * fields, int length, int y, int x, const char * str);
-    FIELD * createAField(std::__1::vector<FIELD *> * fields, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h);
+    FIELD * createAField(std::vector<FIELD *> * fields, int length, int y, int x, const char * str);
+    FIELD * createAField(std::vector<FIELD *> * fields, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h);
   };
 
   class HexForm : public virtual Form {
-    int base = 0;
     std::vector<FIELD *> addressFields;
     std::vector<FIELD *> dataFields;
     std::vector<FIELD *> asciiFields;
@@ -86,13 +85,17 @@ class registerWindow : public virtual Window {
     FIELD * displayButtonField;
     FIELD * keyboardLightField;
     FIELD * keyboardButtonField;
+    FORM *frm;
     public:
     void updateForm();
+    FORM * getForm();
+    HexForm();
+    ~HexForm();
   };
 
   class OctalForm : public virtual Form {
-    int base = 0;
     void updateForm();
+    OctalForm();
   };
 
   int cursorX, cursorY;
@@ -100,17 +103,12 @@ class registerWindow : public virtual Window {
   //class dp2200_cpu *cpu;
   bool octal;
   bool activeWindow;
-  FORM *formHex;
-  FORM *formOctal;
-  bool keyboardLightStatus=false;
-  bool displayLightStatus=false;
-  bool keyboardButtonStatus=false;
-  bool displayButtonStatus=false;
-  FORM * createHexForm();
-  FORM * createOctalForm();
-  FIELD * createAField(std::__1::vector<FIELD *> * , int length, int y, int x, const char * str);
+  registerWindow::HexForm * formHex;
 
-  FIELD * createAField(std::__1::vector<FIELD *> *, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h) ;
+  registerWindow::HexForm * createHexForm ();
+  FIELD * createAField(std::vector<FIELD *> * , int length, int y, int x, const char * str);
+
+  FIELD * createAField(std::vector<FIELD *> *, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h) ;
 
 
 
@@ -123,11 +121,11 @@ class registerWindow : public virtual Window {
 
 
 
-  void updateForm(int startAddress);
-  void updateFormOctal(int startAddress);
+  //void updateForm();
+  //void updateFormOctal();
 public:
 
-
+  WINDOW *getWin();
   registerWindow(class dp2200_cpu *c);
   ~registerWindow();
 

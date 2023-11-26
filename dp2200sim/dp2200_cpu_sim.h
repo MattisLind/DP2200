@@ -79,6 +79,11 @@ public:
 
   class IOController * ioCtrl;
   bool traceEnabled = false;
+  unsigned short startAddress;
+  bool keyboardLightStatus=false;
+  bool displayLightStatus=false;
+  bool keyboardButtonStatus=false;
+  bool displayButtonStatus=false;
 
   // rather than having ioAddress and ioStatus in CPU class a ioController class is handling all IO.
   // This class handles ioStatus and ioAddress.

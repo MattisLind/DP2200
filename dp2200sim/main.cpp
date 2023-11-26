@@ -28,12 +28,17 @@ FILE *logfile;
 
 class dp2200_cpu cpu;
 
+class dp2200Window *dpw;
+class registerWindow *rw;
+class registerWindow *r;
+class commandWindow *cw;
+
 int pollKeyboard(void);
 int cpuRunner();
 
 class commandWindow;
 
-class registerWindow *r;
+
 
 void form_hook_proxy(formnode * f) {
   class hookExecutor * hE;
@@ -45,17 +50,17 @@ void form_hook_proxy(formnode * f) {
 void registerWindow::Form::memoryAddressHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 16);
-  rw->base = (value - address * 16) & 0x3ff0;
-  rw->updateForm(rw->base);
-  wrefresh(rw->win);
+  cpu.startAddress = (value - address * 16) & 0x3ff0;
+  rwf->updateForm();
+  wrefresh(r->win);
 }
 
 void registerWindow::Form::memoryDataHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 16);
-  cpu.memory[rw->base + data] = value;
-  rw->updateForm(rw->base);
-  wrefresh(rw->win);
+  cpu.memory[cpu.startAddress + data] = value;
+  rwf->updateForm();
+  wrefresh(r->getWin());
 }
 
 void registerWindow::Form::charPointerHookExecutor::exec(FIELD *field) {
@@ -71,9 +76,6 @@ void registerWindow::Form::shortPointerHookExecutor::exec(FIELD *field) {
 }
 
 
-class dp2200Window *dpw;
-class registerWindow *rw;
-class commandWindow *cw;
 
 
 class callbackRecord {
