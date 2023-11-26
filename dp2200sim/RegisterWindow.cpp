@@ -27,13 +27,14 @@ void registerWindow::HexForm::updateForm() {
   int i, k = 0, j;
   char b[5];
   unsigned char t;
+  unsigned short startAddress = cpu.startAddress;
   char asciiB[17], fieldB[19];
-  for (i = 0; i < 16 && cpu.startAddress < 0x4000; cpu.startAddress += 16, i++) {
-    snprintf(b, 5, "%04X", cpu.startAddress);
+  for (i = 0; i < 16 && startAddress < 0x4000; startAddress += 16, i++) {
+    snprintf(b, 5, "%04X", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (j = 0; j < 16; j++) {
-      t = cpu.memory[cpu.startAddress + j];
-      if ((cpu.startAddress + j) == cpu.P ) {
+      t = cpu.memory[startAddress + j];
+      if ((startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {
         set_field_back(dataFields[k], A_NORMAL);
@@ -47,12 +48,12 @@ void registerWindow::HexForm::updateForm() {
     snprintf(fieldB, 19, "|%s|", asciiB);
     set_field_buffer(asciiFields[i], 0, fieldB);
   }
-  for (; i < 16; cpu.startAddress += 16, i++) {
-    snprintf(b, 5, "%04X", cpu.startAddress);
+  for (; i < 16; startAddress += 16, i++) {
+    snprintf(b, 5, "%04X", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (int j = 0; j < 16; j++) {
-      t = cpu.memory[cpu.startAddress + j];
-      if ((cpu.startAddress + j) == cpu.P ) {
+      t = cpu.memory[startAddress + j];
+      if ((startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {
         set_field_back(dataFields[k], A_NORMAL);
