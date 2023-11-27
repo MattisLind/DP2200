@@ -1,20 +1,18 @@
 # dp2200sim - a Datapoint 2200 simulator
 
 PLEASE NOTE!  STILL WORK IN PROGRESS.<BR> 
-
-It can run and step through programs. Breakpoint can be used. 
+ 
 At this point it is able to load the first program into memory and it starts the simple CTOS 3.2 operating system and give a ready prompt.
+It is possible to interact with the program running on the simulated machine and debug it using breakpoints and single step.
 
-More work on getting the keyboard to give input is now required.
 
-
-[![Watch the video](https://i.imgur.com/vSpatoKh.png)](https://youtu.be/QHUuPtVpjNc)
+[![Watch the video](https://i.imgur.com/zhIMYDc.png)](https://youtu.be/XfsMBhP13ww)
 
 Build the simulator using make.
 
-Tested primairly on MACOS but are said to compile on Linux as well.
+Tested primairly on MACOS but builds on Linux as well.
 
-The actual cpu simulator code was is based on a 8008 simultor by M. Willegal. I have heavily modified it for Datapoint 2200 and wrapped it into C++.
+The actual cpu simulator code is based on a 8008 simultor by Mike Willegal. I have heavily modified it for Datapoint 2200 and wrapped it into C++.
 
 ## Requirements
 
