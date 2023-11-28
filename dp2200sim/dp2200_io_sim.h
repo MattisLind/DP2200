@@ -122,12 +122,37 @@ class IOController {
     void updateKbd(int);
   };
 
+
+  class ParallellInterfaceAdaptorDevice : public virtual IODevice  {
+    public:
+    unsigned char input ();
+    int exWrite(unsigned char data); 
+    int exCom1(unsigned char data);
+    int exCom2(unsigned char data);
+    int exCom3(unsigned char data);
+    int exCom4(unsigned char data);
+    int exBeep();
+    int exClick();
+    int exDeck1();
+    int exDeck2();
+    int exRBK();
+    int exWBK();
+    int exBSP();
+    int exSF();
+    int exSB();
+    int exRewind();
+    int exTStop();
+    ParallellInterfaceAdaptorDevice();
+  };
+
+
   class IODevice * dev[16];
   int ioAddress; 
   std::vector<unsigned char> supportedDevices;
   public:
   class CassetteDevice * cassetteDevice;
   class ScreenKeyboardDevice * screenKeyboardDevice;
+  class ParallellInterfaceAdaptorDevice * parallellInterfaceAdaptorDevice;
   IOController ();
   unsigned char input ();
   int exAdr (unsigned char address);

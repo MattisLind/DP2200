@@ -46,6 +46,10 @@ void dp2200Window::handleKey(int key) {
   case 0x0a:
     cpu->ioCtrl->screenKeyboardDevice->updateKbd(0x0d);
     break;
+  case 0x7f:
+    printLog("INFO", "Got BS\n");
+    cpu->ioCtrl->screenKeyboardDevice->updateKbd(0x08);
+    break;    
   case 0x1b:
     cpu->ioCtrl->screenKeyboardDevice->updateKbd(0x30);
     break;

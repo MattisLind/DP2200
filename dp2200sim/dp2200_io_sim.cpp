@@ -15,8 +15,10 @@ void printLog(const char *level, const char *fmt, ...);
 IOController::IOController () {
   dev[0] = cassetteDevice = new CassetteDevice();
   dev[1] = screenKeyboardDevice = new ScreenKeyboardDevice();
+  dev[6] = parallellInterfaceAdaptorDevice = new ParallellInterfaceAdaptorDevice();
   supportedDevices.push_back(0);
   supportedDevices.push_back(1);
+  supportedDevices.push_back(6);
 }
 
 int IOController::exAdr (unsigned char address) {
@@ -393,4 +395,65 @@ void IOController::ScreenKeyboardDevice::updateKbd(int key) {
 
 IOController::ScreenKeyboardDevice::ScreenKeyboardDevice() {
   statusRegister = (SCRNKBD_STATUS_CRT_READY);
+}
+
+
+unsigned char IOController::ParallellInterfaceAdaptorDevice::input () {
+  if (status) {
+    return statusRegister;
+  } else {
+    return dataRegister;
+  }
+}
+int IOController::ParallellInterfaceAdaptorDevice::exWrite(unsigned char data) {
+  return 1;
+} 
+int IOController::ParallellInterfaceAdaptorDevice::exCom1(unsigned char data){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exCom2(unsigned char data){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exCom3(unsigned char data){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exCom4(unsigned char data){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exBeep(){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exClick(){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exDeck1(){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exDeck2(){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exRBK(){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exWBK(){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exBSP(){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exSF(){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exSB(){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exRewind(){
+  return 1;
+}
+int IOController::ParallellInterfaceAdaptorDevice::exTStop(){
+  return 1;
+}
+
+IOController::ParallellInterfaceAdaptorDevice::ParallellInterfaceAdaptorDevice() {
+  statusRegister = 0;
 }

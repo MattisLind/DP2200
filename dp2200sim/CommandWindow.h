@@ -14,7 +14,7 @@ class commandWindow;
 void printLog(const char *level, const char *fmt, ...);
 extern float yield;
 
-#define PARAM_VALUE_SIZE 32
+#define PARAM_VALUE_SIZE 256
 
 typedef union p {
   char s[PARAM_VALUE_SIZE];
