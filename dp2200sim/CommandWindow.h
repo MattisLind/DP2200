@@ -74,6 +74,7 @@ public:
   void normalWindow();
   void handleKey(int ch);
   void resetCursor();
+  void resize();
 };
 
 

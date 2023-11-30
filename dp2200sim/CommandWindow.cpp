@@ -405,3 +405,16 @@ void commandWindow::resetCursor() {
     wrefresh(innerWin);
   }
 }
+
+void commandWindow::resize() {
+  wresize(win, LINES - 14, 82);
+  wresize(innerWin, LINES - 16, 80);
+  if (activeWindow) {
+    hightlightWindow();
+  } else {
+    normalWindow();
+  }
+  wrefresh(win);
+  redrawwin(innerWin);
+  wrefresh(innerWin);  
+}

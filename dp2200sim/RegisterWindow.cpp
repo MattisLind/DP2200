@@ -484,11 +484,12 @@ registerWindow::registerWindow(class dp2200_cpu *c) {
   formHex = createHexForm ();
   formOctal = createOctalForm ();
   currentForm = formOctal;
-
+  dwinoctal=derwin(win, 44, 95, 1, 1);
+  dwinhex=derwin(win, 44, 95, 1, 1);
   set_form_win(formHex->getForm(), win);
-  set_form_sub(formHex->getForm(), derwin(win, 44, 95, 1, 1));
+  set_form_sub(formHex->getForm(), dwinhex);
   set_form_win(formOctal->getForm(), win);
-  set_form_sub(formOctal->getForm(), derwin(win, 44, 95, 1, 1));
+  set_form_sub(formOctal->getForm(), dwinoctal);
   post_form(currentForm->getForm());
   form_driver(currentForm->getForm(), REQ_OVL_MODE);
 
@@ -660,3 +661,16 @@ void registerWindow::setOctal(bool octal) {
   wrefresh(win); 
 }
 
+void registerWindow::resize() {
+  wresize(win, LINES, COLS - 82); 
+  if (activeWindow) {
+    hightlightWindow();
+  } else {
+    normalWindow();
+  }
+  currentForm->updateForm();
+  wrefresh(win); 
+  wrefresh(dwinoctal);
+  wrefresh(dwinhex);
+  refresh();
+}

@@ -7,6 +7,7 @@ public:
   virtual void normalWindow() = 0;
   virtual void handleKey(int) = 0;
   virtual void resetCursor() = 0;
+  virtual void resize() = 0;
 };
 
 #endif

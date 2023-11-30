@@ -133,6 +133,7 @@ void timeoutInNanosecs (struct timespec * t, long nanos) {
 
 int pollKeyboard() {
   int ch;
+  struct winsize w;
   rw->updateWindow();
   windows[activeWindow]->resetCursor();
   ch = getch();
@@ -147,7 +148,14 @@ int pollKeyboard() {
     activeWindow = activeWindow < 0 ? 2 : activeWindow;
     windows[activeWindow]->hightlightWindow();
     break;
-  case KEY_RESIZE:
+  case KEY_RESIZE: 
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    if ((w.ws_col < 179) || (w.ws_row < 46)) {
+      endwin();
+      fprintf(stderr, "Too small screen. Increase terminal window to be bigger than 179 x 46. Current screen size is %d x %d\n", w.ws_col, w.ws_row);
+      exit(1);
+    }
+    for (int i=0; i<3; i++) windows[i]->resize();
     break;
   case ERR:
     break;
@@ -263,7 +271,7 @@ int main(int argc, char *argv[]) {
   logfile = fopen("dp2200.log", "w");
   printLog("INFO", "Starting up %d\n", 10);
   if ((w.ws_col < 179) || (w.ws_row < 46)) {
-    fprintf(stderr, "Too small screen. Increase terminal window to be bigger than 167 x 46. Current screen size is %d x %d\n", w.ws_col, w.ws_row);
+    fprintf(stderr, "Too small screen. Increase terminal window to be bigger than 179 x 46. Current screen size is %d x %d\n", w.ws_col, w.ws_row);
     exit(1);
   }
   initscr(); /* Start curses mode 		*/

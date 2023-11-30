@@ -161,6 +161,8 @@ class registerWindow : public virtual Window {
 
   int cursorX, cursorY;
   WINDOW *win;
+  WINDOW *dwinhex;
+  WINDOW *dwinoctal;
 
   bool activeWindow;
   registerWindow::HexForm * formHex;
@@ -192,6 +194,7 @@ public:
   void normalWindow();
   void resetCursor();
   void handleKey(int key);
+  void resize();
   int setDisplayLight(bool);
   int setKeyboardLight(bool);
   int setKeyboardButton(bool);

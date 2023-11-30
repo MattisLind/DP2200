@@ -13,6 +13,18 @@ dp2200Window::dp2200Window(class dp2200_cpu * c) {
   activeWindow = false;
   scrollok(innerWin, TRUE);
 }
+
+void dp2200Window::resize() {
+  if (activeWindow) {
+    hightlightWindow();
+  } else {
+    normalWindow();
+  }
+  wrefresh(win);
+  redrawwin(innerWin);
+  wrefresh(innerWin);  
+}
+
 void dp2200Window::hightlightWindow() {
   wattrset(win, A_STANDOUT);
   box(win, 0, 0);
