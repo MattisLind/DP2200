@@ -291,8 +291,9 @@ int main(int argc, char *argv[]) {
   windows[activeWindow]->hightlightWindow();
   //cpuRunner();
   while (1) { // event loop
+    cpu.interruptPending = 1;
     clock_gettime(CLOCK_MONOTONIC, &before);
-    addTimeSpec(&after, &before, (long) (yield/100 * 10000000));
+    addTimeSpec(&after, &before, (long) (yield/100 * 1000000));
     while (cpu.running && nowIsLessThan(&after)) {
       // Run instructions
       if (cpu.execute()) {
@@ -316,7 +317,7 @@ int main(int argc, char *argv[]) {
       callBack(timerRecord);
     }
     pollKeyboard();
-    addTimeSpec(&after, &before, 10000000); // 10 ms
+    addTimeSpec(&after, &before, 1000000); // 1 ms
 
     // calculate time between after and now 
     clock_gettime(CLOCK_MONOTONIC, &now);

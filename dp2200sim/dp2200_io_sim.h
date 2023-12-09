@@ -4,6 +4,7 @@
 
 #include <vector>
 #include "cassetteTape.h"
+#include "FloppyDrive.h"
 #include "dp2200Window.h"
 
 class callbackRecord * addToTimerQueue(std::function<int(class callbackRecord *)>, struct timespec);
@@ -24,13 +25,22 @@ void removeTimerCallback(class callbackRecord * c);
 #define SCRNKBD_STATUS_KEYBOAD_BUTTON_PRESSED 1 << 2
 #define SCRNKBD_STATUS_DISPLAY_BUTTON_PRESSED 1 << 3
 
-
+#define SCRNKBD_COM1_ROLL_DOWN 1 << 0
 #define SCRNKBD_COM1_ERASE_EOL 1 << 1
 #define SCRNKBD_COM1_ERASE_EOF 1 << 2
 #define SCRNKBD_COM1_ROLL 1 << 3
 #define SCRNKBD_COM1_CURSOR_ONOFF 1 << 4
 #define SCRNKBD_COM1_KDB_LIGHT 1 << 5
 #define SCRNKBD_COM1_DISP_LIGHT 1 << 6
+
+#define FLOPPY_STATUS_DRIVE_ONLINE (1 << 0)
+#define FLOPPY_STATUS_DATA_XFER_IN_PROGRESS (1 << 1)
+#define FLOPPY_STATUS_DRIVE_READY (1 << 2)
+#define FLOPPY_STATUS_WRITE_PROTECT (1 << 3)
+#define FLOPPY_STATUS_CRC_ERROR (1 << 4)
+#define FLOPPY_STATUS_BUFFER_PARITY_ERROR (1 << 5)
+#define FLOPPY_STATUS_DELETED_DATA_MARK (1 << 6)
+#define FLOPPY_STATUS_SECTOR_NOT_FOUND (1 << 7)
 
 extern class dp2200Window * dpw;
 
@@ -146,6 +156,35 @@ class IOController {
   };
 
 
+  class FloppyDevice : public virtual IODevice  {
+    int selectedDrive;
+    int selectedBufferPage;
+    char buffer[4][256];
+    int bufferAddress;
+    class FloppyDrive * floppyDrives[4];
+    public:
+    unsigned char input ();
+    int exWrite(unsigned char data); 
+    int exCom1(unsigned char data);
+    int exCom2(unsigned char data);
+    int exCom3(unsigned char data);
+    int exCom4(unsigned char data);
+    int exBeep();
+    int exClick();
+    int exDeck1();
+    int exDeck2();
+    int exRBK();
+    int exWBK();
+    int exBSP();
+    int exSF();
+    int exSB();
+    int exRewind();
+    int exTStop();
+    int openFile (int, std::string fileName);
+    void closeFile (int);    
+    FloppyDevice();
+  };
+
   class IODevice * dev[16];
   int ioAddress; 
   std::vector<unsigned char> supportedDevices;
@@ -153,6 +192,7 @@ class IOController {
   class CassetteDevice * cassetteDevice;
   class ScreenKeyboardDevice * screenKeyboardDevice;
   class ParallellInterfaceAdaptorDevice * parallellInterfaceAdaptorDevice;
+  class FloppyDevice * floppyDevice;
   IOController ();
   unsigned char input ();
   int exAdr (unsigned char address);

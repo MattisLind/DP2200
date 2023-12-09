@@ -15,9 +15,11 @@ void printLog(const char *level, const char *fmt, ...);
 IOController::IOController () {
   dev[0] = cassetteDevice = new CassetteDevice();
   dev[1] = screenKeyboardDevice = new ScreenKeyboardDevice();
+  dev[12] = floppyDevice = new FloppyDevice();
   dev[6] = parallellInterfaceAdaptorDevice = new ParallellInterfaceAdaptorDevice();
   supportedDevices.push_back(0);
   supportedDevices.push_back(1);
+  supportedDevices.push_back(12);
   supportedDevices.push_back(6);
 }
 
@@ -307,6 +309,16 @@ void IOController::CassetteDevice::updateReadyFlag(bool gap) {
 
 unsigned char IOController::ScreenKeyboardDevice::input () {
   if (status) {
+    if (rw->getDisplayButton()) {
+      statusRegister |= 0010;
+    } else {
+      statusRegister &= ~0010;
+    }
+    if (rw->getKeyboardButton()) {
+      statusRegister |= 0004;
+    } else {
+      statusRegister &= ~0004;
+    }
     return statusRegister;
   } else {
     statusRegister &= ~(SCRNKBD_STATUS_KBD_READY);
@@ -317,30 +329,33 @@ int IOController::ScreenKeyboardDevice::exWrite(unsigned char data) {
   return dpw->writeCharacter(data);
 } 
 int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
-  // 
+  //
+  if (data & SCRNKBD_COM1_ROLL_DOWN) {
+    return 1; // halt if 5500 / 1100 specific RAM display card function is used!
+  } 
   if (data & SCRNKBD_COM1_ERASE_EOF) {
-    return dpw->eraseFromCursorToEndOfFrame();  
+    dpw->eraseFromCursorToEndOfFrame();  
   }
   if (data & SCRNKBD_COM1_ERASE_EOL) {
-    return dpw->eraseFromCursorToEndOfLine(); 
+    dpw->eraseFromCursorToEndOfLine(); 
   }
   if (data & SCRNKBD_COM1_ROLL) {
-    return dpw->rollScreenOneLine();
+    dpw->rollScreenOneLine();
   }
   if (data & SCRNKBD_COM1_CURSOR_ONOFF) {
-    return dpw->showCursor(true);
+    dpw->showCursor(true);
   } else {
-    return dpw->showCursor(false);
+    dpw->showCursor(false);
   }
   if (data & SCRNKBD_COM1_KDB_LIGHT) {
-    return rw->setKeyboardLight(true);
+    rw->setKeyboardLight(true);
   } else {
-    return rw->setKeyboardLight(false);
+    rw->setKeyboardLight(false);
   }
   if (data & SCRNKBD_COM1_DISP_LIGHT) {
-    return rw->setDisplayLight(true);
+    rw->setDisplayLight(true);
   } else {
-    return rw->setDisplayLight(false);
+    rw->setDisplayLight(false);
   }
   return 0;
 }
@@ -351,7 +366,7 @@ int IOController::ScreenKeyboardDevice::exCom3(unsigned char data){
   return dpw->setCursorY(data);
 }
 int IOController::ScreenKeyboardDevice::exCom4(unsigned char data){
-  return 1;
+  return 0;  // load font - do nothing...
 }
 int IOController::ScreenKeyboardDevice::exBeep(){
   beep();
@@ -456,4 +471,183 @@ int IOController::ParallellInterfaceAdaptorDevice::exTStop(){
 
 IOController::ParallellInterfaceAdaptorDevice::ParallellInterfaceAdaptorDevice() {
   statusRegister = 0;
+}
+
+
+
+
+unsigned char IOController::FloppyDevice::input () {
+  if (status) {
+    if (floppyDrives[selectedDrive]->online()) {
+      statusRegister |= FLOPPY_STATUS_DRIVE_ONLINE;
+    } else {
+      statusRegister &= ~FLOPPY_STATUS_DRIVE_ONLINE;
+    }
+    printLog("INFO", "Returning floppy status = %02X\n", statusRegister);
+    return statusRegister;
+  } else {
+    printLog("INFO", "Reading data from bufferPage %d address %d = %02X\n", selectedBufferPage, bufferAddress, 0xff&buffer[selectedBufferPage][bufferAddress]);
+    return buffer[selectedBufferPage][bufferAddress];
+  }
+}
+int IOController::FloppyDevice::exWrite(unsigned char data) {
+  return 1;
+} 
+int IOController::FloppyDevice::exCom1(unsigned char data){
+  struct timespec then;
+  switch (data) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+      selectedDrive = 0x3 & data;
+      printLog("INFO", "Selecting drive %d\n", 0x3&data);
+      statusRegister &= ~FLOPPY_STATUS_DRIVE_READY;
+      timeoutInNanosecs(&then, 10000);
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+          printLog("INFO", "10us timeout floppy select drive is ready\n");
+          t->statusRegister |= FLOPPY_STATUS_DRIVE_READY;
+          return 0;
+        },
+        then);
+
+      break;
+    case 4: // Clear Buffer Parity Error
+      return 1;
+    case  5: // Read Selected Sector into Selected Buffer Page
+      printLog("INFO", "Reading from drive\n");
+      statusRegister |= FLOPPY_STATUS_DATA_XFER_IN_PROGRESS;
+      statusRegister &= ~(FLOPPY_STATUS_SECTOR_NOT_FOUND | FLOPPY_STATUS_DELETED_DATA_MARK | FLOPPY_STATUS_CRC_ERROR | FLOPPY_STATUS_DRIVE_READY);
+      timeoutInNanosecs(&then, 1000000);
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+          int ret;
+          printLog("INFO", "10ms timeout floppy read is ready\n");
+          t->statusRegister &= ~FLOPPY_STATUS_DATA_XFER_IN_PROGRESS;
+          ret = t->floppyDrives[t->selectedDrive]->readSector(t->buffer[t->selectedBufferPage]);
+          switch (ret) {
+          case FLOPPY_SECTOR_NOT_FOUND:
+            t->statusRegister |= FLOPPY_STATUS_SECTOR_NOT_FOUND;
+            break;
+          case FLOPPY_DELETED_DATA:
+            t->statusRegister |= FLOPPY_STATUS_DELETED_DATA_MARK;
+            break;
+          case FLOPPY_CRC_ERROR:
+            t->statusRegister |= FLOPPY_STATUS_CRC_ERROR;
+            break;
+          case FLOPPY_OK:
+            t->statusRegister |= FLOPPY_STATUS_DRIVE_READY;
+            break;
+          }
+          return 0;
+        }, then);
+      break;
+    case 6: // Write Selected Buffer Page onto Selected Sector
+    case 7: // Same as 6 plus read check of CRC
+      return 1;
+      break;
+    case 8: // Restore Selected Drive (seek to track 0)
+      printLog("INFO", "Doing a restore to track 0.\n");
+      statusRegister &= ~FLOPPY_STATUS_DRIVE_READY;
+      timeoutInNanosecs(&then, 100000000);
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+          printLog("INFO", "100ms timeout floppy restore is ready\n");
+          t->floppyDrives[t->selectedDrive]->setTrack(0);
+          t->statusRegister |= FLOPPY_STATUS_DRIVE_READY;
+          return 0;
+        }, then);     
+      break;
+    case 9:
+      printLog("INFO", "Select buffer page = %d\n", 0x3 & (data>>6));
+      selectedBufferPage = 0x3 & (data>>6);
+      break;
+    case 10:
+    case 11:
+      return 1;
+
+  }
+
+  return 0;
+}
+int IOController::FloppyDevice::exCom2(unsigned char data){
+  struct timespec then;
+  statusRegister &= ~FLOPPY_STATUS_DRIVE_READY;
+  printLog("INFO","Seek to track %d\n", data);
+  if (data>76) {
+    data = 76;
+  }
+  timeoutInNanosecs(&then, 10000000);
+  addToTimerQueue([t = this, tr=data](class callbackRecord *c) -> int {
+        printLog("INFO", "10ms timeout floppy seek is ready\n");
+        t->floppyDrives[t->selectedDrive]->setTrack(tr);
+        t->statusRegister |= FLOPPY_STATUS_DRIVE_READY;
+        return 0;
+      }, then);   
+  return 0;
+}
+
+int IOController::FloppyDevice::exCom3(unsigned char data){
+  struct timespec then;
+  printLog("INFO","COmmand word %02x, Select sector %d\n", data & 0xff, data & 0xf );
+  floppyDrives[selectedDrive]->setSector(data & 0xf);
+  statusRegister &= ~FLOPPY_STATUS_DRIVE_READY;
+  timeoutInNanosecs(&then, 10000);
+  addToTimerQueue([t = this](class callbackRecord *c) -> int {
+        printLog("INFO", "10us timeout floppy select sector is ready\n");
+        t->statusRegister |= FLOPPY_STATUS_DRIVE_READY;
+        return 0;
+      }, then);   
+  return 0;
+}
+int IOController::FloppyDevice::exCom4(unsigned char data){
+  printLog("INFO", "Setting bufferAddress=%d\n", data);
+  bufferAddress = data;
+  return 0;
+}
+int IOController::FloppyDevice::exBeep(){
+  return 1;
+}
+int IOController::FloppyDevice::exClick(){
+  return 1;
+}
+int IOController::FloppyDevice::exDeck1(){
+  return 1;
+}
+int IOController::FloppyDevice::exDeck2(){
+  return 1;
+}
+int IOController::FloppyDevice::exRBK(){
+  return 1;
+}
+int IOController::FloppyDevice::exWBK(){
+  return 1;
+}
+int IOController::FloppyDevice::exBSP(){
+  return 1;
+}
+int IOController::FloppyDevice::exSF(){
+  return 1;
+}
+int IOController::FloppyDevice::exSB(){
+  return 1;
+}
+int IOController::FloppyDevice::exRewind(){
+  return 1;
+}
+int IOController::FloppyDevice::exTStop(){
+  return 1;
+}
+
+int IOController::FloppyDevice::openFile(int drive, std::string fileName){
+  return floppyDrives[drive]->openFile(fileName);
+}
+
+void IOController::FloppyDevice::closeFile(int drive){
+  floppyDrives[drive]->closeFile();
+}
+
+IOController::FloppyDevice::FloppyDevice() {
+  statusRegister = 0;
+  for (int i=0; i<4; i++) {
+    floppyDrives[i] = new FloppyDrive();
+  }
 }
