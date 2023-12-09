@@ -108,15 +108,22 @@ void commandWindow::doRemoveBreakpoint(std::vector<Param> params) {
 }
 
 void commandWindow::doDetach(std::vector<Param> params) {
-  int drive=0;
+  int drive=0; 
+  std::string type;
   for (auto it = params.begin(); it < params.end(); it++) {
     if (it->paramId == DRIVE) {
       drive = it->paramValue.i;
     }
+    if (it->paramId == TYPE) {
+      type = it->paramValue.s;
+    }
   }
-  cpu->ioCtrl->cassetteDevice->closeFile(drive);
-  wprintw(innerWin, "Detaching file %s to drive %d\n",
-          cpu->ioCtrl->cassetteDevice->getFileName(drive).c_str(), drive);
+  if (type == "CASSETTE") {
+    cpu->ioCtrl->cassetteDevice->closeFile(drive);
+    wprintw(innerWin, "Detaching file %s to drive %d\n",cpu->ioCtrl->cassetteDevice->getFileName(drive).c_str(), drive);
+  } else {
+    cpu->ioCtrl->floppyDevice->closeFile(drive); 
+  }
 }
 
 void commandWindow::doAttach(std::vector<Param> params) {

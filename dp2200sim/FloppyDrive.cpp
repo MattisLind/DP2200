@@ -109,6 +109,9 @@ int FloppyDrive::validateTrack(int track) {
   // open a file and store pointers intenally to each track
   // has to be an IMD with 26 sectors, FM 500 kbps, 128 bytes/sector 77 tracks.
 int FloppyDrive::openFile (std::string fileName) {
+  if (file!=NULL) {
+    fclose(file);
+  }
   file = fopen(fileName.c_str(), "r");
   if (file==NULL)  {
     return FILE_NOT_FOUND;
@@ -137,6 +140,7 @@ int FloppyDrive::openFile (std::string fileName) {
 
 void  FloppyDrive::closeFile () {
   status = false;
+  fclose(file);
 }
 std::string  FloppyDrive::getFileName () {
   return fileName;
