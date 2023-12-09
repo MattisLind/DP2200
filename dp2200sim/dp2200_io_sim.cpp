@@ -513,7 +513,7 @@ int IOController::FloppyDevice::exCom1(unsigned char data){
 
       break;
     case 4: // Clear Buffer Parity Error
-      return 1;
+      return 0;
     case  5: // Read Selected Sector into Selected Buffer Page
       printLog("INFO", "Reading from drive\n");
       statusRegister |= FLOPPY_STATUS_DATA_XFER_IN_PROGRESS;
@@ -607,7 +607,7 @@ int IOController::FloppyDevice::exBeep(){
   return 1;
 }
 int IOController::FloppyDevice::exClick(){
-  return 1;
+  return 0; // For some reason the DOS.C does a EX_CLICK operation towards the floppy disk interface which isn't documented. I wonder why. Now we don not halt any longer.
 }
 int IOController::FloppyDevice::exDeck1(){
   return 1;

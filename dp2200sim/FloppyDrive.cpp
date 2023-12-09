@@ -1,6 +1,6 @@
 #include "FloppyDrive.h"
 
-
+void printLog(const char *level, const char *fmt, ...);
 
 FloppyDrive::FloppyDrive() {
 
@@ -146,6 +146,7 @@ int FloppyDrive::readSectorLowlevel(char * buffer, int track, int sector) {
   int sectorType, data;
   fseek(file, sectorPointers[track][sector], SEEK_SET);
   sectorType = fgetc(file);
+  printLog("INFO", "Seek to pos=%06X Got sectorType=%d \n",sectorPointers[track][sector], sectorType);
   switch (sectorType) {
     case 0:
       return FLOPPY_SECTOR_NOT_FOUND;
@@ -156,6 +157,7 @@ int FloppyDrive::readSectorLowlevel(char * buffer, int track, int sector) {
     case 7:
       for (int j=0; j< 128; j++) {
         data = fgetc(file);
+        printLog("INFO", "Got data = %02X\n", data);
         *buffer++ = data;
       }
       break;
@@ -164,7 +166,8 @@ int FloppyDrive::readSectorLowlevel(char * buffer, int track, int sector) {
     case 6:
     case 8:
       data = fgetc(file);
-      for (int j=0; j< 12; j++) {
+      printLog("INFO", "Got data = %02X\n", data);
+      for (int j=0; j< 128; j++) {
         *buffer++ = data;
       }
       break;
@@ -189,7 +192,7 @@ int FloppyDrive::readSectorLowlevel(char * buffer, int track, int sector) {
    // returns a status OK or deleted data
 int  FloppyDrive::readSector(char * buffer) {
   int ret;
-  int sector = selectedSector << 1;
+  int sector = (selectedSector << 1)+1;
   ret = readSectorLowlevel(buffer, selectedTrack, sector);
   if (ret!=FLOPPY_OK) {
     return ret;
