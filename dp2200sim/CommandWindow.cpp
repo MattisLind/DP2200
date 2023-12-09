@@ -317,12 +317,12 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
                       "Attach file to cassette drive. \n  Parameter FILE specify the file to attach.\nParameter DRIVE= specify the drive used. Default drive is 0.\nTYPE specify either CASSETTE or FLOPPY, CASSETTE is default.",
                       {{"DRIVE", DRIVE, NUMBER, {.i = 0}},
                         {"FILENAME", FILENAME, STRING, {.s = {'\0'}}},
-                        {"TYPE", TYPE, STRING, {.s = "CASSETTE"}}},
+                        {"TYPE", TYPE, STRING, {.s = {'C','A','S','S','E','T','T','E','\0'}}}},
                       &commandWindow::doAttach});
   commands.push_back({"DETACH",
                       "Detach file from cassette drive. \n  Parameter DRIVE specify the drive used. Default drive is 0.",
                       {{"DRIVE", DRIVE, NUMBER, {.i = 0}}, 
-                      {"TYPE", TYPE, STRING, {.s = "CASSETTE"}}},
+                      {"TYPE", TYPE, STRING, {.s = {'C','A','S','S','E','T','T','E','\0'}}}},
                       &commandWindow::doDetach});
   commands.push_back({"STOP", "Stop execution", {}, &commandWindow::doHalt});
   commands.push_back(
