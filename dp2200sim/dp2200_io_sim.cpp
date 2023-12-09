@@ -483,6 +483,7 @@ unsigned char IOController::FloppyDevice::input () {
     } else {
       statusRegister &= ~FLOPPY_STATUS_DRIVE_ONLINE;
     }
+    statusRegister |= FLOPPY_STATUS_WRITE_PROTECT;
     printLog("INFO", "Returning floppy status = %02X\n", statusRegister);
     return statusRegister;
   } else {
@@ -491,7 +492,9 @@ unsigned char IOController::FloppyDevice::input () {
   }
 }
 int IOController::FloppyDevice::exWrite(unsigned char data) {
-  return 1;
+  printLog("INFO", "Writing data %02X to address %d in bufferPage %d\n", data&0xff, bufferAddress, selectedBufferPage);
+  buffer[selectedBufferPage][bufferAddress]=data;
+  return 0;
 } 
 int IOController::FloppyDevice::exCom1(unsigned char data){
   struct timespec then;
@@ -543,7 +546,7 @@ int IOController::FloppyDevice::exCom1(unsigned char data){
       break;
     case 6: // Write Selected Buffer Page onto Selected Sector
     case 7: // Same as 6 plus read check of CRC
-      return 1;
+      return 0;
       break;
     case 8: // Restore Selected Drive (seek to track 0)
       printLog("INFO", "Doing a restore to track 0.\n");

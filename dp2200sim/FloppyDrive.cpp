@@ -215,3 +215,7 @@ void FloppyDrive::setSector(int s) {
 bool FloppyDrive::online() {
   return status;
 }
+
+int FloppyDrive::writeSector(char * buffer) {
+  return 0;
+}

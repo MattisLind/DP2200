@@ -47,6 +47,7 @@ class FloppyDrive {
   void setTrack(int t);
   void setSector(int s);
   bool online();
+  int writeSector(char * buffer);
 };
 
 #endif
