@@ -14,6 +14,40 @@ Tested primairly on MACOS but builds on Linux as well.
 
 The actual cpu simulator code is based on a 8008 simultor by Mike Willegal. I have heavily modified it for Datapoint 2200 and wrapped it into C++.
 
+The simulator now also have support for the 9380 floppy drive system. The floppy drive supports four disks. To be able to run DOS.C use the DP1100DisketteBoot.tap from the DOS.C directory. 
+Attach is on cassette 0
+```
+ATTACH F=DP1100DisketteBoot.tap
+LOAD
+```
+
+The attach 011.IMD in floppy disk drive 0
+```
+ATTACH F=011.IMD T=FLOPPY 
+```
+Then type RUN. NOW DOS.C will start and you get a DOS.C prompt:
+
+```
+┌DATAPOINT 2200 SCREEN───────────────────────────────────────────────────────────┐
+│                                                                                │
+│                                                                                │
+│                                                                                │
+│                                                                                │
+│                                                                                │
+│                                                                                │
+│                                                                                │
+│                                                                                │
+│DOS.C  DATAPOINT CORPORATION'S  DISK OPERATING SYSTEM  VERSION 2.               │
+│                                                                                │
+│READY                                                                           │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+USE the CAT command to list files. It list all files on all drives if you have attached .IMD files to drive 1, 2 or 3.
+Please note that the DISPLAY button has to be pressed to have the output printed on screen. I.e. pressing F6 twice while in the DATAPOINT 2200 SCREEN window.
+
+Please note that all files are mounted read-only since writing has not yet been implemented.
+
 ## Requirements
 
 This is an unsorted list of requirements. Not necessarily part of the MVP. More as a list coming from brain-storming.
