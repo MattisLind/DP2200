@@ -28,6 +28,7 @@ class FloppyDrive {
   bool status;
   std::string iMDDescription; 
   long sectorPointers[77][26];
+  unsigned char diskImage [77][26][128];
   int validateTrack(int);
   int readSectorLowlevel(char * buffer, int track, int sector);
   int selectedTrack;

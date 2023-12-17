@@ -38,6 +38,7 @@ int FloppyDrive::validateTrack(int track) {
     return FILE_PREMATURE_EOF;
   }
   if (numSectors != 26) {
+    printLog("INFO", "Got numSectors=%d on track %d file pos=%ld",numSectors, track, ftell(file));
     return FILE_WRONG_NUM_SECTORS;
   }    
   int sectorSize = fgetc(file);
@@ -74,7 +75,7 @@ int FloppyDrive::validateTrack(int track) {
   }
   for (int i=0; i<26; i++) {
     sectorPointers[track][sectorMap[i]] = ftell(file);
-    int sectorHeader = fgetc(file);
+    int sectorHeader = fgetc(file);  
     if (feof(file)) {
       return FILE_PREMATURE_EOF;
     }
@@ -86,7 +87,9 @@ int FloppyDrive::validateTrack(int track) {
       case 5:
       case 7:
         for (int j=0; j< 128; j++) {
-          fgetc(file);
+          int data;
+          data = fgetc(file);
+          diskImage[track][sectorMap[i]-1][j]=data;
           if (feof(file)) {
             return FILE_PREMATURE_EOF;
           }
@@ -95,12 +98,17 @@ int FloppyDrive::validateTrack(int track) {
       case 2:
       case 4:
       case 6:
-      case 8:
-        fgetc(file);
+      case 8: {
+        int compressedData;
+        compressedData = fgetc(file);
+        for (int j=0; j<128; j++) {
+          diskImage[track][sectorMap[i]-1][j] = compressedData;
+        }
         if (feof(file)) {
           return FILE_PREMATURE_EOF;
         }
         break;
+      }
     }
   }
   return FILE_OK;
@@ -131,6 +139,7 @@ int FloppyDrive::openFile (std::string fileName) {
     int ret;
     ret = validateTrack(track); 
     if (ret != FILE_OK) {
+      printLog("INFO", "Validate track returned not OK for track %d filepos=%ld\n", track, ftell(file));
       return ret;
     }
   }
@@ -146,64 +155,17 @@ std::string  FloppyDrive::getFileName () {
   return fileName;
 }
 
-int FloppyDrive::readSectorLowlevel(char * buffer, int track, int sector) {
-  int sectorType, data;
-  fseek(file, sectorPointers[track][sector], SEEK_SET);
-  sectorType = fgetc(file);
-  printLog("INFO", "Seek to pos=%06X Got sectorType=%d \n",sectorPointers[track][sector], sectorType);
-  switch (sectorType) {
-    case 0:
-      return FLOPPY_SECTOR_NOT_FOUND;
-      break;
-    case 1:
-    case 3:
-    case 5:
-    case 7:
-      for (int j=0; j< 128; j++) {
-        data = fgetc(file);
-        printLog("INFO", "Got data = %02X\n", data);
-        *buffer++ = data;
-      }
-      break;
-    case 2:
-    case 4:
-    case 6:
-    case 8:
-      data = fgetc(file);
-      printLog("INFO", "Got data = %02X\n", data);
-      for (int j=0; j< 128; j++) {
-        *buffer++ = data;
-      }
-      break;
-  }
-  switch (sectorType) {
-    case 1:
-    case 2:
-      return FLOPPY_OK;
-    case 3:
-    case 4:
-      return FLOPPY_DELETED_DATA;
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-      return FLOPPY_CRC_ERROR;
-  }
-  return FLOPPY_OK;
-}
    // sectornumber is multiplied by two and then both the odd and even 128 byte sector is read
    // read from track given
    // returns a status OK or deleted data
 int  FloppyDrive::readSector(char * buffer) {
-  int ret;
-  int sector = (selectedSector << 1)+1;
-  ret = readSectorLowlevel(buffer, selectedTrack, sector);
-  if (ret!=FLOPPY_OK) {
-    return ret;
+  int i;
+  int sector = (selectedSector << 1);
+  for (i=0;i<128;i++) {
+    buffer[i]=diskImage[selectedTrack][sector][i];
   }
-  ret = readSectorLowlevel(buffer+128, selectedTrack, sector+1);
-  if (ret!=FLOPPY_OK) {
-    return ret;
+  for (i=0;i<128;i++) {
+    buffer[i+128]=diskImage[selectedTrack][sector+1][i];
   }
   return FLOPPY_OK;
 }
@@ -221,5 +183,13 @@ bool FloppyDrive::online() {
 }
 
 int FloppyDrive::writeSector(char * buffer) {
-  return 0;
+  int i;
+  int sector = (selectedSector << 1);
+  for (i=0;i<128;i++) {
+    diskImage[selectedTrack][sector][i]=buffer[i];
+  }
+  for (;i<256;i++) {
+    diskImage[selectedTrack][sector+1][i]=buffer[i];
+  }
+  return FLOPPY_OK;
 }
