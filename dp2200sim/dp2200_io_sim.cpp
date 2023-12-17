@@ -621,7 +621,7 @@ unsigned char IOController::FloppyDevice::input () {
     } else {
       statusRegister &= ~FLOPPY_STATUS_DRIVE_ONLINE;
     }
-    statusRegister |= FLOPPY_STATUS_WRITE_PROTECT;
+    //statusRegister |= FLOPPY_STATUS_WRITE_PROTECT;
     printLog("INFO", "Returning floppy status = %02X\n", statusRegister);
     return statusRegister;
   } else {
@@ -684,7 +684,31 @@ int IOController::FloppyDevice::exCom1(unsigned char data){
       break;
     case 6: // Write Selected Buffer Page onto Selected Sector
     case 7: // Same as 6 plus read check of CRC
-      return 0;
+     printLog("INFO", "Reading from drive\n");
+      statusRegister |= FLOPPY_STATUS_DATA_XFER_IN_PROGRESS;
+      statusRegister &= ~(FLOPPY_STATUS_SECTOR_NOT_FOUND | FLOPPY_STATUS_DELETED_DATA_MARK | FLOPPY_STATUS_CRC_ERROR | FLOPPY_STATUS_DRIVE_READY); 
+      timeoutInNanosecs(&then, 1000000); 
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+          int ret;
+          printLog("INFO", "10ms timeout floppy read is ready\n");
+          t->statusRegister &= ~FLOPPY_STATUS_DATA_XFER_IN_PROGRESS;
+          ret = t->floppyDrives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage]);
+          switch (ret) {
+          case FLOPPY_SECTOR_NOT_FOUND:
+            t->statusRegister |= FLOPPY_STATUS_SECTOR_NOT_FOUND;
+            break;
+          case FLOPPY_DELETED_DATA:
+            t->statusRegister |= FLOPPY_STATUS_DELETED_DATA_MARK;
+            break;
+          case FLOPPY_CRC_ERROR:
+            t->statusRegister |= FLOPPY_STATUS_CRC_ERROR;
+            break;
+          case FLOPPY_OK:
+            t->statusRegister |= FLOPPY_STATUS_DRIVE_READY;
+            break;
+          }
+          return 0;
+        }, then);                
       break;
     case 8: // Restore Selected Drive (seek to track 0)
       printLog("INFO", "Doing a restore to track 0.\n");

@@ -20,6 +20,10 @@
 #define FLOPPY_DELETED_DATA -2
 #define FLOPPY_CRC_ERROR -3
 
+struct sector {
+  unsigned char sectorType;
+  unsigned char data[128];
+};
 
 class FloppyDrive {
 
@@ -28,11 +32,12 @@ class FloppyDrive {
   bool status;
   std::string iMDDescription; 
   long sectorPointers[77][26];
-  unsigned char diskImage [77][26][128];
+  struct sector diskImage [77][26];
   int validateTrack(int);
   int readSectorLowlevel(char * buffer, int track, int sector);
   int selectedTrack;
   int selectedSector;
+  bool imageTypeIsIMD;
   public:
 
   FloppyDrive();
@@ -49,6 +54,9 @@ class FloppyDrive {
   void setSector(int s);
   bool online();
   int writeSector(char * buffer);
+  int writeBackIMD();
+  int writeBackRaw();
+  int writeTrackBackIMD(int trackß);
 };
 
 #endif
