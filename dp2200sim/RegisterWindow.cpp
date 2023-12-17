@@ -115,6 +115,14 @@ void registerWindow::OctalForm::updateForm() {
     }   
   }
 
+  if (cpu.setSel==0) {
+    set_field_back(mode[0], A_UNDERLINE);
+    set_field_back(mode[1], A_NORMAL);  
+  } else {
+    set_field_back(mode[1], A_UNDERLINE);
+    set_field_back(mode[0], A_NORMAL);   
+  }
+
   // update mnemonic
 
   set_field_buffer(mnemonic, 0, cpu.disassembleLine(asciiB, 16, true, cpu.P)); 
@@ -234,6 +242,14 @@ void registerWindow::HexForm::updateForm() {
     }   
   }
 
+  if (cpu.setSel==0) {
+    set_field_back(mode[0], A_UNDERLINE);
+    set_field_back(mode[1], A_NORMAL);  
+  } else {
+    set_field_back(mode[1], A_UNDERLINE);
+    set_field_back(mode[0], A_NORMAL);   
+  }
+
   // update mnemonic
 
   set_field_buffer(mnemonic, 0, cpu.disassembleLine(asciiB, 16, false, cpu.P)); 
@@ -305,7 +321,11 @@ registerWindow::OctalForm::OctalForm () {
   int offset=21;
 
   createAField(&registerViewFields, 10,2,6, "REGISTERS");
-  createAField(&registerViewFields,66,3,3,"ALPHA          BETA          STACK    TRACE            BREAKPOINTS");
+  createAField(&registerViewFields,38,3,31,"STACK    TRACE            BREAKPOINTS");
+  const char * alphaText = "ALPHA";
+  mode[0] = createAField(&registerViewFields,strlen(alphaText), 3 , 3, alphaText);
+  const char * betaText = "BETA";
+  mode[1] = createAField(&registerViewFields,strlen(betaText), 3 , 18, betaText);  
 
   for (auto regset=0;regset < 2; regset++) {
     for (auto reg=0; reg<7; reg++) {
@@ -382,7 +402,11 @@ registerWindow::HexForm::HexForm () {
   int offset=21;
 
   createAField(&registerViewFields, 10,2,6, "REGISTERS");
-  createAField(&registerViewFields,65,3,3,"ALPHA          BETA          STACK    TRACE          BREAKPOINTS");
+  createAField(&registerViewFields,38,3,31,"STACK    TRACE            BREAKPOINTS");
+  const char * alphaText = "ALPHA";
+  mode[0] = createAField(&registerViewFields,strlen(alphaText), 3 , 3, alphaText);
+  const char * betaText = "BETA";
+  mode[1] = createAField(&registerViewFields,strlen(betaText), 3 , 18, betaText);  
 
   for (auto regset=0;regset < 2; regset++) {
     for (auto reg=0; reg<7; reg++) {

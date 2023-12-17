@@ -155,6 +155,53 @@ class IOController {
     ParallellInterfaceAdaptorDevice();
   };
 
+  class ServoPrinterDevice : public virtual IODevice  {
+    public:
+    unsigned char input ();
+    int exWrite(unsigned char data); 
+    int exCom1(unsigned char data);
+    int exCom2(unsigned char data);
+    int exCom3(unsigned char data);
+    int exCom4(unsigned char data);
+    int exBeep();
+    int exClick();
+    int exDeck1();
+    int exDeck2();
+    int exRBK();
+    int exWBK();
+    int exBSP();
+    int exSF();
+    int exSB();
+    int exRewind();
+    int exTStop();
+    ServoPrinterDevice();
+  };  
+
+  class LocalPrinterDevice : public virtual IODevice  {
+    FILE * file;
+    public:
+    unsigned char input ();
+    int exWrite(unsigned char data); 
+    int exCom1(unsigned char data);
+    int exCom2(unsigned char data);
+    int exCom3(unsigned char data);
+    int exCom4(unsigned char data);
+    int exBeep();
+    int exClick();
+    int exDeck1();
+    int exDeck2();
+    int exRBK();
+    int exWBK();
+    int exBSP();
+    int exSF();
+    int exSB();
+    int exRewind();
+    int exTStop();
+    int openFile (int, std::string fileName);
+    void closeFile (int);    
+    LocalPrinterDevice();
+  }; 
+
 
   class FloppyDevice : public virtual IODevice  {
     int selectedDrive;
@@ -193,6 +240,8 @@ class IOController {
   class ScreenKeyboardDevice * screenKeyboardDevice;
   class ParallellInterfaceAdaptorDevice * parallellInterfaceAdaptorDevice;
   class FloppyDevice * floppyDevice;
+  class ServoPrinterDevice * servoPrinterDevice;
+  class LocalPrinterDevice * localPrinterDevice;
   IOController ();
   unsigned char input ();
   int exAdr (unsigned char address);

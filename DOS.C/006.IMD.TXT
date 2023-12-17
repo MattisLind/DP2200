@@ -1,0 +1,22 @@
+ 
+PAGE  1  DRIVE  1  006.IMD                                               
+ 
+ 
+ALPHABET/TXT (100)     
+CAT     /CMD (020)     
+GAMES   /LIB (200)  W  
+GEODAT  /TXT (140)     
+ODDSFILE/TXT (120)     
+RANDOM  /TXT (160)     
+SYSTEM0 /SYS (000) DW  
+SYSTEM1 /SYS (001) DW  
+SYSTEM2 /SYS (002) DW  
+SYSTEM3 /SYS (003) DW  
+SYSTEM4 /SYS (004) DW  
+SYSTEM5 /SYS (005) DW  
+SYSTEM6 /SYS (006) DW  
+SYSTEM7 /SYS (007) D   
+UTILITY /LNK (040)  W  
+UTILITY /REL (060)  W  
+
+ 

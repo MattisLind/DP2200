@@ -1,0 +1,32 @@
+ 
+PAGE  1  DRIVE  1  009.IMD                                               
+ 
+ 
+ALERT   /CMD (200)     
+AUTOKEY /CMD (220)     
+BACKUP  /CHN (100)     
+CAT     /CMD (240)     
+CHAIN   /CMD (260)     
+CHAIN   /OV1 (061)     
+CHOP    /CMD (300)     
+EDIT    /CMD (320)     
+FASTBACK/CHN (120)     
+INITDISK/CHN (140)     
+KILLALL /CMD (340)     
+LIB     /CMD (360)     
+LIBO    /CHN (160)     
+REPAIR  /CMD (041)     
+SYSTEM0 /SYS (000) DW  
+SYSTEM1 /SYS (001) DW  
+SYSTEM2 /SYS (002) DW  
+SYSTEM3 /SYS (003) DW  
+SYSTEM4 /SYS (004) DW  
+SYSTEM5 /SYS (005) DW  
+SYSTEM6 /SYS (006) DW  
+SYSTEM7 /SYS (007) D   
+UTILITY /LNK (040)  W  
+UTILITY /REL (020)  W  
+UTILITY /SYS (060) DW  
+ 
+ 
+ 

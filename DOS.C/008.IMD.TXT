@@ -1,0 +1,19 @@
+
+PAGE  1  DRIVE  1  008.IMD                                               
+ 
+ 
+CAT     /CMD (020)     
+LIBRARY /PRG (100)     
+SYSTEM0 /SYS (000) DW  
+SYSTEM1 /SYS (001) DW  
+SYSTEM2 /SYS (002) DW  
+SYSTEM3 /SYS (003) DW  
+SYSTEM4 /SYS (004) DW  
+SYSTEM5 /SYS (005) DW  
+SYSTEM6 /SYS (006) DW  
+SYSTEM7 /SYS (007) D   
+UTILITY /LNK (040)  W  
+UTILITY /REL (060)  W  
+
+ 
+ 

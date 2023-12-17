@@ -122,6 +122,7 @@ class registerWindow : public virtual Window {
     FIELD * displayButtonField;
     FIELD * keyboardLightField;
     FIELD * keyboardButtonField;
+    FIELD * mode[2];
     FORM *frm;
     public:
     void updateForm();
@@ -151,6 +152,7 @@ class registerWindow : public virtual Window {
     FIELD * displayButtonField;
     FIELD * keyboardLightField;
     FIELD * keyboardButtonField;
+    FIELD * mode[2];
     FORM *frm;
     public:
     void updateForm();

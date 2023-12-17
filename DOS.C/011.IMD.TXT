@@ -1,0 +1,54 @@
+ 
+PAGE  1  DRIVE  1  011.IMD                                               
+ 
+ 
+APP     /CMD (260)     
+AUTO    /CMD (300)     
+AUTOKEY /CMD (320)     
+BACKUP  /CMD (100)     
+BLOKEDIT/CMD (340)     
+BOOTMAKE/CMD (020) D   
+BUILD   /CMD (360)     
+CAT     /CMD (040) D   
+CHAIN   /CMD (021)     
+CHAIN   /OV1 (041)     
+CHANGE  /CMD (061)     
+COPY    /CMD (101)     
+COPYFILE/OVC (120)     
+DOS     /EPT (121)     
+DOSGEN  /CMD (140)     
+DR2     /OV1 (222)     
+DUMP    /CMD (141)     
+DUMP9380/CMD (160)     
+EBCDIC  /SEQ (161)     
+EDIT    /CMD (201)     
+FILES   /CMD (221)     
+FIX     /CMD (241)     
+FREE    /CMD (261)     
+INDEX   /CMD (301)     
+KILL    /CMD (321)     
+LIST    /CMD (341)     
+MANUAL  /CMD (361)     
+MASSACRE/CMD (022)     
+MIN     /CMD (060) D   
+MOUT    /CMD (042)     
+NAME    /CMD (200)     
+OVERLAYS/SYS (220)     
+REFORMAT/CMD (062)     
+REPAIR  /CMD (240)     
+REWIND  /CMD (102)     
+SAPP    /CMD (122)     
+SCRATCH /TXT (262)     
+SORT    /CMD (142)     
+SORT    /OV1 (162)     
+SUR     /CMD (202)     
+SYSTEM0 /SYS (000) DW  
+SYSTEM1 /SYS (001) DW  
+SYSTEM2 /SYS (002) DW  
+SYSTEM3 /SYS (003) DW  
+SYSTEM4 /SYS (004) DW  
+SYSTEM5 /SYS (005) DW  
+SYSTEM6 /SYS (006) DW  
+SYSTEM7 /SYS (007) D   
+
+ 

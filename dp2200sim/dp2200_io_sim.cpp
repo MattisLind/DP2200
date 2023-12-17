@@ -17,10 +17,14 @@ IOController::IOController () {
   dev[1] = screenKeyboardDevice = new ScreenKeyboardDevice();
   dev[12] = floppyDevice = new FloppyDevice();
   dev[6] = parallellInterfaceAdaptorDevice = new ParallellInterfaceAdaptorDevice();
+  dev[10] = servoPrinterDevice = new ServoPrinterDevice();
+  dev[3] = localPrinterDevice = new LocalPrinterDevice();
   supportedDevices.push_back(0);
   supportedDevices.push_back(1);
   supportedDevices.push_back(12);
   supportedDevices.push_back(6);
+  supportedDevices.push_back(10);
+  supportedDevices.push_back(3);
 }
 
 int IOController::exAdr (unsigned char address) {
@@ -475,6 +479,140 @@ IOController::ParallellInterfaceAdaptorDevice::ParallellInterfaceAdaptorDevice()
 
 
 
+unsigned char IOController::ServoPrinterDevice::input () {
+  if (status) {
+    return statusRegister;
+  } else {
+    return dataRegister;
+  }
+}
+int IOController::ServoPrinterDevice::exWrite(unsigned char data) {
+  return 1;
+} 
+int IOController::ServoPrinterDevice::exCom1(unsigned char data){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exCom2(unsigned char data){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exCom3(unsigned char data){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exCom4(unsigned char data){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exBeep(){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exClick(){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exDeck1(){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exDeck2(){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exRBK(){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exWBK(){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exBSP(){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exSF(){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exSB(){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exRewind(){
+  return 1;
+}
+int IOController::ServoPrinterDevice::exTStop(){
+  return 1;
+}
+
+IOController::ServoPrinterDevice::ServoPrinterDevice() {
+  statusRegister = 0;
+}
+
+unsigned char IOController::LocalPrinterDevice::input () {
+  if (status) {
+    return statusRegister;
+  } else {
+    return dataRegister;
+  }
+}
+int IOController::LocalPrinterDevice::exWrite(unsigned char data) {
+  fwrite(&data, 1, 1, file);
+  return 0;
+} 
+int IOController::LocalPrinterDevice::exCom1(unsigned char data){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exCom2(unsigned char data){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exCom3(unsigned char data){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exCom4(unsigned char data){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exBeep(){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exClick(){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exDeck1(){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exDeck2(){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exRBK(){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exWBK(){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exBSP(){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exSF(){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exSB(){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exRewind(){
+  return 1;
+}
+int IOController::LocalPrinterDevice::exTStop(){
+  return 1;
+}
+
+int IOController::LocalPrinterDevice::openFile(int drive, std::string fileName){
+  if (file != NULL) {
+    fclose(file);
+  }
+  file = fopen(fileName.c_str(), "w");
+  if (file==NULL) { 
+    return -1;
+  }
+  return 0;
+}
+void IOController::LocalPrinterDevice::closeFile(int drive){
+  fclose(file);
+}
+
+IOController::LocalPrinterDevice::LocalPrinterDevice() {
+  statusRegister = 7;
+}
 
 unsigned char IOController::FloppyDevice::input () {
   if (status) {
@@ -607,7 +745,7 @@ int IOController::FloppyDevice::exCom4(unsigned char data){
   return 0;
 }
 int IOController::FloppyDevice::exBeep(){
-  return 1;
+  return 0;
 }
 int IOController::FloppyDevice::exClick(){
   return 0; // For some reason the DOS.C does a EX_CLICK operation towards the floppy disk interface which isn't documented. I wonder why. Now we don not halt any longer.

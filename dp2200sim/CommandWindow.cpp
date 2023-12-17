@@ -72,7 +72,14 @@ void commandWindow::doNoTrace(std::vector<Param> params) {
   cpu->traceEnabled=false; 
 }
 
-void commandWindow::doRestart(std::vector<Param> params) {}
+void commandWindow::doRestart(std::vector<Param> params) {
+  cpu->running = false;
+  cpu->reset();
+  cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory);
+  cpu->totalInstructionTime.tv_nsec=0;
+  cpu->totalInstructionTime.tv_sec=0;
+  cpu->running = true;  
+}
 void commandWindow::doHalt(std::vector<Param> params) {
   cpu->running = false;
 }
@@ -121,8 +128,10 @@ void commandWindow::doDetach(std::vector<Param> params) {
   if (type == "CASSETTE") {
     cpu->ioCtrl->cassetteDevice->closeFile(drive);
     wprintw(innerWin, "Detaching file %s to drive %d\n",cpu->ioCtrl->cassetteDevice->getFileName(drive).c_str(), drive);
-  } else {
+  } else if (type == "FLOPPY") {
     cpu->ioCtrl->floppyDevice->closeFile(drive); 
+  } else if (type == "PRINTER") {
+    cpu->ioCtrl->localPrinterDevice->closeFile(drive); 
   }
 }
 
@@ -164,12 +173,18 @@ void commandWindow::doAttach(std::vector<Param> params) {
     } else {
       wprintw(innerWin, "Failed to open file %s\n", fileName.c_str());      
     }
-  } else {
+  } else if (type == "FLOPPY") {
     if ((ret = cpu->ioCtrl->floppyDevice->openFile(drive, fileName))==0) {
       wprintw(innerWin, "Attaching file %s to floppy drive %d\n", fileName.c_str(),drive);
     } else {
       wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);      
     }
+  } else if (type == "PRINTER") {
+    if ((ret = cpu->ioCtrl->localPrinterDevice->openFile(drive, fileName))==0) {
+      wprintw(innerWin, "Attaching file %s to printer drive\n", fileName.c_str(),drive);
+    } else {
+      wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);      
+    }    
   }
 }
 void commandWindow::processCommand(char ch) {
@@ -321,13 +336,13 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
   commands.push_back(
       {"STEP", "Step one instruction", {}, &commandWindow::doStep});
   commands.push_back({"ATTACH",
-                      "Attach file to cassette drive. \n  Parameter FILE specify the file to attach.\nParameter DRIVE= specify the drive used. Default drive is 0.\nTYPE specify either CASSETTE or FLOPPY, CASSETTE is default.",
+                      "Attach file to cassette drive. \n  Parameter FILE specify the file to attach.\nParameter DRIVE= specify the drive used. Default drive is 0.\nTYPE specify either CASSETTE, FLOPPY or PRINTER. CASSETTE is default.",
                       {{"DRIVE", DRIVE, NUMBER, {.i = 0}},
                         {"FILENAME", FILENAME, STRING, {.s = {'\0'}}},
                         {"TYPE", TYPE, STRING, {.s = {'C','A','S','S','E','T','T','E','\0'}}}},
                       &commandWindow::doAttach});
   commands.push_back({"DETACH",
-                      "Detach file from cassette drive. \n  Parameter DRIVE specify the drive used. Default drive is 0.",
+                      "Detach file from cassette drive. \n  Parameter DRIVE specify the drive used. Default drive is 0.\nTYPE specify either CASSETTE, FLOPPY or PRINTER. CASSETTE is default.",
                       {{"DRIVE", DRIVE, NUMBER, {.i = 0}}, 
                       {"TYPE", TYPE, STRING, {.s = {'C','A','S','S','E','T','T','E','\0'}}}},
                       &commandWindow::doDetach});

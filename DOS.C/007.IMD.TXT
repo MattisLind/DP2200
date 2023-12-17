@@ -1,0 +1,23 @@
+ 
+PAGE  1  DRIVE  1  007.IMD                                               
+ 
+ 
+ANIMAL  /TXT (140)     
+BASEBALL/TXT (100)     
+BLOCKADE/TXT (160)     
+CAT     /CMD (060)     
+DOGRACE /TXT (120)     
+LUNAR   /TXT (220)     
+SCHEDULE/TXT (200)     
+SYSTEM0 /SYS (000) DW  
+SYSTEM1 /SYS (001) DW  
+SYSTEM2 /SYS (002) DW  
+SYSTEM3 /SYS (003) DW  
+SYSTEM4 /SYS (004) DW  
+SYSTEM5 /SYS (005) DW  
+SYSTEM6 /SYS (006) DW  
+SYSTEM7 /SYS (007) D   
+UTILITY /LNK (020)  W  
+UTILITY /REL (040)  W  
+
+ 

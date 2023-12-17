@@ -11,6 +11,9 @@ CassetteTape::CassetteTape() {
 }
 
 bool CassetteTape::openFile(std::string fileName) {
+  if (file != NULL) {
+    fclose(file);
+  }
   file = fopen(fileName.c_str(), "r");
   return file != NULL;
 }

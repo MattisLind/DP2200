@@ -1,0 +1,21 @@
+  
+PAGE  1  DRIVE  1  012.IMD                                               
+ 
+ 
+DOSC242 /RFM (100)     
+INDEX   /CMD (060)     
+SORT    /CMD (120)     
+SORT    /OV1 (140)     
+SYSTEM0 /SYS (000)     
+SYSTEM1 /SYS (001)     
+SYSTEM2 /SYS (002)     
+SYSTEM3 /SYS (003)     
+SYSTEM4 /SYS (004)     
+SYSTEM5 /SYS (005)     
+SYSTEM6 /SYS (006) DW  
+SYSTEM7 /SYS (007) D   
+UTILITY /LNK (040)  W  
+UTILITY /REL (020)  W  
+
+ 
+ 
