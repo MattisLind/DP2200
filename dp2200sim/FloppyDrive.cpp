@@ -261,6 +261,7 @@ void  FloppyDrive::closeFile () {
     } else {
       writeBackRaw();
     }
+    fflush(file);
     fclose(file);
     file=NULL;
   }

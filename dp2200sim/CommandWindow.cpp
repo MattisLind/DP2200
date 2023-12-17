@@ -125,6 +125,7 @@ void commandWindow::doDetach(std::vector<Param> params) {
       type = it->paramValue.s;
     }
   }
+  std::transform(type.begin(), type.end(), type.begin(),::toupper);
   if (type == "CASSETTE") {
     cpu->ioCtrl->cassetteDevice->closeFile(drive);
     wprintw(innerWin, "Detaching file %s to drive %d\n",cpu->ioCtrl->cassetteDevice->getFileName(drive).c_str(), drive);
@@ -132,6 +133,8 @@ void commandWindow::doDetach(std::vector<Param> params) {
     cpu->ioCtrl->floppyDevice->closeFile(drive); 
   } else if (type == "PRINTER") {
     cpu->ioCtrl->localPrinterDevice->closeFile(drive); 
+  } else {
+    wprintw(innerWin, "Unrecognized type %s\n", type.c_str());
   }
 }
 
@@ -150,8 +153,7 @@ void commandWindow::doAttach(std::vector<Param> params) {
       printLog("INFO", "type STRING paramValue=%s\n", it->paramValue.s);
       break;
     case BOOL:
-      printLog("INFO", "type=BOOL paramValue=%s\n",
-                it->paramValue.b ? "TRUE" : "FALSE");
+      printLog("INFO", "type=BOOL paramValue=%s\n",it->paramValue.b ? "TRUE" : "FALSE");
       break;
     }
     if (it->paramId == FILENAME) {
@@ -181,7 +183,7 @@ void commandWindow::doAttach(std::vector<Param> params) {
     }
   } else if (type == "PRINTER") {
     if ((ret = cpu->ioCtrl->localPrinterDevice->openFile(drive, fileName))==0) {
-      wprintw(innerWin, "Attaching file %s to printer drive\n", fileName.c_str(),drive);
+      wprintw(innerWin, "Attaching file %s to printer\n", fileName.c_str(),drive);
     } else {
       wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);      
     }    

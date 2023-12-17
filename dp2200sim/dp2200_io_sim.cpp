@@ -541,13 +541,16 @@ IOController::ServoPrinterDevice::ServoPrinterDevice() {
 
 unsigned char IOController::LocalPrinterDevice::input () {
   if (status) {
+    if (file!=NULL) {
+      statusRegister |= 2;
+    }    
     return statusRegister;
   } else {
     return dataRegister;
   }
 }
 int IOController::LocalPrinterDevice::exWrite(unsigned char data) {
-  fwrite(&data, 1, 1, file);
+  if (file != NULL) fwrite(&data, 1, 1, file);
   return 0;
 } 
 int IOController::LocalPrinterDevice::exCom1(unsigned char data){
@@ -606,12 +609,16 @@ int IOController::LocalPrinterDevice::openFile(int drive, std::string fileName){
   }
   return 0;
 }
-void IOController::LocalPrinterDevice::closeFile(int drive){
+void IOController::LocalPrinterDevice::closeFile(int drive) {
+  printLog("INFO", "Flushing and closing printer file.\n");
+  fflush(file);
   fclose(file);
+  file = NULL;
 }
 
 IOController::LocalPrinterDevice::LocalPrinterDevice() {
-  statusRegister = 7;
+  statusRegister = 5;
+
 }
 
 unsigned char IOController::FloppyDevice::input () {
@@ -630,7 +637,7 @@ unsigned char IOController::FloppyDevice::input () {
   }
 }
 int IOController::FloppyDevice::exWrite(unsigned char data) {
-  printLog("INFO", "Writing data %02X to address %d in bufferPage %d\n", data&0xff, bufferAddress, selectedBufferPage);
+  //printLog("INFO", "Writing data %02X to address %d in bufferPage %d\n", data&0xff, bufferAddress, selectedBufferPage);
   buffer[selectedBufferPage][bufferAddress]=data;
   return 0;
 } 
@@ -764,7 +771,7 @@ int IOController::FloppyDevice::exCom3(unsigned char data){
   return 0;
 }
 int IOController::FloppyDevice::exCom4(unsigned char data){
-  printLog("INFO", "Setting bufferAddress=%d\n", data);
+  //printLog("INFO", "Setting bufferAddress=%d\n", data);
   bufferAddress = data;
   return 0;
 }

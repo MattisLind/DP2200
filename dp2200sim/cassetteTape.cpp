@@ -18,7 +18,11 @@ bool CassetteTape::openFile(std::string fileName) {
   return file != NULL;
 }
 
-void CassetteTape::closeFile() { fclose(file); }
+void CassetteTape::closeFile() { 
+  fflush(file);
+  fclose(file);
+  file=NULL; 
+}
 
 std::string CassetteTape::getFileName() { return fileName; }
 
