@@ -72,7 +72,7 @@ int FloppyDrive::writeTrackBackIMD(int track) {
 
 int FloppyDrive::writeBackIMD() {
   rewind(file);
-  for (int i=0;i < iMDDescription.length(); i++) {
+  for (unsigned long int i=0;i < iMDDescription.length(); i++) {
     fputc(iMDDescription[i], file);
   }
   fputc(0x1a, file); 
@@ -313,8 +313,8 @@ int FloppyDrive::writeSector(char * buffer) {
     diskImage[selectedTrack][sector].data[i]=buffer[i];
   }
   diskImage[selectedTrack][sector].sectorType = 1;
-  for (;i<256;i++) {
-    diskImage[selectedTrack][sector+1].data[i]=buffer[i];
+  for (i=0;i<128;i++) {
+    diskImage[selectedTrack][sector+1].data[i]=buffer[i+128];
   }
   diskImage[selectedTrack][sector+1].sectorType = 1;
 

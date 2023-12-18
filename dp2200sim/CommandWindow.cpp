@@ -183,7 +183,7 @@ void commandWindow::doAttach(std::vector<Param> params) {
     }
   } else if (type == "PRINTER") {
     if ((ret = cpu->ioCtrl->localPrinterDevice->openFile(drive, fileName))==0) {
-      wprintw(innerWin, "Attaching file %s to printer\n", fileName.c_str(),drive);
+      wprintw(innerWin, "Attaching file %s to printer\n", fileName.c_str());
     } else {
       wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);      
     }    
