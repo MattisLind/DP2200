@@ -9,7 +9,7 @@
 #include "dp2200_cpu_sim.h"
 
 typedef enum { STRING, NUMBER, BOOL } Type;
-typedef enum { DRIVE, FILENAME, ADDRESS, ENABLED, VALUE, TYPE } ParamId;
+typedef enum { DRIVE, FILENAME, ADDRESS, ENABLED, VALUE, TYPE, WRITEBACK, WRITEPROTECT } ParamId;
 class commandWindow;
 void printLog(const char *level, const char *fmt, ...);
 extern float yield;

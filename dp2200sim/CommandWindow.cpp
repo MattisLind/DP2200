@@ -141,6 +141,7 @@ void commandWindow::doDetach(std::vector<Param> params) {
 void commandWindow::doAttach(std::vector<Param> params) {
   std::string fileName, type;
   int drive=0, ret;
+  bool writeProtect=true, writeBack=false;
   
   for (auto it = params.begin(); it < params.end(); it++) {
     printLog("INFO", "paramName=%s paramType=%d paramId=%d\n",
@@ -165,6 +166,12 @@ void commandWindow::doAttach(std::vector<Param> params) {
     if (it->paramId == DRIVE) {
       drive = it->paramValue.i;
     }
+    if (it->paramId == WRITEBACK) {
+      writeBack = it->paramValue.b;
+    }
+    if (it->paramId == WRITEPROTECT) {
+      writeProtect = it->paramValue.b;
+    }
   }
   std::transform(type.begin(), type.end(), type.begin(),
                   ::toupper);
@@ -176,7 +183,7 @@ void commandWindow::doAttach(std::vector<Param> params) {
       wprintw(innerWin, "Failed to open file %s\n", fileName.c_str());      
     }
   } else if (type == "FLOPPY") {
-    if ((ret = cpu->ioCtrl->floppyDevice->openFile(drive, fileName))==0) {
+    if ((ret = cpu->ioCtrl->floppyDevice->openFile(drive, fileName, writeProtect, writeBack))==0) {
       wprintw(innerWin, "Attaching file %s to floppy drive %d\n", fileName.c_str(),drive);
     } else {
       wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);      
@@ -293,6 +300,7 @@ void commandWindow::processCommand(char ch) {
             printLog("INFO", "string=%s\n", filteredParams[0]->paramValue.s);
             filteredParams[0]->paramValue.s[PARAM_VALUE_SIZE - 1] = 0;
           } else {
+            std::transform(v.begin(), v.end(), v.begin(), ::toupper);
             if (v == "TRUE") {
               filteredParams[0]->paramValue.b = true;
             } else {
@@ -341,7 +349,10 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
                       "Attach file to cassette drive. \n  Parameter FILE specify the file to attach.\nParameter DRIVE= specify the drive used. Default drive is 0.\nTYPE specify either CASSETTE, FLOPPY or PRINTER. CASSETTE is default.",
                       {{"DRIVE", DRIVE, NUMBER, {.i = 0}},
                         {"FILENAME", FILENAME, STRING, {.s = {'\0'}}},
-                        {"TYPE", TYPE, STRING, {.s = {'C','A','S','S','E','T','T','E','\0'}}}},
+                        {"TYPE", TYPE, STRING, {.s = {'C','A','S','S','E','T','T','E','\0'}}},
+                        {"WRITEBACK", WRITEBACK, BOOL, {.b = false } },
+                        {"WRITEPROTECT", WRITEPROTECT, BOOL, {.b = true}}                        
+                      },
                       &commandWindow::doAttach});
   commands.push_back({"DETACH",
                       "Detach file from cassette drive. \n  Parameter DRIVE specify the drive used. Default drive is 0.\nTYPE specify either CASSETTE, FLOPPY or PRINTER. CASSETTE is default.",

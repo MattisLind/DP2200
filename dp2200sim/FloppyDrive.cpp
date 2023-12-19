@@ -6,6 +6,10 @@ FloppyDrive::FloppyDrive() {
   file=NULL;
 }
 
+bool FloppyDrive::isWriteProtected() {
+  return writeProtect;
+}
+
 int FloppyDrive::writeTrackBackIMD(int track) {
   fputc(0, file); // mode
   fputc(track, file); // track
@@ -18,18 +22,19 @@ int FloppyDrive::writeTrackBackIMD(int track) {
   }
   for (int i=0;i<26;i++) {
     bool compressable=true;
-    unsigned char firstByte = diskImage[selectedTrack][i].data[0];
+    unsigned char firstByte = diskImage[track][i].data[0];
     for (int j=1;j<128;j++) {
-      if (firstByte!=diskImage[selectedTrack][i].data[j]) {
+      if (firstByte!=diskImage[track][i].data[j]) {
         compressable = false;
         break; 
       } 
     }
-    switch (diskImage[selectedTrack][i].sectorType) {
+    printLog("INFO", "Write sectorType = %d  compressable=%s Sector=%d Track=%d\n", diskImage[track][i].sectorType, compressable?"TRUE":"FALSE", i, track);
+    switch (diskImage[track][i].sectorType) {
       case 1:
       case 2:
         if (compressable) {
-          fputc(2, file); // compresed 
+          fputc(2, file); // compressed 
         } else {
           fputc(1, file);
         }
@@ -37,7 +42,7 @@ int FloppyDrive::writeTrackBackIMD(int track) {
       case 3:
       case 4:
         if (compressable) {
-          fputc(4, file); // compresed 
+          fputc(4, file); // compressed 
         } else {
           fputc(3, file);
         } 
@@ -45,7 +50,7 @@ int FloppyDrive::writeTrackBackIMD(int track) {
       case 5:
       case 6:
         if (compressable) {
-          fputc(5, file); // compresed 
+          fputc(5, file); // compressed 
         } else {
           fputc(6, file);
         } 
@@ -53,7 +58,7 @@ int FloppyDrive::writeTrackBackIMD(int track) {
       case 7:
       case 8:
         if (compressable) {
-          fputc(8, file); // compresed 
+          fputc(8, file); // compressed 
         } else {
           fputc(7, file);
         } 
@@ -63,7 +68,7 @@ int FloppyDrive::writeTrackBackIMD(int track) {
       fputc(firstByte, file);
     } else {
       for (int j=0;j<128;j++) {
-        fputc(diskImage[selectedTrack][i].data[j], file);  
+        fputc(diskImage[track][i].data[j], file);  
       }
     }     
   }  
@@ -159,9 +164,9 @@ int FloppyDrive::validateTrack(int track) {
     } 
   }
   for (int i=0; i<26; i++) {
-    sectorPointers[track][sectorMap[i]] = ftell(file);
     int sectorHeader = fgetc(file);  
     diskImage[track][sectorMap[i]-1].sectorType = sectorHeader;
+    printLog("INFO","track=%d sector=%d sectorType=%d\n", track, sectorMap[i]-1, diskImage[track][sectorMap[i]-1].sectorType);
     if (feof(file)) {
       return FILE_PREMATURE_EOF;
     }
@@ -202,10 +207,13 @@ int FloppyDrive::validateTrack(int track) {
 
   // open a file and store pointers intenally to each track
   // has to be an IMD with 26 sectors, FM 500 kbps, 128 bytes/sector 77 tracks.
-int FloppyDrive::openFile (std::string fileName) {
+int FloppyDrive::openFile (std::string fileName, bool wp, bool wb) {
+  writeProtect = wp;
+  writeBack = wb;
   bool imdFailed=false;
   int ret;
   closeFile();
+  iMDDescription.clear();
   file = fopen(fileName.c_str(), "r+");
   if (file==NULL)  {
     return FILE_NOT_FOUND;
@@ -244,6 +252,8 @@ int FloppyDrive::openFile (std::string fileName) {
         }
       }
     } else {
+      fclose(file);
+      file=NULL;
       return ret;
     }
   } else {
@@ -256,10 +266,12 @@ int FloppyDrive::openFile (std::string fileName) {
 void  FloppyDrive::closeFile () {
   status = false;
   if (file!=NULL) {
-    if (imageTypeIsIMD) {
-      writeBackIMD();
-    } else {
-      writeBackRaw();
+    if (writeBack) {
+      if (imageTypeIsIMD) {
+        writeBackIMD();
+      } else {
+        writeBackRaw();
+      }
     }
     fflush(file);
     fclose(file);

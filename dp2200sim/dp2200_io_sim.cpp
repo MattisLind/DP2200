@@ -628,7 +628,11 @@ unsigned char IOController::FloppyDevice::input () {
     } else {
       statusRegister &= ~FLOPPY_STATUS_DRIVE_ONLINE;
     }
-    //statusRegister |= FLOPPY_STATUS_WRITE_PROTECT;
+    if (floppyDrives[selectedDrive]->isWriteProtected()) {
+      statusRegister |= FLOPPY_STATUS_WRITE_PROTECT; 
+    } else {
+      statusRegister &= ~FLOPPY_STATUS_WRITE_PROTECT;
+    }
     printLog("INFO", "Returning floppy status = %02X\n", statusRegister);
     return statusRegister;
   } else {
@@ -809,8 +813,8 @@ int IOController::FloppyDevice::exTStop(){
   return 1;
 }
 
-int IOController::FloppyDevice::openFile(int drive, std::string fileName){
-  return floppyDrives[drive]->openFile(fileName);
+int IOController::FloppyDevice::openFile(int drive, std::string fileName, bool writeProtect,  bool writeBack){
+  return floppyDrives[drive]->openFile(fileName, writeProtect, writeBack);
 }
 
 void IOController::FloppyDevice::closeFile(int drive){

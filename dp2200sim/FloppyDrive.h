@@ -21,7 +21,7 @@
 #define FLOPPY_CRC_ERROR -3
 
 struct sector {
-  unsigned char sectorType;
+  int sectorType;
   unsigned char data[128];
 };
 
@@ -31,19 +31,20 @@ class FloppyDrive {
   std::string fileName;
   bool status;
   std::string iMDDescription; 
-  long sectorPointers[77][26];
   struct sector diskImage [77][26];
   int validateTrack(int);
   int readSectorLowlevel(char * buffer, int track, int sector);
   int selectedTrack;
   int selectedSector;
   bool imageTypeIsIMD;
+  bool writeProtect;
+  bool writeBack;
   public:
 
   FloppyDrive();
   // open a file and store pointers intenally to each track
   // has to be an IMD with 26 sectors, FM 500 kbps, 128 bytes/sector 77 tracks.
-  int openFile (std::string fileName);
+  int openFile (std::string fileName, bool, bool);
   void closeFile ();
   std::string getFileName ();
    // sectornumber is multiplied by two and then both the odd and even 128 byte sector is read
@@ -56,7 +57,8 @@ class FloppyDrive {
   int writeSector(char * buffer);
   int writeBackIMD();
   int writeBackRaw();
-  int writeTrackBackIMD(int trackß);
+  int writeTrackBackIMD(int track);
+  bool isWriteProtected();
 };
 
 #endif

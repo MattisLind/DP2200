@@ -227,7 +227,7 @@ class IOController {
     int exSB();
     int exRewind();
     int exTStop();
-    int openFile (int, std::string fileName);
+    int openFile (int, std::string fileName, bool, bool);
     void closeFile (int);    
     FloppyDevice();
   };
