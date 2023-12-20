@@ -238,3 +238,17 @@ int dp2200Window::writeCharacter(int value) {
   wrefresh(innerWin);
   return 0;
 }
+
+int dp2200Window::scrollDown() {
+  wscrl(innerWin, -1);
+  return 0;
+}
+
+int dp2200Window::scrollUp() {
+  wscrl(innerWin, 1);
+  return 0;
+}
+
+void dp2200Window::incrementXPos() {
+  cursorX++; 
+}

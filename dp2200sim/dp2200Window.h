@@ -31,6 +31,9 @@ public:
   int writeCharacter(int);
   void setHandleKeyCallback(std::function<void(unsigned char)>);
   void resize();
+  int scrollUp();
+  int scrollDown();
+  void incrementXPos();
 };
 
 #endif

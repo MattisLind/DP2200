@@ -330,12 +330,16 @@ unsigned char IOController::ScreenKeyboardDevice::input () {
   }
 }
 int IOController::ScreenKeyboardDevice::exWrite(unsigned char data) {
-  return dpw->writeCharacter(data);
+  int ret = dpw->writeCharacter(data);
+  if (incrementXOnWrite) {
+    dpw->incrementXPos();
+  }
+  return ret;
 } 
 int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
   //
   if (data & SCRNKBD_COM1_ROLL_DOWN) {
-    return 1; // halt if 5500 / 1100 specific RAM display card function is used!
+    dpw->scrollDown();
   } 
   if (data & SCRNKBD_COM1_ERASE_EOF) {
     dpw->eraseFromCursorToEndOfFrame();  
@@ -344,7 +348,8 @@ int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
     dpw->eraseFromCursorToEndOfLine(); 
   }
   if (data & SCRNKBD_COM1_ROLL) {
-    dpw->rollScreenOneLine();
+    //dpw->rollScreenOneLine();
+    dpw->scrollUp();
   }
   if (data & SCRNKBD_COM1_CURSOR_ONOFF) {
     dpw->showCursor(true);
@@ -360,6 +365,11 @@ int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
     rw->setDisplayLight(true);
   } else {
     rw->setDisplayLight(false);
+  }
+  if (data & SCRNKBD_COM1_AUTO_INCREMENT) { 
+    incrementXOnWrite=true;
+  } else {
+    incrementXOnWrite=false;
   }
   return 0;
 }
@@ -414,6 +424,7 @@ void IOController::ScreenKeyboardDevice::updateKbd(int key) {
 
 IOController::ScreenKeyboardDevice::ScreenKeyboardDevice() {
   statusRegister = (SCRNKBD_STATUS_CRT_READY);
+  incrementXOnWrite = false;
 }
 
 

@@ -32,6 +32,8 @@ void removeTimerCallback(class callbackRecord * c);
 #define SCRNKBD_COM1_CURSOR_ONOFF 1 << 4
 #define SCRNKBD_COM1_KDB_LIGHT 1 << 5
 #define SCRNKBD_COM1_DISP_LIGHT 1 << 6
+#define SCRNKBD_COM1_AUTO_INCREMENT 1 << 7
+
 
 #define FLOPPY_STATUS_DRIVE_ONLINE (1 << 0)
 #define FLOPPY_STATUS_DATA_XFER_IN_PROGRESS (1 << 1)
@@ -110,6 +112,7 @@ class IOController {
   };
 
     class ScreenKeyboardDevice : public virtual IODevice  {
+    bool incrementXOnWrite;  
     public:
     unsigned char input ();
     int exWrite(unsigned char data); 
