@@ -436,7 +436,9 @@ void commandWindow::handleKey(int ch) {
     wmove(innerWin, y, x==(commandLine.size()+1)?x:x+1);
   } else  {
     switch (ch) {
-      case 10: 
+      case 10:
+        getyx(innerWin, y, x);
+        wmove(innerWin, y, commandLine.size()+1);
         waddch(innerWin, '\n');
         processCommand(ch);
         commandLine.clear();
