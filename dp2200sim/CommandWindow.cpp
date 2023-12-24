@@ -424,27 +424,55 @@ void commandWindow::normalWindow() {
   // wrefresh(win);
 }
 void commandWindow::handleKey(int ch) {
+  int y, x;
   printLog("INFO", "Got %c %02X\n", ch, ch);
   if (ch == '?') {
     processCommand(ch);
   } else if ((ch >= 32) && (ch < 127)) {
     waddch(innerWin, ch);
     commandLine += ch;
-  } else if (ch == 10) {
-    waddch(innerWin, '\n');
-    processCommand(ch);
-
-    commandLine.clear();
-    waddch(innerWin, '>');
-  } else if (ch == 0x107 || ch == 127) {
-    int y, x;
-    getyx(innerWin, y, x);
-    wmove(innerWin, y, x > 1 ? x - 1 : x);
-    if (commandLine.size()>0) {
-    wdelch(innerWin);
-    commandLine.erase(commandLine.size() - 1, 1);
-    }
-
+  } else  {
+    switch (ch) {
+      case 10: 
+        waddch(innerWin, '\n');
+        processCommand(ch);
+        commandLine.clear();
+        waddch(innerWin, '>');
+        break;
+      case 0x107:
+      case KEY_DC:
+      case 127:
+        getyx(innerWin, y, x);
+        printLog("INFO", "Before y=%d x=%d commandLine=%s length=%d\n", y, x, commandLine.c_str(), commandLine.size());
+        wmove(innerWin, y, x > 1 ? x - 1 : x);
+        printLog("INFO", "Mid y=%d x=%d commandLine=%s length=%d\n", y, x, commandLine.c_str(), commandLine.size());
+        if (x>1) {
+          wdelch(innerWin);
+          commandLine.erase(x-2, 1);
+        }
+        printLog("INFO", "After y=%d x=%d commandLine=%s length=%d\n", y, x, commandLine.c_str(), commandLine.size());
+        break;
+      case KEY_LEFT:
+        getyx(innerWin, y, x);
+        wmove(innerWin, y, x==1?x:x-1);
+        break;
+      case KEY_RIGHT:
+        getyx(innerWin, y, x);
+        wmove(innerWin, y, x==(commandLine.size()+1)?x:x+1);      
+        break;
+      case KEY_UP:
+        break;
+      case KEY_DOWN:
+        break;
+      case 0x01: // cntrl-A - beginning of line.
+        wmove(innerWin, cursorY, 0);
+        break;
+      case 0x05: // cntrl-E - end of line.
+        wmove(innerWin, cursorY, commandLine.size());
+        break;
+      case KEY_IC:
+        break;
+    } 
   }
   wrefresh(innerWin);
   getyx(innerWin, cursorY, cursorX);
