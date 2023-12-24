@@ -429,8 +429,11 @@ void commandWindow::handleKey(int ch) {
   if (ch == '?') {
     processCommand(ch);
   } else if ((ch >= 32) && (ch < 127)) {
-    waddch(innerWin, ch);
-    commandLine += ch;
+    getyx(innerWin, y, x);
+    //waddch(innerWin, ch);   
+    commandLine.insert(x-1, 1,ch);
+    mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
+    wmove(innerWin, y, x==(commandLine.size()+1)?x:x+1);
   } else  {
     switch (ch) {
       case 10: 
