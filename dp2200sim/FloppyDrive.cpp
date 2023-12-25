@@ -98,6 +98,7 @@ int FloppyDrive::writeBackRaw() {
 }
 
 int FloppyDrive::validateTrack(int track) {
+  bool hasBadBlocks=false;
   int sectorMap[26];
   int mode = fgetc(file);
   if (feof(file)) {
@@ -200,7 +201,13 @@ int FloppyDrive::validateTrack(int track) {
         }
         break;
       }
+    } 
+    if (sectorHeader != 1 && sectorHeader !=2) {
+      hasBadBlocks = true;
     }
+  }
+  if (hasBadBlocks) {
+    return FILE_HAS_BAD_BLOCKS;
   }
   return FILE_OK;
 }

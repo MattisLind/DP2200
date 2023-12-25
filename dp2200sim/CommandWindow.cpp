@@ -186,7 +186,11 @@ void commandWindow::doAttach(std::vector<Param> params) {
     if ((ret = cpu->ioCtrl->floppyDevice->openFile(drive, fileName, writeProtect, writeBack))==0) {
       wprintw(innerWin, "Attaching file %s to floppy drive %d\n", fileName.c_str(),drive);
     } else {
-      wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);      
+      if (ret == FILE_HAS_BAD_BLOCKS) {
+        wprintw(innerWin, "Warning: This IMD image was successfully mounted but contains one or more bad blocks stored when originally reading it. You may encounter problems when accessing it.\n");
+      } else {
+        wprintw(innerWin, "Failed to open file %s code %d. The file is not present or the format is invalid. \n", fileName.c_str(), ret); 
+      }    
     }
   } else if (type == "PRINTER") {
     if ((ret = cpu->ioCtrl->localPrinterDevice->openFile(drive, fileName))==0) {
