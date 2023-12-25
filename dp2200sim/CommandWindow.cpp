@@ -341,6 +341,7 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
   cursorY = 0;
   cpu = c;
   activeWindow = false;
+  commandHistoryIndex = -1;
   commands.push_back(
       {"HELP", "Show help information", {}, &commandWindow::doHelp});
   commands.push_back(
@@ -440,9 +441,14 @@ void commandWindow::handleKey(int ch) {
         getyx(innerWin, y, x);
         wmove(innerWin, y, commandLine.size()+1);
         waddch(innerWin, '\n');
+        commandHistory.push_back(commandLine);
+        for (int i=0; i<commandHistory.size(); i++) {
+          printLog("INFO", "CommandHistory = %s \n", commandHistory[i].c_str());
+        }
         processCommand(ch);
         commandLine.clear();
         waddch(innerWin, '>');
+        commandHistoryIndex = -1;
         break;
       case 0x107:
       case KEY_DC:
@@ -466,8 +472,44 @@ void commandWindow::handleKey(int ch) {
         wmove(innerWin, y, x==(commandLine.size()+1)?x:x+1);      
         break;
       case KEY_UP:
+        getyx(innerWin, y, x);
+        for (int i=0; i<commandHistory.size(); i++) {
+          printLog("INFO", "CommandHistory = %s \n", commandHistory[i].c_str());
+        }   
+            
+        if (commandHistoryIndex== -1) {
+          commandHistoryIndex = commandHistory.size()-1;
+        } else {
+          commandHistoryIndex = commandHistoryIndex==0?0: commandHistoryIndex-1;
+        }
+        printLog("INFO", "commandHistoryIndex=%d\n", commandHistoryIndex);
+        commandLine = commandHistory[commandHistoryIndex];
+        printLog("INFO", "history=%s\n", commandLine.c_str());         
+        mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
+        wclrtoeol(innerWin);
         break;
       case KEY_DOWN:
+        getyx(innerWin, y, x);
+        for (int i=0; i<commandHistory.size(); i++) {
+          printLog("INFO", "CommandHistory = %s \n", commandHistory[i].c_str());
+        }  
+             
+        if (commandHistoryIndex!= -1) {
+          commandHistoryIndex++;
+          if (commandHistoryIndex >= commandHistory.size()) {
+            commandHistoryIndex = -1;
+          }
+        }
+        printLog("INFO", "commandHistoryIndex=%d\n", commandHistoryIndex);
+        if (commandHistoryIndex == -1) {
+          commandLine = "";
+        } else {
+          commandLine = commandHistory[commandHistoryIndex];
+        }
+
+        printLog("INFO", "history=%s\n", commandLine.c_str()); 
+        mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
+        wclrtoeol(innerWin);
         break;
       case 0x01: // cntrl-A - beginning of line.
         wmove(innerWin, cursorY, 0);

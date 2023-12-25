@@ -44,6 +44,10 @@ class commandWindow : public virtual Window {
   std::vector<Cmd> commands;
   dp2200_cpu *cpu;
   bool activeWindow;
+  std::vector<int> test;
+  std::vector<std::string> commandHistory;
+  int commandHistoryIndex;
+  
   void doHelp(std::vector<Param> params);
 
   void doStep(std::vector<Param> params);
