@@ -2,8 +2,7 @@
 
 PLEASE NOTE!  STILL WORK IN PROGRESS.<BR> 
  
-At this point it is able to load the first program into memory and it starts the simple CTOS 3.2 operating system and give a ready prompt.
-It is possible to interact with the program running on the simulated machine and debug it using breakpoints and single step.
+At this point it can load CTOS from cassette tape images and boot DOS.C from floppy disks. It also support a local printer which means that it is possible to print from DOS.C to a file.
 
 
 [![Watch the video](https://i.imgur.com/zhIMYDc.png)](https://youtu.be/XfsMBhP13ww)
