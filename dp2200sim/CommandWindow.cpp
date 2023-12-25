@@ -441,9 +441,8 @@ void commandWindow::handleKey(int ch) {
         getyx(innerWin, y, x);
         wmove(innerWin, y, commandLine.size()+1);
         waddch(innerWin, '\n');
-        commandHistory.push_back(commandLine);
-        for (int i=0; i<commandHistory.size(); i++) {
-          printLog("INFO", "CommandHistory = %s \n", commandHistory[i].c_str());
+        if (commandLine != "") {
+          commandHistory.push_back(commandLine);
         }
         processCommand(ch);
         commandLine.clear();
@@ -473,26 +472,18 @@ void commandWindow::handleKey(int ch) {
         break;
       case KEY_UP:
         getyx(innerWin, y, x);
-        for (int i=0; i<commandHistory.size(); i++) {
-          printLog("INFO", "CommandHistory = %s \n", commandHistory[i].c_str());
-        }   
             
         if (commandHistoryIndex== -1) {
           commandHistoryIndex = commandHistory.size()-1;
         } else {
           commandHistoryIndex = commandHistoryIndex==0?0: commandHistoryIndex-1;
         }
-        printLog("INFO", "commandHistoryIndex=%d\n", commandHistoryIndex);
         commandLine = commandHistory[commandHistoryIndex];
-        printLog("INFO", "history=%s\n", commandLine.c_str());         
         mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
         wclrtoeol(innerWin);
         break;
       case KEY_DOWN:
         getyx(innerWin, y, x);
-        for (int i=0; i<commandHistory.size(); i++) {
-          printLog("INFO", "CommandHistory = %s \n", commandHistory[i].c_str());
-        }  
              
         if (commandHistoryIndex!= -1) {
           commandHistoryIndex++;
@@ -500,14 +491,12 @@ void commandWindow::handleKey(int ch) {
             commandHistoryIndex = -1;
           }
         }
-        printLog("INFO", "commandHistoryIndex=%d\n", commandHistoryIndex);
         if (commandHistoryIndex == -1) {
           commandLine = "";
         } else {
           commandLine = commandHistory[commandHistoryIndex];
         }
 
-        printLog("INFO", "history=%s\n", commandLine.c_str()); 
         mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
         wclrtoeol(innerWin);
         break;
