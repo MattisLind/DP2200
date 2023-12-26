@@ -82,14 +82,14 @@ Commands listed above can be given in the command window. There is a simple comm
 
 A command history exist where previous commands can be retrieved by using the UP arrow. If in command history mode it is possible to browse among the entire history using the UP and DOWN keys.
 
-### Regsiter window
+### Register window
 
 When the CPU is stopped it is possible to alter the contents of memory and registers. It is possible to navigate with the arrow keys to a location that you want to update. Press Enter to store it.
 Pressing the 'o' key toggle between HEX / OCTAL view in the register view
 
 ### DATAPOINT 2200 Window
 
-This is where the simukated system outputs screen data. The F5 and F6 keys are active in this window. They toggle the state of the DATAPOINT 2200 KEYBOARD and DISPLAY keys respectively. On the real hardware these were keys that wasn't scanned in the normal keyboard matrix but acts directly momentarily to the CPU. As this is not possible with ncurses the F5 and F6 toggles the state. Normally the KEYBOARD key stops execution and gets back to the operating system and DISPLAY let the system continue DISPLAY printout. So if printout is paused press F6 twice to let the simulator printout the full content.
+This is where the simukated system outputs screen data. The F5 and F6 keys are active in this window. They toggle the state of the DATAPOINT 2200 KEYBOARD and DISPLAY keys respectively. On the real hardware these were keys that wasn't scanned in the normal keyboard matrix but acts direc momentarily to the CPU. As this is not possible with ncurses the F5 and F6 toggles the state. Normally the KEYBOARD key stops execution and gets back to the operating system and DISPLAY let the system continue display printout. So if printout is paused press F6 twice to let the simulator printout the full content.
 
 ## Requirements
 
