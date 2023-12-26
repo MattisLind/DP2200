@@ -78,7 +78,9 @@ Short description for how to use the simlator. The simulator has three windows. 
 
 ### Command window
 
-Commands listed above can be given in the command window. There is a simple command line editor that allows for LEFT and RIGHT arrow to step back and forth in the command line. Ctrl-A and Ctrl-E can be used to go to the beginning of the line and to end of line respectively. 
+Commands listed above can be given in the command window. Commands are given in the format <Command> <ParameterName>=<ParameterValue> ... <ParameterName>=<ParameterValue> 
+
+There is a simple command line editor that allows for LEFT and RIGHT arrow to step back and forth in the command line. Ctrl-A and Ctrl-E can be used to go to the beginning of the line and to end of line respectively. 
 
 A command history exist where previous commands can be retrieved by using the UP arrow. If in command history mode it is possible to browse among the entire history using the UP and DOWN keys.
 
