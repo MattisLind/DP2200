@@ -238,7 +238,7 @@ int FloppyDrive::openFile (std::string fileName, bool wp, bool wb) {
   }
   for (int track=0; track < 77; track++) {
     ret = validateTrack(track); 
-    if (ret != FILE_OK) {
+    if (ret != FILE_OK && ret != FILE_HAS_BAD_BLOCKS) {
       imdFailed=true;
       printLog("INFO", "Validate track returned not OK for track %d filepos=%ld\n", track, ftell(file));
       break;
