@@ -78,7 +78,7 @@ Short description for how to use the simlator. The simulator has three windows. 
 
 ### Command window
 
-Commands listed above can be given in the command window. Commands are given in the format <Command> <ParameterName>=<ParameterValue> ... <ParameterName>=<ParameterValue> 
+Commands listed above can be given in the command window. Commands are given in the format <br>\<Command\> \<ParameterName\>=\<ParameterValue\> ... \<ParameterName\>=\<ParameterValue\> 
 
 There is a simple command line editor that allows for LEFT and RIGHT arrow to step back and forth in the command line. Ctrl-A and Ctrl-E can be used to go to the beginning of the line and to end of line respectively. 
 
