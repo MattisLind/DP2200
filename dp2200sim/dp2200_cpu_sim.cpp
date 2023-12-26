@@ -11,6 +11,8 @@
 #include <cstring>
 #include <termios.h>
 #include "dp2200_cpu_sim.h"
+#include <functional>
+#include <algorithm>
 
 void printLog(const char *level, const char *fmt, ...);
 

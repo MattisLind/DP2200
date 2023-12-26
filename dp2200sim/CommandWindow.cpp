@@ -1,4 +1,5 @@
 #include "CommandWindow.h"
+#include <algorithm>
 
 
 void commandWindow::doHelp(std::vector<Param> params) {

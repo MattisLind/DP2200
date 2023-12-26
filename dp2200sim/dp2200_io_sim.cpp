@@ -3,6 +3,7 @@
 #include "dp2200_io_sim.h"
 #include "dp2200Window.h"
 #include "RegisterWindow.h"
+#include <algorithm>
 
 extern class dp2200Window * dpw;
 extern class registerWindow * rw;
