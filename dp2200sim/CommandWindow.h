@@ -17,7 +17,7 @@ extern float yield;
 #define PARAM_VALUE_SIZE 256
 
 typedef union p {
-  char s[PARAM_VALUE_SIZE];
+  char s[PARAM_VALUE_SIZE+1];
   bool b;
   int i;
 } ParamValue;

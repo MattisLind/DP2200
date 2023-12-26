@@ -299,8 +299,7 @@ void commandWindow::processCommand(char ch) {
             printLog("INFO", "number = %d\n",
                       filteredParams[0]->paramValue.i);
           } else if (filteredParams[0]->type == STRING) {
-            strncpy(filteredParams[0]->paramValue.s, v.c_str(),
-                    PARAM_VALUE_SIZE);
+            strncpy(filteredParams[0]->paramValue.s, v.c_str(),PARAM_VALUE_SIZE);
             printLog("INFO", "string=%s\n", filteredParams[0]->paramValue.s);
             filteredParams[0]->paramValue.s[PARAM_VALUE_SIZE - 1] = 0;
           } else {
