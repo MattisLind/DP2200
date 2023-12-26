@@ -47,6 +47,50 @@ Please note that the DISPLAY button has to be pressed to have the output printed
 
 Please note that all files are mounted read-only since writing has not yet been implemented.
 
+## How to use the simulator
+
+Short description for how to use the simlator. The simulator has three windows. TAB (or Shift-TAB) is used to cycle between windows. The active windo has a highlighted boarder and a cursor visible (the Datapoint 2200 window may have the cursor turned off since it is controlled by the software).
+
+### Commands
+
+| Command   |  Parameters  |  Description |
+|-----------|--------------|--------------|
+| HELP      |              |  Show help information.  |
+| ATTACH    | FILE<br>DRIVE<br>TYPE<br>WRITEPROTECT<br>WRITEBACK  | Attach a file to the simulator. TYPE indicate the device to attach to. Either CASSETTE (default), FLOPPY or PRINTER. FILE is the file name to open. DRIVE is the drive number. Default is drive 0. WRITEPROTECT is if the attached media is to be writeprotected in the simulator. TRUE or FALSE. Default is TRUE. WRITEBACK indicate if the media shall be written back to the file. TRUE or FALSE. Default is FALSE. |
+| STEP      |              |  Step one instruction. |
+| DETACH     | DRIVE<br>TYPE |  Detach file from cassette drive. Parameter DRIVE specify the drive used. Default drive is 0.│TYPE specify either CASSETTE, FLOPPY or PRINTER. CASSETTE is default.|
+| STOP       |      |   Stop execution |
+| EXIT       |    |     Exit the simulator |
+| QUIT       |         |   Quit the simulator |
+| LOADBOOT   |          |   Load the bootstrap from cassette into memory |
+| RESTART    |           |   Load bootstrap and restart CPU |
+| RESET      |           |  Reset the CPU.|
+| HALT       |           |  Stop the CPU. |
+| RUN        |           |  Run CPU from current location |
+| CLEAR      |           |  Clear memory |
+| BREAK      | ADDRESS          |  Add breakpoint.Parameter ADDRESS is used for specifying the address of the breakpoint.|
+| NOBREAK    | ADDRESS  |  Remove breakpoint. Parameter ADDRESS is used for specifying the address of the breakpoint. │
+| TRACE      |          | Enable trace logging. |
+| NOTRACE    |          | Disable trace logging.|
+| HEXADECIMAL |          | Use hexadecimal notation. Also possible to toggle in the register view by pressing 'o'.|
+| OCTAL      |           | Show in Octal notation. Also possible to toggle in the register view by pressing 'o'. |
+| YIELD      | VALUE     | The amount of CPU time consumed byt the simulator.  VALUE parameter specify the amount. Value between 0 and 100. |
+
+### Command window
+
+Commands listed above can be given in the command window. There is a simple command line editor that allows for LEFT and RIGHT arrow to step back and forth in the command line. Ctrl-A and Ctrl-E can be used to go to the beginning of the line and to end of line respectively. 
+
+A command history exist where previous commands can be retrieved by using the UP arrow. If in command history mode it is possible to browse among the entire history using the UP and DOWN keys.
+
+### Regsiter window
+
+When the CPU is stopped it is possible to alter the contents of memory and registers. It is possible to navigate with the arrow keys to a location that you want to update. Press Enter to store it.
+Pressing the 'o' key toggle between HEX / OCTAL view in the register view
+
+### DATAPOINT 2200 Window
+
+This is where the simukated system outputs screen data. The F5 and F6 keys are active in this window. They toggle the state of the DATAPOINT 2200 KEYBOARD and DISPLAY keys respectively. On the real hardware these were keys that wasn't scanned in the normal keyboard matrix but acts directly momentarily to the CPU. As this is not possible with ncurses the F5 and F6 toggles the state. Normally the KEYBOARD key stops execution and gets back to the operating system and DISPLAY let the system continue DISPLAY printout. So if printout is paused press F6 twice to let the simulator printout the full content.
+
 ## Requirements
 
 This is an unsorted list of requirements. Not necessarily part of the MVP. More as a list coming from brain-storming.
