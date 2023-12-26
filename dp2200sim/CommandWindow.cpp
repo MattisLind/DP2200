@@ -438,7 +438,7 @@ void commandWindow::handleKey(int ch) {
     //waddch(innerWin, ch);   
     commandLine.insert(x-1, 1,ch);
     mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
-    wmove(innerWin, y, x==(commandLine.size()+1)?x:x+1);
+    wmove(innerWin, y, ((unsigned long) x)==(commandLine.size()+1)?x:x+1);
   } else  {
     switch (ch) {
       case 10:
@@ -472,7 +472,7 @@ void commandWindow::handleKey(int ch) {
         break;
       case KEY_RIGHT:
         getyx(innerWin, y, x);
-        wmove(innerWin, y, x==(commandLine.size()+1)?x:x+1);      
+        wmove(innerWin, y, ((unsigned long) x)==(commandLine.size()+1)?x:x+1);      
         break;
       case KEY_UP:
         getyx(innerWin, y, x);
@@ -491,7 +491,7 @@ void commandWindow::handleKey(int ch) {
              
         if (commandHistoryIndex!= -1) {
           commandHistoryIndex++;
-          if (commandHistoryIndex >= commandHistory.size()) {
+          if (((unsigned long)commandHistoryIndex) >= commandHistory.size()) {
             commandHistoryIndex = -1;
           }
         }
