@@ -59,6 +59,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
+#include <cmath>
 
 // support dumping records as intel hex files
 #define SUPPORT_HEX 1
@@ -108,7 +109,7 @@ FILE *fIn; // input audio file handle
 
 // period of a zero bit, in Hz, at 1 7/8 ips
 const float zero_freq = 1084.0f;
-
+const float sampleRate = 44100.0f;
 // pll lock range = nominal +/- 25%
 const float lock_range = 0.25f;
 float min_samples_per_bit;
@@ -637,8 +638,11 @@ void Bit(uint32 time, int bit) {
       count++;
     } else if ((bit == 0) && (count > SYNC_THRESHOLD))
       BSstate = BS_PREAMBLE_0;
-    else
+    else {
+      pll_period = samples_per_bit;
       BSstate = BS_LOST;
+    }
+ 
     break;
 
   case BS_PREAMBLE_0:
@@ -646,6 +650,7 @@ void Bit(uint32 time, int bit) {
       BSstate = BS_PREAMBLE_01;
     } else {
       tprintf(2, "sample %d: preamble lost after %d bits\n", time, count + 2);
+      pll_period = samples_per_bit;
       BSstate = BS_LOST;
     }
     break;
@@ -698,6 +703,7 @@ void Bit(uint32 time, int bit) {
           tprintf(1, "sample %d: bad sync code %03X\n", time, bits & 7);
         }
         StreamError(0);
+        pll_period = samples_per_bit;
         BSstate = BS_LOST;
       }
     }
@@ -707,6 +713,7 @@ void Bit(uint32 time, int bit) {
     count++;
     if (bit == 2) {
       tprintf(2, "sample %d: skipped %d bits to mid-gap\n", time, count);
+      pll_period = samples_per_bit;
       BSstate = BS_LOST;
     }
     if (bit == 1) {
@@ -1044,32 +1051,300 @@ void FindTransitions() {
 //   Compare this derivative with in relative scale to a fixed value
 
 
+struct S {
+  sample_t s;
+  double scaled;
+  uint32 index;
+  bool highest;
+  bool lowest;
+  double distance;
+  bool peak;
+  bool highPeak;
+};
+
+typedef struct S Sample;
+
+typedef std::vector<Sample> SampleBuffer;
+
+struct HL {
+  sample_t highValue;
+  sample_t lowValue;
+  uint32 highIndex;
+  uint32 lowIndex;
+  uint32 highBufferIndex;
+  uint32 lowBufferIndex;
+};
+
+typedef struct HL HiLo;
+
+HiLo findHighestLowest (SampleBuffer * sb) {
+  HiLo hilo;
+  hilo.highValue = (*sb)[0].s;
+  hilo.lowValue = (*sb)[0].s;;
+  hilo.highIndex = (*sb)[0].index;
+  hilo.lowIndex = (*sb)[0].index; 
+  hilo.highBufferIndex = 0;
+  hilo.lowBufferIndex = 0; 
+  uint32 currentBufferIndex;
+  for (uint32 i=1; i< sb->size(); i++) {
+    if ((*sb)[i].s > hilo.highValue) {
+      hilo.highValue = (*sb)[i].s;
+      hilo.highIndex = (*sb)[i].index;
+      hilo.highBufferIndex = i;
+    }
+    if ((*sb)[i].s < hilo.lowValue) {
+      hilo.lowValue = (*sb)[i].s;
+      hilo.lowIndex = (*sb)[i].index;
+      hilo.lowBufferIndex = i;
+    }    
+  } 
+  tprintf(3, "Highest in buffer is %d at %ld and Lowest is %d at %ld\n", hilo.highValue, hilo.highIndex, hilo.lowValue, hilo.lowIndex);
+  return hilo;
+}
+
+struct P {
+  sample_t value;
+  bool hiPeak;
+  uint32 bufferIndex;
+  uint32 index;
+  double scaled;
+};
+
+typedef std::vector<struct P> Peaks;
+
+void savePeak(SampleBuffer * sb, Peaks * ps, bool highPeak, uint32 i) {
+  struct P p;
+  (*sb)[i+1].peak = true;
+  (*sb)[i+1].highPeak = highPeak;
+  p.value = (*sb)[i+1].s;
+  p.hiPeak = highPeak;
+  p.index = (*sb)[i+1].index;
+  p.scaled = (*sb)[i+1].scaled;
+  p.bufferIndex = i+1;
+  ps->push_back(p);
+  tprintf(3, "%s peak found at %ld unscaled=%d scaled=%f\n", p.hiPeak?"High":"Low", p.index, p.value, p.scaled);
+}
+
+Peaks findPeaks (SampleBuffer * sb) {
+  Peaks ps;
+  
+  sample_t diff1, diff2;
+  
+  for (uint32 i=1; i< sb->size()-2; i++) {
+    diff1 = (*sb)[i+1].s - (*sb)[i].s;
+    diff2 = (*sb)[i+2].s - (*sb)[i+1].s;
+    if (diff1<0 && diff2>=0) { // Low local maxima
+      savePeak(sb, &ps, false, i);
+    } else if (diff1>0 && diff2 <=0) { // high local maxima
+      savePeak(sb, &ps, true, i);  
+    } else {
+      (*sb)[i+1].peak = false;  
+    }     
+  } 
+  return ps;
+}
+
+void fillSampleBuffer (uint32 * nSamp, SampleBuffer * sb, int count) {
+  // First remove old samples
+  sb->clear();
+  for (int i = 0; i < count && *nSamp < expected_samples; i++, (*nSamp)++) {
+    Sample t;
+    t.scaled = 0.0;
+    t.index = *nSamp;
+    t.highest = false;
+    t.lowest = false;
+    t.distance = 0.0;
+    t.peak = false;
+    t.highPeak = false;
+    sample_t s=GETIN(*nSamp);
+    t.s = s;
+    tprintf(3, "Getting nSamp=%ld sample=%d\n", *nSamp, s); 
+    sb->push_back(t);
+  }  
+}
+
+void fillSampleBuffer (uint32 * nSamp, SampleBuffer * sb, int count, uint32 startIndex) {
+  // First remove old samples
+  tprintf(3, "Clearing sampleBuffer from %d to %d\n", (sb->begin())->index, startIndex);
+  while ((sb->begin())->index < startIndex) {
+    sb->erase(sb->begin()); 
+  }
+  count -= sb->size();
+  for (int i = 0; i < count && *nSamp < expected_samples; i++, (*nSamp)++) {
+    sample_t s=GETIN(*nSamp);
+    Sample t;
+    t.s = s;
+    t.scaled = 0.0;
+    t.index = *nSamp;
+    t.highest = false;
+    t.lowest = false;
+    t.distance = 0.0;
+    t.peak = false;
+    t.highPeak = false;
+    tprintf(3, "Getting nSamp=%ld sample=%d\n", *nSamp, s); 
+    sb->push_back(t);
+  }  
+}
+
+void scaleBuffer (SampleBuffer * sb, sample_t scalingValue, sample_t lowest) {
+  for (int i=0; i<sb->size(); i++) {
+    (*sb)[i].scaled = ((double) ((*sb)[i].s-lowest))/ ((double) scalingValue);
+    tprintf(3, "Scale buffer value %d (%ld) with scalingValue %d/%d to %f\n",(*sb)[i].s, (*sb)[i].index, scalingValue, lowest, (*sb)[i].scaled );
+  } 
+}
+
+struct PeakScore {
+  sample_t timeDistance;
+  double amplitudeDistance;
+  uint32 firstBufferIndex;
+  uint32 lastBufferIndex;
+  uint32 firstIndex;
+  uint32 lastIndex;
+  double score;
+};
 
 
+bool compareSort (struct PeakScore a,struct PeakScore b) { return (a.score<b.score); }
+
+typedef std::vector<struct PeakScore> PeakScores;
+
+
+PeakScores calculateScores (Peaks * ps) {
+  PeakScores scores;
+  struct PeakScore s;
+  for (int i = 0; i < ps->size() - 1; i++)
+  {
+    for (int j = i + 1; j < ps->size(); j++)
+    {
+      bool firstHiPeak = (*ps)[i].hiPeak;
+      bool lastHiPeak = (*ps)[j].hiPeak;
+      tprintf(3, "Processing peaks %d,%d firstHiPeak=%s lastHiPeak=%s",(*ps)[i].index, (*ps)[j].index, firstHiPeak?"TRUE":"FALSE", lastHiPeak?"TRUE":"FALSE" );
+      if ((firstHiPeak && !lastHiPeak) || (!firstHiPeak && lastHiPeak)) {
+        s.amplitudeDistance = fabs((*ps)[i].scaled - (*ps)[j].scaled);
+        s.timeDistance = abs(((int)(*ps)[i].index) - ((int)(*ps)[j].index));
+        s.firstBufferIndex = (*ps)[i].bufferIndex;
+        s.lastBufferIndex = (*ps)[j].bufferIndex;
+        s.firstIndex = (*ps)[i].index;
+        s.lastIndex = (*ps)[j].index;
+        scores.push_back(s);
+        tprintf(3, " - amplitudeDistanced=%f timeDistance=%d firstBufferIndex=%ld lastBufferIndex=%ld firstIndex=%ld lastIndex=%ld\n",s.amplitudeDistance, s.timeDistance, s.firstBufferIndex, s.lastBufferIndex,s.firstIndex, s.lastIndex );
+      } else {
+        tprintf (3, " - not a transistion\n");
+      }
+    }
+  }
+  for (int i = 0; i < scores.size(); i++) { 
+    double samplesPerPeriod = sampleRate / zero_freq;
+    double timeScore = pow((((double)scores[i].timeDistance) - samplesPerPeriod)/samplesPerPeriod, 2);
+    double amplitudeScore = pow((scores[i].amplitudeDistance - 1.0f), 2);
+    scores[i].score = timeScore + amplitudeScore;
+    tprintf(3, "amplitudeScore=%f timeScore=%f at %ld, %ld\n", amplitudeScore, timeScore, scores[i].firstIndex, scores[i].lastIndex);
+  }
+  std::sort(scores.begin(), scores.end(), compareSort);
+  for (int i = 0; i < scores.size(); i++) {
+    tprintf(3, "Sorted: score=%f at %ld, %ld\n", scores[i].score, scores[i].firstIndex,scores[i].lastIndex );
+  }
+  return scores;
+}
+
+
+
+
+PeakScores calculateScoresSingle (Peaks * ps, bool lastPeakIsHigh,double lastPeakAmplitude) {
+  struct PeakScore s;
+  PeakScores scores;
+  for (int i=0; i < ps->size(); i++) {
+    tprintf(3, "Processing peaks %d lastPeakIsHigh=%s currentPeakIsHigh=%s scaled=%f lastPeakAmplitude=%f", (*ps)[i].index, lastPeakIsHigh?"TRUE":"FALSE", (*ps)[i].hiPeak?"TRUE":"FALSE", (*ps)[i].scaled, lastPeakAmplitude);
+    if ((lastPeakIsHigh && (!((*ps)[i].hiPeak))) ||((!lastPeakIsHigh) && ((*ps)[i].hiPeak))) { 
+      double totalScore;
+      double longPeriod = sampleRate / zero_freq;
+      double shortPeriod = sampleRate / (2.0f *zero_freq);
+      double longScore =  pow(((((double) (*ps)[i].bufferIndex) - longPeriod)/longPeriod), 2);
+      double shortScore = pow(((((double) (*ps)[i].bufferIndex) - shortPeriod)/shortPeriod),2); 
+      double amplitudeDistance = fabs((*ps)[i].scaled - lastPeakAmplitude);
+      double amplitudeScore = pow(amplitudeDistance-1,2);
+      if (longScore<shortScore) {
+        totalScore = longScore+amplitudeScore;
+      } else {
+        totalScore = shortScore+amplitudeScore;
+      }  
+      s.firstBufferIndex = (*ps)[i].bufferIndex;
+      s.firstIndex = (*ps)[i].index;
+      s.score = totalScore;
+      scores.push_back(s);
+      tprintf(3, " - longScore=%f shortScore=%f amplitudeScore=%f\n",longScore, shortScore, amplitudeScore );
+    } else {
+      tprintf (3, " - not a transistion\n");
+    }
+  }
+  std::sort(scores.begin(), scores.end(), compareSort);
+  for (int i = 0; i < scores.size(); i++) {
+    tprintf(3, "Sorted: score=%f at %ld\n", scores[i].score, scores[i].firstIndex );
+  }  
+  return scores;
+}
+
+uint32 findKnee(SampleBuffer * s, uint32 peakBufferIndex) {
+  double peak = (*s)[peakBufferIndex].scaled;
+  double previousPeak = (*s)[0].scaled;
+  double distance = fabs(peak-previousPeak);
+  bool isHighPeak = (*s)[peakBufferIndex].highPeak;
+  uint32 i;
+  for (i=peakBufferIndex; i > 0; i--) {
+    tprintf(3, "findKnee: searching. i=%ld highPeak=%s scaled=%f distance=%f scaled/distance=%f\n", i, (*s)[i].highPeak?"TRUE":"FALSE",(*s)[i].scaled, distance, (*s)[i].scaled/distance );
+    if ((fabs(((*s)[i].scaled)-previousPeak)/distance)<0.95f) break; 
+  }
+  tprintf(3, "findKnee: peak=%f previousPeak=%d distance=%f foundKnee=%f at %d (%d) \n", peak, previousPeak, distance, (*s)[i].scaled, (*s)[i].index, i); 
+  return (*s)[i].index;  
+}
 
 void FindTransitions() {
-  std::vector<sample_t> sampleBuffer;
+  SampleBuffer sampleBuffer;
   sample_t low=32767, high=-32768, sample;
+  long lastPeak=0;
+  bool lastPeakIsHigh;
   int lowestIndex, highestIndex;
   uint32 nSamp = 0;
+  HiLo hilo;
   while (nSamp < expected_samples) { 
     if (BSstate == BS_LOST) {
-      for (int i = 0; i < 80 && nSamp < expected_samples; i++, nSamp++) {
-        sampleBuffer.push_back(GETIN(nSamp));
-      }
-      for (int i = 0; i < 80; i++) {
-        sample = sampleBuffer[i];
-        if (low > sample) {
-          lowestIndex = nSamp;
-          low = sample;
-        }
-        if (high < sample) {
-          highestIndex = nSamp;
-          high = sample;
-        }
+      Peaks ps;
+      PeakScores scores;
+      fillSampleBuffer(&nSamp, &sampleBuffer, 80);
+      hilo = findHighestLowest(&sampleBuffer);
+      scaleBuffer(&sampleBuffer, hilo.highValue-hilo.lowValue, hilo.lowValue);
+      ps = findPeaks(&sampleBuffer);
+      scores = calculateScores(&ps);
+      // Take the first one which has lowest score. Lower score is better..
+      if (scores.size()>0) {
+        uint32 lastBufferIndex = scores[0].lastBufferIndex;
+        lastPeakIsHigh = sampleBuffer[lastBufferIndex].highPeak;
+        DecodeBits(scores[0].firstIndex);
+        DecodeBits(scores[0].lastIndex);
+        tprintf(3, "firstBufferIndex=%ld lastBufferIndex=%ld lastPeakIsHigh=%s\n",  scores[0].firstBufferIndex, scores[0].lastBufferIndex, lastPeakIsHigh?"TRUE":"FALSE");
+        lastPeak =  scores[0].lastIndex;
+      } else {
+        tprintf(3, "Didn't find any peaks. Scores is empty.\n");
       }
     } else {
-
+      Peaks ps;
+      PeakScores scores;
+      fillSampleBuffer(&nSamp, &sampleBuffer, 62, lastPeak);
+      hilo = findHighestLowest(&sampleBuffer);
+      scaleBuffer(&sampleBuffer, hilo.highValue-hilo.lowValue, hilo.lowValue);
+      ps = findPeaks(&sampleBuffer);
+      scores = calculateScoresSingle(&ps, lastPeakIsHigh, sampleBuffer[0].scaled); 
+      if (scores.size()>0) {
+        uint32 firstBufferIndex = scores[0].firstBufferIndex;
+        uint32 kneeIndex = findKnee(&sampleBuffer, firstBufferIndex);
+        lastPeakIsHigh = sampleBuffer[firstBufferIndex].highPeak;
+        lastPeak =  scores[0].firstIndex;
+        tprintf(3, "kneeIndex=%ld\n", kneeIndex);
+        DecodeBits(kneeIndex);
+      } else {
+        DecodeBits(sampleBuffer[sampleBuffer.size()].index);
+        tprintf(3, "Didn't find any peaks. Scores is empty.\n");
+      }
     }
   }
 
