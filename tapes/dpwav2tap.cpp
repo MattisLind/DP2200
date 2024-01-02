@@ -108,7 +108,8 @@ uint32 sample_rate;      // samples/second
 FILE *fIn; // input audio file handle
 
 // period of a zero bit, in Hz, at 1 7/8 ips
-const float zero_freq = 1084.0f;
+//const float zero_freq = 1084.0f;
+const float zero_freq = 1010.0f;
 const float sampleRate = 44100.0f;
 // pll lock range = nominal +/- 25%
 const float lock_range = 0.25f;
@@ -117,6 +118,9 @@ float max_samples_per_bit;
 
 float samples_per_bit; // bit period, in samples
 float pll_period;      // current PLL estimate of bit period
+
+
+uint32 nSamp = 0;
 
 // ========================================================================
 // filtered reporting
@@ -415,37 +419,37 @@ int isChecksumOK(unsigned char * buffer, int size) {
 void parseDPFormat() {
   int startingAddress;
   if (isFileHeader(obuff_buffer)) {
-  tprintf(3, "This is a FileHeader. ");
+  tprintf(1, "This is a FileHeader. ");
   if (obuff_bytecnt != 4) {
-    tprintf(3, "The size of this block is incorrect. It is %d bytes rather than 4 bytes. ", obuff_bytecnt);
+    tprintf(1, "The size of this block is incorrect. It is %d bytes rather than 4 bytes. ", obuff_bytecnt);
   }
-  tprintf(3, "The filenumber is %d. ", 0xff&obuff_buffer[2]);
+  tprintf(1, "The filenumber is %d. ", 0xff&obuff_buffer[2]);
   if ((0xff&obuff_buffer[2])!=(0xff&(~obuff_buffer[3]))) {
-    tprintf(3, "The inverted filenumber is incorrect: %d should have been %d.", 0xff&obuff_buffer[3], 0xff&(~obuff_buffer[2]));
+    tprintf(1, "The inverted filenumber is incorrect: %d should have been %d.", 0xff&obuff_buffer[3], 0xff&(~obuff_buffer[2]));
   }
   if (obuff_buffer[2]==127) {
-    tprintf(3,"This is the end of tape marker. Files beyond this point is probably damaged.");
+    tprintf(1,"This is the end of tape marker. Files beyond this point is probably damaged.");
   }
-  tprintf(3,"\n");
+  tprintf(1,"\n");
 } else if (isNumericRecord(obuff_buffer)) {
-  tprintf(3,"This is a numeric record with %d bytes. ", obuff_bytecnt);
+  tprintf(1,"This is a numeric record with %d bytes. ", obuff_bytecnt);
   if (!isChecksumOK(obuff_buffer, obuff_bytecnt)) {
-    tprintf(3, "The checksum is NOT OK.");
+    tprintf(1, "The checksum is NOT OK.");
   }
   startingAddress = (obuff_buffer[4] << 8) | obuff_buffer[5];
-  tprintf (3, "Load address for this block is %05o. ", startingAddress);
+  tprintf (1, "Load address for this block is %05o. ", startingAddress);
   if ((obuff_buffer[4] != (0xFF&~obuff_buffer[6])) || (obuff_buffer[5] != (0xFF&~obuff_buffer[7]))) {
-    tprintf(3, "Loading address corrupted.");
+    tprintf(1, "Loading address corrupted.");
   }
-  tprintf(3, "\n");
+  tprintf(1, "\n");
 
 } else if (isSymbolicRecord(obuff_buffer)) {
-  tprintf(3, "This is a symbolic record with %d bytes. ", obuff_bytecnt);
-  tprintf(3, "\n");
+  tprintf(1, "This is a symbolic record with %d bytes. ", obuff_bytecnt);
+  tprintf(1, "\n");
 } else {
   // something else - should be the first block which is the boot block - 
-  tprintf(3, "This is something else. Only the first boot block should be like this. ");
-  tprintf(3, "\n");
+  tprintf(1, "This is something else. Only the first boot block should be like this. ");
+  tprintf(1, "\n");
 }
 }
 
@@ -688,21 +692,22 @@ void Bit(uint32 time, int bit) {
         count = 0;
         BSbyteCount++;
       } else if (bits == 0x7FF) {
-        tprintf(1, "sample %d: hit valid gap after %d bytes, PLL period=%f\n",
-                time, BSbyteCount, pll_period);
-        StreamEnd();
+        tprintf(1, "sample %d: hit valid gap after %d bytes, PLL period=%f @%ld\n",
+                time, BSbyteCount, pll_period, nSamp);
+        if (obuff_bytecnt > 0) StreamEnd();
         count = 0;
         BSstate = BS_GAP;
       } else {
         if (BSbyteCount == 0) {
           tprintf(1,
                   "sample %d: bad sync code %03X; apparently it was not a "
-                  "valid sync\n",
-                  time, bits & 7);
+                  "valid sync @%ld\n",
+                  time, bits & 7, nSamp);
         } else {
-          tprintf(1, "sample %d: bad sync code %03X\n", time, bits & 7);
+          tprintf(1, "sample %d: bad sync code %03X\n @%ld", time, bits & 7, nSamp);
         }
-        StreamError(0);
+        tprintf(1, "Bad block @%ld\n", nSamp);
+        //StreamError(0);
         pll_period = samples_per_bit;
         BSstate = BS_LOST;
       }
@@ -768,8 +773,8 @@ void PLL(int duration) {
 }
 
 void DecodeBits(uint32 time) {
- /* if (time== 974700) time=974702;
-  if (time == 974736) time = 974725;
+  /*if (time== 389884) time=389885;
+  if (time == 390017) time = 390019;
   if (time == 974872) time = 974870; */
   enum XXX { DB_INIT = 0, DB_HALF_BIT, DB_READY };
   const char * stateStr[] = {"DB_INIT", "DB_HALF_BIT", "DB_READY"};
@@ -1186,10 +1191,10 @@ void fillSampleBuffer (uint32 * nSamp, SampleBuffer * sb, int count, uint32 star
   }  
 }
 
-void scaleBuffer (SampleBuffer * sb, sample_t scalingValue, sample_t lowest) {
+void scaleBuffer (SampleBuffer * sb, double scalingValue, sample_t lowest) {
   for (int i=0; i<sb->size(); i++) {
-    (*sb)[i].scaled = ((double) ((*sb)[i].s-lowest))/ ((double) scalingValue);
-    tprintf(3, "Scale buffer value %d (%ld) with scalingValue %d/%d to %f\n",(*sb)[i].s, (*sb)[i].index, scalingValue, lowest, (*sb)[i].scaled );
+    (*sb)[i].scaled = (( ((double)((*sb)[i].s))-((double)lowest)))/  scalingValue;
+    tprintf(3, "Scale buffer value %d (%ld) with scalingValue %f/%d to %f\n",(*sb)[i].s, (*sb)[i].index, scalingValue, lowest, (*sb)[i].scaled );
   } 
 }
 
@@ -1264,9 +1269,9 @@ PeakScores calculateScoresSingle (Peaks * ps, bool lastPeakIsHigh,double lastPea
       double amplitudeDistance = fabs((*ps)[i].scaled - lastPeakAmplitude);
       double amplitudeScore = pow(amplitudeDistance-1,2);
       if (longScore<shortScore) {
-        totalScore = longScore+amplitudeScore;
+        totalScore = 2*longScore+amplitudeScore;
       } else {
-        totalScore = shortScore+amplitudeScore;
+        totalScore = 2*shortScore+amplitudeScore;
       }  
       s.firstBufferIndex = (*ps)[i].bufferIndex;
       s.firstIndex = (*ps)[i].index;
@@ -1292,7 +1297,7 @@ uint32 findKnee(SampleBuffer * s, uint32 peakBufferIndex) {
   uint32 i;
   for (i=peakBufferIndex; i > 0; i--) {
     tprintf(3, "findKnee: searching. i=%ld highPeak=%s scaled=%f distance=%f scaled/distance=%f\n", i, (*s)[i].highPeak?"TRUE":"FALSE",(*s)[i].scaled, distance, (*s)[i].scaled/distance );
-    if ((fabs(((*s)[i].scaled)-previousPeak)/distance)<0.95f) break; 
+    if ((fabs(((*s)[i].scaled)-previousPeak)/distance)<0.925f) break; 
   }
   tprintf(3, "findKnee: peak=%f previousPeak=%d distance=%f foundKnee=%f at %d (%d) \n", peak, previousPeak, distance, (*s)[i].scaled, (*s)[i].index, i); 
   return (*s)[i].index;  
@@ -1304,7 +1309,7 @@ void FindTransitions() {
   long lastPeak=0;
   bool lastPeakIsHigh;
   int lowestIndex, highestIndex;
-  uint32 nSamp = 0;
+
   HiLo hilo;
   while (nSamp < expected_samples) { 
     if (BSstate == BS_LOST) {
@@ -1312,7 +1317,7 @@ void FindTransitions() {
       PeakScores scores;
       fillSampleBuffer(&nSamp, &sampleBuffer, 80);
       hilo = findHighestLowest(&sampleBuffer);
-      scaleBuffer(&sampleBuffer, hilo.highValue-hilo.lowValue, hilo.lowValue);
+      scaleBuffer(&sampleBuffer, fabs(((double) hilo.highValue)-((double) hilo.lowValue)), hilo.lowValue);
       ps = findPeaks(&sampleBuffer);
       scores = calculateScores(&ps);
       // Take the first one which has lowest score. Lower score is better..
@@ -1329,9 +1334,9 @@ void FindTransitions() {
     } else {
       Peaks ps;
       PeakScores scores;
-      fillSampleBuffer(&nSamp, &sampleBuffer, 62, lastPeak);
+      fillSampleBuffer(&nSamp, &sampleBuffer, 67, lastPeak);
       hilo = findHighestLowest(&sampleBuffer);
-      scaleBuffer(&sampleBuffer, hilo.highValue-hilo.lowValue, hilo.lowValue);
+      scaleBuffer(&sampleBuffer, fabs(((double) hilo.highValue)-((double) hilo.lowValue)), hilo.lowValue);
       ps = findPeaks(&sampleBuffer);
       scores = calculateScoresSingle(&ps, lastPeakIsHigh, sampleBuffer[0].scaled); 
       if (scores.size()>0) {
