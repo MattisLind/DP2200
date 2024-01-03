@@ -44,6 +44,15 @@ void removeTimerCallback(class callbackRecord * c);
 #define FLOPPY_STATUS_DELETED_DATA_MARK (1 << 6)
 #define FLOPPY_STATUS_SECTOR_NOT_FOUND (1 << 7)
 
+#define DISK9350_STATUS_DRIVE_ONLINE (1 << 0)
+#define DISK9350_STATUS_CONTROLLER_READY (1 << 1)
+#define DISK9350_STATUS_DRIVE_READY (1 << 2)
+#define DISK9350_STATUS_WRITE_PROTECT_ENABLE (1 << 3)
+#define DISK9350_STATUS_CRC_ERROR (1 << 4)
+#define DISK9350_STATUS_COMMAND_ERROR (1 << 5)
+#define DISK9350_STATUS_INVALID_SECTOR_ADDRESS (1 << 6)
+#define DISK9350_STATUS_OVERFLOW (1 << 7)
+
 extern class dp2200Window * dpw;
 
 class IOController {
@@ -235,6 +244,73 @@ class IOController {
     FloppyDevice();
   };
 
+  class Disk9350Device : public virtual IODevice  {
+
+    class Disk9350Drive {
+      std::string fileName;
+      FILE * file;
+      bool writeProtected;
+      public:
+      int openFile (std::string fileName, bool writeProtected);
+      void closeFile();
+      int readSector(char * buffer, long address);
+      int writeSector(char * buffer, long address); 
+    };
+
+    int selectedDrive;
+    int selectedBufferPage;
+    char buffer[16][256];
+    int bufferAddress;
+    int head;
+    int sector;
+    int cylinder;
+
+    class Disk9350Drive * drives[4];
+    public:
+    unsigned char input ();
+    int exWrite(unsigned char data); 
+    int exCom1(unsigned char data);
+    int exCom2(unsigned char data);
+    int exCom3(unsigned char data);
+    int exCom4(unsigned char data);
+    int exBeep();
+    int exClick();
+    int exDeck1();
+    int exDeck2();
+    int exRBK();
+    int exWBK();
+    int exBSP();
+    int exSF();
+    int exSB();
+    int exRewind();
+    int exTStop();
+    Disk9350Device();
+  };
+
+
+  class Disk9370Device : public virtual IODevice  {
+    public:
+    unsigned char input ();
+    int exWrite(unsigned char data); 
+    int exCom1(unsigned char data);
+    int exCom2(unsigned char data);
+    int exCom3(unsigned char data);
+    int exCom4(unsigned char data);
+    int exBeep();
+    int exClick();
+    int exDeck1();
+    int exDeck2();
+    int exRBK();
+    int exWBK();
+    int exBSP();
+    int exSF();
+    int exSB();
+    int exRewind();
+    int exTStop();
+    Disk9370Device();
+  };  
+
+
   class IODevice * dev[16];
   int ioAddress; 
   std::vector<unsigned char> supportedDevices;
@@ -245,6 +321,8 @@ class IOController {
   class FloppyDevice * floppyDevice;
   class ServoPrinterDevice * servoPrinterDevice;
   class LocalPrinterDevice * localPrinterDevice;
+  class Disk9350Device * disk9350Device;
+  class Disk9370Device * disk9370Device;
   IOController ();
   unsigned char input ();
   int exAdr (unsigned char address);
@@ -267,5 +345,8 @@ class IOController {
   int exRewind();
   int exTStop();
 }; 
+
+  
+
 
 #endif

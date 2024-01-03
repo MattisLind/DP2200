@@ -4,6 +4,7 @@
 #include "dp2200Window.h"
 #include "RegisterWindow.h"
 #include <algorithm>
+#include <sys/stat.h>
 
 extern class dp2200Window * dpw;
 extern class registerWindow * rw;
@@ -20,12 +21,16 @@ IOController::IOController () {
   dev[6] = parallellInterfaceAdaptorDevice = new ParallellInterfaceAdaptorDevice();
   dev[10] = servoPrinterDevice = new ServoPrinterDevice();
   dev[3] = localPrinterDevice = new LocalPrinterDevice();
+  dev[8] = disk9350Device = new Disk9350Device();
+  dev[11] = disk9370Device = new Disk9370Device();
   supportedDevices.push_back(0);
   supportedDevices.push_back(1);
   supportedDevices.push_back(12);
   supportedDevices.push_back(6);
   supportedDevices.push_back(10);
   supportedDevices.push_back(3);
+  supportedDevices.push_back(8);
+  supportedDevices.push_back(11);  
 }
 
 int IOController::exAdr (unsigned char address) {
@@ -707,7 +712,7 @@ int IOController::FloppyDevice::exCom1(unsigned char data){
       break;
     case 6: // Write Selected Buffer Page onto Selected Sector
     case 7: // Same as 6 plus read check of CRC
-     printLog("INFO", "Reading from drive\n");
+     printLog("INFO", "Writing to drive\n");
       statusRegister |= FLOPPY_STATUS_DATA_XFER_IN_PROGRESS;
       statusRegister &= ~(FLOPPY_STATUS_SECTOR_NOT_FOUND | FLOPPY_STATUS_DELETED_DATA_MARK | FLOPPY_STATUS_CRC_ERROR | FLOPPY_STATUS_DRIVE_READY); 
       timeoutInNanosecs(&then, 1000000); 
@@ -838,4 +843,246 @@ IOController::FloppyDevice::FloppyDevice() {
   for (int i=0; i<4; i++) {
     floppyDrives[i] = new FloppyDrive();
   }
+}
+
+
+
+
+unsigned char IOController::Disk9350Device::input () {
+  if (status) {
+    return statusRegister;
+  } else {
+    return dataRegister;
+  }
+}
+int IOController::Disk9350Device::exWrite(unsigned char data) {
+  return 1;
+} 
+int IOController::Disk9350Device::exCom1(unsigned char data) {
+  struct timespec then;
+  long address; 
+  switch (0xf & data) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+      // Select drive 0..3
+      selectedDrive = 0x3 & data;
+      printLog("INFO", "Selecting drive %d\n", 0x3&data);
+      statusRegister &= ~DISK9350_STATUS_DRIVE_READY;
+      timeoutInNanosecs(&then, 10000);
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+          printLog("INFO", "10us timeout 9350 drive select drive is ready\n");
+          t->statusRegister |= DISK9350_STATUS_DRIVE_READY;
+          return 0;
+        },
+        then);
+
+      return 0;
+    case 4:
+      // Clear selected buffer page to all zeros. Set page byte address to zero.
+      for (int i=0; i<256; i++) {
+        buffer[selectedBufferPage][i]=0;
+      }
+      bufferAddress = 0;
+      return 0;
+    case 5:
+      // Read selected sector onto selected buffer page.
+      printLog("INFO", "Reading from 9350 drive\n");
+      statusRegister &= ~(DISK9350_STATUS_CONTROLLER_READY | DISK9350_STATUS_CRC_ERROR | DISK9350_STATUS_INVALID_SECTOR_ADDRESS);
+      address = cylinder * head * sector;
+      timeoutInNanosecs(&then, 1000000);
+      addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
+          printLog("INFO", "10ms timeout 9350 disk read is ready\n");
+          t->statusRegister |= DISK9350_STATUS_CONTROLLER_READY;
+          t->drives[t->selectedDrive]->readSector(t->buffer[t->selectedBufferPage], address);
+          return 0;
+        }, then);      
+      return 0;
+      // Write selected buffer page onto selected sector.
+    case 6:
+      // Same as 6 followd by a read check of CRC. Implemented exactly as 6. No Read done. 
+    case 7:
+      printLog("INFO", "Writing to 9350 drive\n");
+      statusRegister &= ~(DISK9350_STATUS_CONTROLLER_READY | DISK9350_STATUS_CRC_ERROR | DISK9350_STATUS_INVALID_SECTOR_ADDRESS);
+      address = cylinder * head * sector;
+      timeoutInNanosecs(&then, 1000000);
+      addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
+          int ret;
+          printLog("INFO", "10ms timeout 9350 disk read is ready\n"); 
+          ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
+          if (ret!=0) {
+            t->statusRegister |= DISK9350_STATUS_WRITE_PROTECT_ENABLE; 
+          }
+          t->statusRegister |= DISK9350_STATUS_CONTROLLER_READY;
+          return 0;
+        }, then);      
+      return 0;
+      // Restore selected drive.
+    case 8:
+      head = 0;
+      return 0;
+      // Select buffer page specified by bits 6,7.
+    case 9:
+      bufferAddress = (data >> 4) & 0xf;
+      return 0;
+    default:
+      return 1;
+  }
+  return 1;
+}
+int IOController::Disk9350Device::exCom2(unsigned char data){
+  // Select Cylinder number (0..312 octal)
+  cylinder = data;
+  return 0;
+}
+int IOController::Disk9350Device::exCom3(unsigned char data){
+  // Select Sector number bits 0..4. Select track bit 5.
+  sector = 0x1f & data;
+  head = (data >> 5) & 1;
+  return 0;
+}
+int IOController::Disk9350Device::exCom4(unsigned char data){
+  // Select Buffer Page Byte Adderss (0-255 Decimal 0.377 Octal)
+  bufferAddress = data;
+  return 0;
+}
+int IOController::Disk9350Device::exBeep(){
+  return 1;
+}
+int IOController::Disk9350Device::exClick(){
+  return 1;
+}
+int IOController::Disk9350Device::exDeck1(){
+  return 1;
+}
+int IOController::Disk9350Device::exDeck2(){
+  return 1;
+}
+int IOController::Disk9350Device::exRBK(){
+  return 1;
+}
+int IOController::Disk9350Device::exWBK(){
+  return 1;
+}
+int IOController::Disk9350Device::exBSP(){
+  return 1;
+}
+int IOController::Disk9350Device::exSF(){
+  return 1;
+}
+int IOController::Disk9350Device::exSB(){
+  return 1;
+}
+int IOController::Disk9350Device::exRewind(){
+  return 1;
+}
+int IOController::Disk9350Device::exTStop(){
+  return 1;
+}
+
+IOController::Disk9350Device::Disk9350Device() {
+  statusRegister = 0;
+  drives[0] = new Disk9350Drive();
+  drives[1] = new Disk9350Drive();
+  drives[2] = new Disk9350Drive();
+  drives[3] = new Disk9350Drive();
+}
+
+int IOController::Disk9350Device::Disk9350Drive::openFile (std::string fileName, bool wp) {
+  // try to open file. If it fails to open create an empty file and attach it insted.
+  struct stat buffer;
+  if (file != NULL) {
+    closeFile();
+  }
+  writeProtected = wp;
+  if (stat (fileName.c_str(), &buffer) == 0) {
+    file = fopen (fileName.c_str(), "w");
+  } else {
+    char b [256];
+    memset(b, 0, 256);
+    file = fopen (fileName.c_str(), "w");
+    for (int i=0; i < 0312*027*2; i++) {
+      fwrite(b, 256, 1, file); 
+    }
+    rewind(file);
+  }
+  return 0;
+}
+
+void  IOController::Disk9350Device::Disk9350Drive::closeFile() {
+  fclose(file);
+}
+
+int IOController::Disk9350Device::Disk9350Drive::readSector(char * buffer, long address) {
+  fseek(file, address, SEEK_SET);
+  fread(buffer, 1, 256, file);
+  return 0;
+}
+
+int IOController::Disk9350Device::Disk9350Drive::writeSector(char * buffer, long address) {
+  if (writeProtected) return 1;
+  fseek(file, address, SEEK_SET);
+  fwrite(buffer, 1, 256, file);  
+  return 0;
+}
+
+unsigned char IOController::Disk9370Device::input () {
+  if (status) {
+    return statusRegister;
+  } else {
+    return dataRegister;
+  }
+}
+int IOController::Disk9370Device::exWrite(unsigned char data) {
+  return 1;
+} 
+int IOController::Disk9370Device::exCom1(unsigned char data){
+  return 1;
+}
+int IOController::Disk9370Device::exCom2(unsigned char data){
+  return 1;
+}
+int IOController::Disk9370Device::exCom3(unsigned char data){
+  return 1;
+}
+int IOController::Disk9370Device::exCom4(unsigned char data){
+  return 1;
+}
+int IOController::Disk9370Device::exBeep(){
+  return 1;
+}
+int IOController::Disk9370Device::exClick(){
+  return 1;
+}
+int IOController::Disk9370Device::exDeck1(){
+  return 1;
+}
+int IOController::Disk9370Device::exDeck2(){
+  return 1;
+}
+int IOController::Disk9370Device::exRBK(){
+  return 1;
+}
+int IOController::Disk9370Device::exWBK(){
+  return 1;
+}
+int IOController::Disk9370Device::exBSP(){
+  return 1;
+}
+int IOController::Disk9370Device::exSF(){
+  return 1;
+}
+int IOController::Disk9370Device::exSB(){
+  return 1;
+}
+int IOController::Disk9370Device::exRewind(){
+  return 1;
+}
+int IOController::Disk9370Device::exTStop(){
+  return 1;
+}
+
+IOController::Disk9370Device::Disk9370Device() {
+  statusRegister = 0;
 }
