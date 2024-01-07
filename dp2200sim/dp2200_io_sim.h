@@ -53,6 +53,15 @@ void removeTimerCallback(class callbackRecord * c);
 #define DISK9350_STATUS_INVALID_SECTOR_ADDRESS (1 << 6)
 #define DISK9350_STATUS_OVERFLOW (1 << 7)
 
+#define DISK9370_STATUS_DRIVE_ONLINE (1 << 0)
+#define DISK9370_STATUS_DATA_XFER_IN_PROGRESS (1 << 1)
+#define DISK9370_STATUS_DRIVE_BUSY (1 << 2)
+#define DISK9370_STATUS_SEEK_INCOMPLETE_ERROR (1 << 3)
+#define DISK9370_STATUS_CRC_ERROR (1 << 4)
+#define DISK9370_STATUS_WRITE_PROTECT_ENABLE (1 << 5)
+#define DISK9370_STATUS_SECTOR_NOT_FOUND (1 << 6)
+#define DISK9370_STATUS_BUFFER_PARITY_ERROR (1 << 7)
+
 extern class dp2200Window * dpw;
 
 class IOController {
@@ -255,6 +264,8 @@ class IOController {
       void closeFile();
       int readSector(char * buffer, long address);
       int writeSector(char * buffer, long address); 
+      bool isWriteProtected();
+      bool isOnline();
     };
 
     int selectedDrive;
@@ -264,10 +275,12 @@ class IOController {
     int head;
     int sector;
     int cylinder;
-
     class Disk9350Drive * drives[4];
+
     public:
     unsigned char input ();
+    int openFile(int drive, std::string fileName, bool wp);
+    void closeFile (int drive);
     int exWrite(unsigned char data); 
     int exCom1(unsigned char data);
     int exCom2(unsigned char data);
@@ -289,7 +302,30 @@ class IOController {
 
 
   class Disk9370Device : public virtual IODevice  {
+    class Disk9370Drive {
+      std::string fileName;
+      FILE * file;
+      bool writeProtected;
+      public:
+      int openFile (std::string fileName, bool writeProtected);
+      void closeFile();
+      int readSector(char * buffer, long address);
+      int writeSector(char * buffer, long address);
+      bool isWriteProtected();
+      bool isOnline();       
+    };
+    int tmp;
+    int selectedDrive;
+    int selectedBufferPage;
+    char buffer[16][256];
+    int bufferAddress;
+    int head;
+    int sector;
+    int cylinder;
+    class Disk9370Drive * drives[8];    
     public:
+    int openFile(int drive, std::string fileName, bool wp);
+    void closeFile (int drive);    
     unsigned char input ();
     int exWrite(unsigned char data); 
     int exCom1(unsigned char data);

@@ -850,13 +850,26 @@ IOController::FloppyDevice::FloppyDevice() {
 
 unsigned char IOController::Disk9350Device::input () {
   if (status) {
+    if (drives[selectedDrive]->isOnline()) {
+      statusRegister |= DISK9350_STATUS_DRIVE_ONLINE;
+    } else {
+      statusRegister &= ~DISK9350_STATUS_DRIVE_ONLINE;
+    }
+    if (drives[selectedDrive]->isWriteProtected()) {
+      statusRegister |= DISK9350_STATUS_WRITE_PROTECT_ENABLE; 
+    } else {
+      statusRegister &= ~DISK9350_STATUS_WRITE_PROTECT_ENABLE;
+    }    
     return statusRegister;
   } else {
-    return dataRegister;
+    printLog("INFO", "Reading data from 9350 bufferPage %d address %d = %02X\n", selectedBufferPage, bufferAddress, 0xff&buffer[selectedBufferPage][bufferAddress]);
+    return buffer[selectedBufferPage][bufferAddress];
   }
 }
 int IOController::Disk9350Device::exWrite(unsigned char data) {
-  return 1;
+  //printLog("INFO", "9350 Writing data %02X to address %d in bufferPage %d\n", data&0xff, bufferAddress, selectedBufferPage);
+  buffer[selectedBufferPage][bufferAddress]=data;
+  return 0;
 } 
 int IOController::Disk9350Device::exCom1(unsigned char data) {
   struct timespec then;
@@ -909,7 +922,7 @@ int IOController::Disk9350Device::exCom1(unsigned char data) {
       timeoutInNanosecs(&then, 1000000);
       addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
           int ret;
-          printLog("INFO", "10ms timeout 9350 disk read is ready\n"); 
+          printLog("INFO", "10ms timeout 9350 disk write is ready\n"); 
           ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
           if (ret!=0) {
             t->statusRegister |= DISK9350_STATUS_WRITE_PROTECT_ENABLE; 
@@ -920,7 +933,17 @@ int IOController::Disk9350Device::exCom1(unsigned char data) {
       return 0;
       // Restore selected drive.
     case 8:
-      head = 0;
+      printLog("INFO", "Restoring drive %d\n", selectedDrive);
+      statusRegister &= ~DISK9350_STATUS_DRIVE_READY;
+      timeoutInNanosecs(&then, 1000000);
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+          printLog("INFO", "1ms timeout 9350 restore drive is ready\n");
+          t->cylinder = 0;
+          t->statusRegister |= DISK9350_STATUS_DRIVE_READY;
+          return 0;
+        },
+        then);
+
       return 0;
       // Select buffer page specified by bits 6,7.
     case 9:
@@ -981,6 +1004,14 @@ int IOController::Disk9350Device::exTStop(){
   return 1;
 }
 
+int IOController::Disk9350Device::openFile (int drive, std::string fileName, bool wp) {
+  return drives[drive]->openFile(fileName, wp);
+}
+
+void IOController::Disk9350Device::closeFile (int drive) {
+  drives[drive]->closeFile();
+}
+
 IOController::Disk9350Device::Disk9350Device() {
   statusRegister = 0;
   drives[0] = new Disk9350Drive();
@@ -997,9 +1028,11 @@ int IOController::Disk9350Device::Disk9350Drive::openFile (std::string fileName,
   }
   writeProtected = wp;
   if (stat (fileName.c_str(), &buffer) == 0) {
+    printLog("INFO", "Open old file %s.\n", fileName.c_str());
     file = fopen (fileName.c_str(), "w");
   } else {
     char b [256];
+    printLog("INFO", "Open mew file %s.\n", fileName.c_str());
     memset(b, 0, 256);
     file = fopen (fileName.c_str(), "w");
     for (int i=0; i < 0312*027*2; i++) {
@@ -1012,6 +1045,7 @@ int IOController::Disk9350Device::Disk9350Drive::openFile (std::string fileName,
 
 void  IOController::Disk9350Device::Disk9350Drive::closeFile() {
   fclose(file);
+  file = NULL;
 }
 
 int IOController::Disk9350Device::Disk9350Drive::readSector(char * buffer, long address) {
@@ -1027,27 +1061,150 @@ int IOController::Disk9350Device::Disk9350Drive::writeSector(char * buffer, long
   return 0;
 }
 
+bool IOController::Disk9350Device::Disk9350Drive::isOnline() {
+  return file!=NULL;
+}
+
+bool IOController::Disk9350Device::Disk9350Drive::isWriteProtected() {
+  return writeProtected;
+}
+
 unsigned char IOController::Disk9370Device::input () {
   if (status) {
+    if (drives[selectedDrive]->isOnline()) {
+      statusRegister |= DISK9370_STATUS_DRIVE_ONLINE;
+    } else {
+      statusRegister &= ~DISK9370_STATUS_DRIVE_ONLINE;
+    }
+    if (drives[selectedDrive]->isWriteProtected()) {
+      statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
+    } else {
+      statusRegister &= ~DISK9370_STATUS_WRITE_PROTECT_ENABLE;
+    }     
     return statusRegister;
   } else {
     return dataRegister;
   }
 }
 int IOController::Disk9370Device::exWrite(unsigned char data) {
-  return 1;
+  //printLog("INFO", "9370 Writing data %02X to address %d in bufferPage %d\n", data&0xff, bufferAddress, selectedBufferPage);
+  buffer[selectedBufferPage][bufferAddress]=data;
+  return 0;
 } 
 int IOController::Disk9370Device::exCom1(unsigned char data){
-  return 1;
+  struct timespec then;
+  long address; 
+  switch (data & 0xf) {
+    case 0: // Master clear
+      tmp=0;
+      statusRegister=0;
+      return 0;
+    case 1: // Disk read
+      printLog("INFO", "Reading from 9370 drive\n");
+      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
+      statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
+      address = cylinder * head * sector;
+      timeoutInNanosecs(&then, 1000000);
+      addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
+          printLog("INFO", "10ms timeout 9370 disk read is ready\n");
+          t->statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
+          t->drives[t->selectedDrive]->readSector(t->buffer[t->selectedBufferPage], address);
+          return 0;
+        }, then);      
+      return 0;
+    case 2: // Disk write
+    case 3: // Disk write verify. Same as 2 since we are not checking CRC in the simulator.
+      printLog("INFO", "Writing to 9370 drive\n");
+      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
+      statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
+      address = cylinder * head * sector;
+      timeoutInNanosecs(&then, 1000000);
+      addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
+          int ret;
+          printLog("INFO", "10ms timeout 9370 disk write is ready\n"); 
+          ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
+          if (ret!=0) {
+            t->statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
+          }
+        t->statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
+          return 0;
+        }, then);      
+      return 0;
+    case 4: // Restore selected drive
+      cylinder = 0;
+      printLog("INFO", "Restoring drive %d\n", selectedDrive);
+      statusRegister |= DISK9370_STATUS_DRIVE_BUSY;
+      timeoutInNanosecs(&then, 1000000);
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+          printLog("INFO", "1ms timeout 9350 restore drive is ready\n");
+          t->statusRegister &= ~DISK9370_STATUS_DRIVE_BUSY;
+          return 0;
+        },
+        then);
+
+      return 0;
+    case 5: // Select Physical Drive as per contents of the EX COM2 register 0-7
+      selectedDrive = tmp & 0x7;
+      printLog("INFO", "Selecting drive %d\n", 0x7&data);
+      statusRegister |= DISK9370_STATUS_DRIVE_BUSY;
+      timeoutInNanosecs(&then, 10000);
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+          printLog("INFO", "10us timeout 9350 drive select drive is ready\n");
+          t->statusRegister &= ~DISK9370_STATUS_DRIVE_BUSY;
+          return 0;
+        },
+        then);
+      return 0;
+    case 6: // Select cylinder as per contents of EX COM2 Register 0-312 octal (9374 - Sets upper 8 bits of cylinder address)
+      cylinder = tmp;
+      return 0;
+    case 7: // Verify Drive type 001 -> Datapoint 9370, 020 -> Datapoint 9374 ???? What is this??
+      return 1;  // Don't know how to really implement this.
+    case 8: // Format track 
+      printLog("INFO", "Formatting a track on a 9370 drive\n");
+      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
+      statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
+      address = cylinder * head * sector;
+      timeoutInNanosecs(&then, 3000000);
+      addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
+          int ret;
+          printLog("INFO", "3ms timeout 9370 disk write is ready\n"); 
+          ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
+          if (ret!=0) {
+            t->statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
+          }
+        t->statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
+          return 0;
+        }, then);      
+      return 0;
+    case 9: // Select head as per contents of EX COM2 Register 0-19 decimal 0.-23 octal (9364 - 0-17 octal)
+      head = tmp;
+      return 0;
+    case 10: // Select Sector as per contents of EX COM2 Register (0-24 decimal, 0-27 octal) 9374 - Sets upper 5 bits of sector address
+      sector = tmp;
+      return 0;
+    case 11: // Clear Buffer Parity Error
+      return 0;
+    case 12: // Diagnostic Reset: Clear File Unsafe (9374 - not used)
+      return 0;
+    case 13: // Set Track Offset per contents pf EX COM2 register (9374 only)
+      return 0;
+    default:
+      return 1; 
+  }
 }
 int IOController::Disk9370Device::exCom2(unsigned char data){
-  return 1;
+  tmp = data;
+  return 0;
 }
 int IOController::Disk9370Device::exCom3(unsigned char data){
-  return 1;
+  selectedBufferPage = data & 0xf;
+  return 0;
 }
 int IOController::Disk9370Device::exCom4(unsigned char data){
-  return 1;
+  // Select Buffer Page Byte Adderss (0-255 Decimal 0.377 Octal)
+  bufferAddress = data;
+  return 0;
 }
 int IOController::Disk9370Device::exBeep(){
   return 1;
@@ -1083,6 +1240,73 @@ int IOController::Disk9370Device::exTStop(){
   return 1;
 }
 
+int IOController::Disk9370Device::openFile (int drive, std::string fileName, bool wp) {
+  return drives[drive]->openFile(fileName, wp);
+}
+
+void IOController::Disk9370Device::closeFile (int drive) {
+  drives[drive]->closeFile();
+}
+
+
 IOController::Disk9370Device::Disk9370Device() {
   statusRegister = 0;
+  drives[0] = new Disk9370Drive();
+  drives[1] = new Disk9370Drive();
+  drives[2] = new Disk9370Drive();
+  drives[3] = new Disk9370Drive();
+  drives[4] = new Disk9370Drive();
+  drives[5] = new Disk9370Drive();
+  drives[6] = new Disk9370Drive();
+  drives[7] = new Disk9370Drive();  
+}
+
+
+int IOController::Disk9370Device::Disk9370Drive::openFile (std::string fileName, bool wp) {
+  // try to open file. If it fails to open create an empty file and attach it insted.
+  struct stat buffer;
+  if (file != NULL) {
+    closeFile();
+  }
+  writeProtected = wp;
+  if (stat (fileName.c_str(), &buffer) == 0) {
+    printLog("INFO", "Open old file %s.\n", fileName.c_str());
+    file = fopen (fileName.c_str(), "w");
+  } else {
+    char b [256];
+    printLog("INFO", "Open mew file %s.\n", fileName.c_str());
+    memset(b, 0, 256);
+    file = fopen (fileName.c_str(), "w");
+    for (int i=0; i < 0312*027*2; i++) {
+      fwrite(b, 256, 1, file); 
+    }
+    rewind(file);
+  }
+  return 0;
+}
+
+void  IOController::Disk9370Device::Disk9370Drive::closeFile() {
+  fclose(file);
+  file = NULL;
+}
+
+int IOController::Disk9370Device::Disk9370Drive::readSector(char * buffer, long address) {
+  fseek(file, address, SEEK_SET);
+  fread(buffer, 1, 256, file);
+  return 0;
+}
+
+int IOController::Disk9370Device::Disk9370Drive::writeSector(char * buffer, long address) {
+  if (writeProtected) return 1;
+  fseek(file, address, SEEK_SET);
+  fwrite(buffer, 1, 256, file);  
+  return 0;
+}
+
+bool IOController::Disk9370Device::Disk9370Drive::isOnline() {
+  return file!=NULL;
+}
+
+bool IOController::Disk9370Device::Disk9370Drive::isWriteProtected() {
+  return writeProtected;
 }

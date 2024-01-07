@@ -134,7 +134,11 @@ void commandWindow::doDetach(std::vector<Param> params) {
     cpu->ioCtrl->floppyDevice->closeFile(drive); 
   } else if (type == "PRINTER") {
     cpu->ioCtrl->localPrinterDevice->closeFile(drive); 
-  } else {
+  } else if (type == "9350") {
+    cpu->ioCtrl->disk9350Device->closeFile(drive);
+  } else if (type == "9370") {
+    cpu->ioCtrl->disk9370Device->closeFile(drive);
+  }else {
     wprintw(innerWin, "Unrecognized type %s\n", type.c_str());
   }
 }
@@ -199,6 +203,18 @@ void commandWindow::doAttach(std::vector<Param> params) {
     } else {
       wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);      
     }    
+  } else if (type == "9350") {
+    if ((ret = cpu->ioCtrl->disk9350Device->openFile(drive, fileName, writeProtect))==0) {
+      wprintw(innerWin, "Attaching file %s to 9350 disk drive %d\n", fileName.c_str(), drive );
+    } else {
+      wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);
+    }
+  } else if (type == "9370") {
+    if ((ret = cpu->ioCtrl->disk9370Device->openFile(drive, fileName, writeProtect))==0) {
+      wprintw(innerWin, "Attaching file %s to 9350 disk drive %d\n", fileName.c_str(), drive );
+    } else {
+      wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);
+    }
   }
 }
 void commandWindow::processCommand(char ch) {
