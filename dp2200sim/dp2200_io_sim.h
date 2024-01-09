@@ -347,7 +347,7 @@ class IOController {
   };  
 
 
-  class IODevice * dev[16];
+  class IODevice * dev[256];
   int ioAddress; 
   std::vector<unsigned char> supportedDevices;
   public:

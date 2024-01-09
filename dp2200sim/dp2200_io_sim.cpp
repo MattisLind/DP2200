@@ -15,29 +15,29 @@ void printLog(const char *level, const char *fmt, ...);
 
 
 IOController::IOController () {
-  dev[0] = cassetteDevice = new CassetteDevice();
-  dev[1] = screenKeyboardDevice = new ScreenKeyboardDevice();
-  dev[12] = floppyDevice = new FloppyDevice();
-  dev[6] = parallellInterfaceAdaptorDevice = new ParallellInterfaceAdaptorDevice();
-  dev[10] = servoPrinterDevice = new ServoPrinterDevice();
-  dev[3] = localPrinterDevice = new LocalPrinterDevice();
-  dev[8] = disk9350Device = new Disk9350Device();
-  dev[11] = disk9370Device = new Disk9370Device();
-  supportedDevices.push_back(0);
-  supportedDevices.push_back(1);
-  supportedDevices.push_back(12);
-  supportedDevices.push_back(6);
-  supportedDevices.push_back(10);
-  supportedDevices.push_back(3);
-  supportedDevices.push_back(8);
-  supportedDevices.push_back(11);  
+  dev[0xf0] = cassetteDevice = new CassetteDevice();
+  dev[0xe1] = screenKeyboardDevice = new ScreenKeyboardDevice();
+  dev[0x3c] = floppyDevice = new FloppyDevice();
+  dev[0x96] = parallellInterfaceAdaptorDevice = new ParallellInterfaceAdaptorDevice();
+  dev[0x5a] = servoPrinterDevice = new ServoPrinterDevice();
+  dev[0xc3] = localPrinterDevice = new LocalPrinterDevice();
+  dev[0x78] = disk9350Device = new Disk9350Device();
+  dev[0x4b] = disk9370Device = new Disk9370Device();
+  supportedDevices.push_back(0xf0);
+  supportedDevices.push_back(0xe1);
+  supportedDevices.push_back(0x3c);
+  supportedDevices.push_back(0x96);
+  supportedDevices.push_back(0x5a);
+  supportedDevices.push_back(0xc3);
+  supportedDevices.push_back(0x78);
+  supportedDevices.push_back(0x4b);  
 }
 
 int IOController::exAdr (unsigned char address) {
-  if (std::find(supportedDevices.begin(), supportedDevices.end(), address&0xf)==supportedDevices.end()) {
+  if (std::find(supportedDevices.begin(), supportedDevices.end(), address)==supportedDevices.end()) {
     return 1;
   }
-  ioAddress = address & 0xf;
+  ioAddress = address;
   exStatus();
   return 0;
 }
@@ -1277,7 +1277,7 @@ int IOController::Disk9370Device::Disk9370Drive::openFile (std::string fileName,
     printLog("INFO", "Open mew file %s.\n", fileName.c_str());
     memset(b, 0, 256);
     file = fopen (fileName.c_str(), "w");
-    for (int i=0; i < 0312*027*2; i++) {
+    for (int i=0; i < 0312*027*023; i++) {
       fwrite(b, 256, 1, file); 
     }
     rewind(file);
