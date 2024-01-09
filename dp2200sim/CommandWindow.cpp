@@ -211,7 +211,7 @@ void commandWindow::doAttach(std::vector<Param> params) {
     }
   } else if (type == "9370") {
     if ((ret = cpu->ioCtrl->disk9370Device->openFile(drive, fileName, writeProtect))==0) {
-      wprintw(innerWin, "Attaching file %s to 9350 disk drive %d\n", fileName.c_str(), drive );
+      wprintw(innerWin, "Attaching file %s to 9370 disk drive %d\n", fileName.c_str(), drive );
     } else {
       wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);
     }

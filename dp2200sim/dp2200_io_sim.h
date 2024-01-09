@@ -68,7 +68,7 @@ class IOController {
   class IODevice {
     protected:
     unsigned char statusRegister, dataRegister;
-    bool status;
+    int status;
     public:
     virtual unsigned char input () = 0;
     void exStatus ();
@@ -346,6 +346,28 @@ class IOController {
     Disk9370Device();
   };  
 
+  class Disk9390Device : public virtual IODevice  {
+    public:
+    unsigned char input ();
+    int exWrite(unsigned char data); 
+    int exCom1(unsigned char data);
+    int exCom2(unsigned char data);
+    int exCom3(unsigned char data);
+    int exCom4(unsigned char data);
+    int exBeep();
+    int exClick();
+    int exDeck1();
+    int exDeck2();
+    int exRBK();
+    int exWBK();
+    int exBSP();
+    int exSF();
+    int exSB();
+    int exRewind();
+    int exTStop();
+    Disk9390Device();
+  };
+
 
   class IODevice * dev[256];
   int ioAddress; 
@@ -359,6 +381,7 @@ class IOController {
   class LocalPrinterDevice * localPrinterDevice;
   class Disk9350Device * disk9350Device;
   class Disk9370Device * disk9370Device;
+  class Disk9390Device * disk9390Device;
   IOController ();
   unsigned char input ();
   int exAdr (unsigned char address);

@@ -23,6 +23,7 @@ IOController::IOController () {
   dev[0xc3] = localPrinterDevice = new LocalPrinterDevice();
   dev[0x78] = disk9350Device = new Disk9350Device();
   dev[0x4b] = disk9370Device = new Disk9370Device();
+  dev[0x71] = disk9390Device = new Disk9390Device();
   supportedDevices.push_back(0xf0);
   supportedDevices.push_back(0xe1);
   supportedDevices.push_back(0x3c);
@@ -31,6 +32,7 @@ IOController::IOController () {
   supportedDevices.push_back(0xc3);
   supportedDevices.push_back(0x78);
   supportedDevices.push_back(0x4b);  
+  supportedDevices.push_back(0x71);
 }
 
 int IOController::exAdr (unsigned char address) {
@@ -106,11 +108,11 @@ unsigned char IOController::input () {
 
 
 void IOController::IODevice::exStatus () {
-  status = true;
+  status = 1;
 }
 
 void IOController::IODevice::exData () {
-  status = false;
+  status = 0;
 }
 
 unsigned char IOController::CassetteDevice::input () {
@@ -1070,7 +1072,7 @@ bool IOController::Disk9350Device::Disk9350Drive::isWriteProtected() {
 }
 
 unsigned char IOController::Disk9370Device::input () {
-  if (status) {
+  if (status==1) {
     if (drives[selectedDrive]->isOnline()) {
       statusRegister |= DISK9370_STATUS_DRIVE_ONLINE;
     } else {
@@ -1082,8 +1084,10 @@ unsigned char IOController::Disk9370Device::input () {
       statusRegister &= ~DISK9370_STATUS_WRITE_PROTECT_ENABLE;
     }     
     return statusRegister;
-  } else {
+  } else if (status == 0) {
     return dataRegister;
+  } else {
+    return 001;
   }
 }
 int IOController::Disk9370Device::exWrite(unsigned char data) {
@@ -1159,7 +1163,8 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       cylinder = tmp;
       return 0;
     case 7: // Verify Drive type 001 -> Datapoint 9370, 020 -> Datapoint 9374 ???? What is this??
-      return 1;  // Don't know how to really implement this.
+      status=2;
+      return 0; 
     case 8: // Format track 
       printLog("INFO", "Formatting a track on a 9370 drive\n");
       statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
@@ -1309,4 +1314,66 @@ bool IOController::Disk9370Device::Disk9370Drive::isOnline() {
 
 bool IOController::Disk9370Device::Disk9370Drive::isWriteProtected() {
   return writeProtected;
+}
+
+
+unsigned char IOController::Disk9390Device::input () {
+  if (status) {
+    return statusRegister;
+  } else {
+    return dataRegister;
+  }
+}
+int IOController::Disk9390Device::exWrite(unsigned char data) {
+  return 1;
+} 
+int IOController::Disk9390Device::exCom1(unsigned char data){
+  return 1;
+}
+int IOController::Disk9390Device::exCom2(unsigned char data){
+  return 1;
+}
+int IOController::Disk9390Device::exCom3(unsigned char data){
+  return 1;
+}
+int IOController::Disk9390Device::exCom4(unsigned char data){
+  return 1;
+}
+int IOController::Disk9390Device::exBeep(){
+  return 1;
+}
+int IOController::Disk9390Device::exClick(){
+  return 1;
+}
+int IOController::Disk9390Device::exDeck1(){
+  return 1;
+}
+int IOController::Disk9390Device::exDeck2(){
+  return 1;
+}
+int IOController::Disk9390Device::exRBK(){
+  return 1;
+}
+int IOController::Disk9390Device::exWBK(){
+  return 1;
+}
+int IOController::Disk9390Device::exBSP(){
+  return 1;
+}
+int IOController::Disk9390Device::exSF(){
+  return 1;
+}
+int IOController::Disk9390Device::exSB(){
+  return 1;
+}
+int IOController::Disk9390Device::exRewind(){
+  return 1;
+}
+int IOController::Disk9390Device::exTStop(){
+  return 1;
+}
+
+IOController::Disk9390Device::Disk9390Device() {
+  statusRegister = 0;
+  dataRegister = 0;
 }
