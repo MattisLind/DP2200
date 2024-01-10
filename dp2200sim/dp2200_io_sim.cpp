@@ -1104,13 +1104,13 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       statusRegister=0;
       return 0;
     case 1: // Disk read
-      printLog("INFO", "Reading from 9370 drive\n");
+      printLog("INFO", "Reading from 9370 drive %d\n", selectedDrive);
       statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
       statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
       address = cylinder * head * sector;
       timeoutInNanosecs(&then, 1000000);
       addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
-          printLog("INFO", "10ms timeout 9370 disk read is ready\n");
+          printLog("INFO", "10ms timeout 9370 disk read is ready on drive %d\n", t->selectedDrive);
           t->statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
           t->drives[t->selectedDrive]->readSector(t->buffer[t->selectedBufferPage], address);
           return 0;
@@ -1118,14 +1118,14 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       return 0;
     case 2: // Disk write
     case 3: // Disk write verify. Same as 2 since we are not checking CRC in the simulator.
-      printLog("INFO", "Writing to 9370 drive\n");
+      printLog("INFO", "Writing to 9370 drive %d\n", selectedDrive);
       statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
       statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
       address = cylinder * head * sector;
       timeoutInNanosecs(&then, 1000000);
       addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
           int ret;
-          printLog("INFO", "10ms timeout 9370 disk write is ready\n"); 
+          printLog("INFO", "10ms timeout 9370 disk write is ready on drive %d\n", t->selectedDrive); 
           ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
           if (ret!=0) {
             t->statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
@@ -1149,11 +1149,11 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       return 0;
     case 5: // Select Physical Drive as per contents of the EX COM2 register 0-7
       selectedDrive = tmp & 0x7;
-      printLog("INFO", "Selecting drive %d\n", 0x7&data);
+      printLog("INFO", "Selecting drive %d\n", 0x7&tmp);
       statusRegister |= DISK9370_STATUS_DRIVE_BUSY;
       timeoutInNanosecs(&then, 10000);
       addToTimerQueue([t = this](class callbackRecord *c) -> int {
-          printLog("INFO", "10us timeout 9350 drive select drive is ready\n");
+          printLog("INFO", "10us timeout 9370 drive select drive is ready\n");
           t->statusRegister &= ~DISK9370_STATUS_DRIVE_BUSY;
           return 0;
         },
@@ -1166,14 +1166,14 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       status=2;
       return 0; 
     case 8: // Format track 
-      printLog("INFO", "Formatting a track on a 9370 drive\n");
+      printLog("INFO", "Formatting a track on a 9370 drive %d\n", selectedDrive);
       statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
       statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
       address = cylinder * head * sector;
       timeoutInNanosecs(&then, 3000000);
       addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
           int ret;
-          printLog("INFO", "3ms timeout 9370 disk write is ready\n"); 
+          printLog("INFO", "3ms timeout 9370 disk track format is ready on drive %d\n", t->selectedDrive); 
           ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
           if (ret!=0) {
             t->statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
