@@ -884,11 +884,11 @@ int IOController::Disk9350Device::exCom1(unsigned char data) {
       // Select drive 0..3
       selectedDrive = 0x3 & data;
       printLog("INFO", "Selecting drive %d\n", 0x3&data);
-      statusRegister &= ~DISK9350_STATUS_DRIVE_READY;
+      statusRegister &= ~(DISK9350_STATUS_DRIVE_READY | DISK9350_STATUS_CONTROLLER_READY);
       timeoutInNanosecs(&then, 10000);
       addToTimerQueue([t = this](class callbackRecord *c) -> int {
           printLog("INFO", "10us timeout 9350 drive select drive is ready\n");
-          t->statusRegister |= DISK9350_STATUS_DRIVE_READY;
+          t->statusRegister |= DISK9350_STATUS_DRIVE_READY | DISK9350_STATUS_CONTROLLER_READY;
           return 0;
         },
         then);
@@ -1161,6 +1161,7 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       return 0;
     case 6: // Select cylinder as per contents of EX COM2 Register 0-312 octal (9374 - Sets upper 8 bits of cylinder address)
       cylinder = tmp;
+      printLog("INFO", "9370: Selecting cyliner %d\n", sector);
       return 0;
     case 7: // Verify Drive type 001 -> Datapoint 9370, 020 -> Datapoint 9374 ???? What is this??
       status=2;
@@ -1184,9 +1185,12 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       return 0;
     case 9: // Select head as per contents of EX COM2 Register 0-19 decimal 0.-23 octal (9364 - 0-17 octal)
       head = tmp;
+      printLog("INFO", "9370: Selecting head %d\n", head);
+
       return 0;
     case 10: // Select Sector as per contents of EX COM2 Register (0-24 decimal, 0-27 octal) 9374 - Sets upper 5 bits of sector address
       sector = tmp;
+      printLog("INFO", "9370: Selecting sector %d\n", sector);
       return 0;
     case 11: // Clear Buffer Parity Error
       return 0;
