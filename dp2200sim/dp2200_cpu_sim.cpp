@@ -1,6 +1,4 @@
 //
-// Datapoint 2200 Disassembler
-// Input : raw binary code
 //
 // Based on M. Willegal 8008 disassembler / simulator
 //
@@ -131,6 +129,23 @@ int dp2200_cpu::removeBreakpoint(unsigned short address) {
   return 0; 
 }
 
+void dp2200_cpu::setCPUtype2200() {
+  pMask = 0x3fff;
+  hMask = 0x3f;
+  is5500 = false;
+  is2200 = true;
+}
+
+
+void dp2200_cpu::setCPUtype5500() {
+  pMask = 0xffff;
+  hMask = 0xff;
+  is5500=true;
+  is2200=false;
+}
+
+
+
 void dp2200_cpu::clear() {
   for (unsigned long i=0; i<sizeof(memory);i++ ) memory[i]=0;
 }
@@ -148,75 +163,139 @@ void dp2200_cpu::reset() {
     setSel = 0;
     interruptPending = 0;
     interruptEnabled = 0;
+}
+
+int dp2200_cpu::execute() {
+  unsigned char inst;
+  char buffer[32]; 
+  int timeForInstruction;
+  int halted;
+  struct inst i;
+  /* Handle interrupt*/
+
+  if (interruptEnabled && interruptPending) {
+    interruptPending = 0;
+
+    /* now bump stack to use new pc and save it */
+    stack.stk[stackptr] = P;
+    stackptr = (stackptr + 1) & 0xf;
+    P = 0;
+  }
+  inst = memory[P];
+
+  switch (inst) {
+    case 0022:
+    case 0062:
+    case 0111:
+    case 0113:
+    case 0115:
+    case 0117:
+    case 0174:
+    case 0176:
+      // 
+      if (is5500) {
+        implicit = inst;
+        P++;
+        fetches++;
+        inst = memory[P];
+      } else {
+        return 1;  // halt on 2200.
+      }
+      break;
+    default:
+      implicit = 0;
   }
 
-  int dp2200_cpu::execute() {
-    unsigned char inst;
-    char buffer[32]; 
-    int timeForInstruction;
-    int halted;
-    struct inst i;
-    /* Handle interrupt*/
+  i.data[0] = memory[P];
+  i.data[1] = memory[P+1];
+  i.data[2] = memory[P+2];
+  i.address = P;
+  if (instructionTrace.size()>=16) {
+    instructionTrace.erase(instructionTrace.begin());
+  }
 
-    if (interruptEnabled && interruptPending) {
-      interruptPending = 0;
-
-      /* now bump stack to use new pc and save it */
-      stack.stk[stackptr] = P;
-      stackptr = (stackptr + 1) & 0xf;
-      P = 0;
-    }
-    inst = memory[P];
-    i.data[0] = memory[P];
-    i.data[1] = memory[P+1];
-    i.data[2] = memory[P+2];
-    i.address = P;
-    if (instructionTrace.size()>=8) {
-      instructionTrace.erase(instructionTrace.begin());
-    }
+  instructionTrace.push_back(i);
+  timeForInstruction = instTimeInNsNotTkn[inst];
+  disassembleLine(buffer, 32, false, P);
   
-    instructionTrace.push_back(i);
-    timeForInstruction = instTimeInNsNotTkn[inst];
-    disassembleLine(buffer, 32, false, P);
-    
-    P++;
-    P &= 0x3fff;
-    fetches++;
+  P++;
+  P &= pMask;
+  fetches++;
 
 
 
-    /* call into four major instruction subgroups for decoding */
 
-    switch (inst >> 6) {
-    case 0:
-      halted = immediateplus(inst);
-      break;
-    case 1:
-      halted = iojmpcall(inst);
-      break;
-    case 2:
-      halted = mathboolean(inst);
-      break;
-    case 3:
-      halted = load(inst);
-      break;
-    }
-    totalInstructionTime.tv_nsec+=timeForInstruction;
-    if (totalInstructionTime.tv_nsec >= 1000000000) {
-      totalInstructionTime.tv_nsec-=1000000000;
-      totalInstructionTime.tv_sec++;
-    }
-    if (traceEnabled) printLog("TRACE", "%04X %s -> %s | A=%02X B=%02X C=%02X D=%02X E=%02X H=%02X L=%02X C=%1d Z=%1d P=%1d S=%1d | A=%02X B=%02X C=%02X D=%02X E=%02X H=%02X L=%02X C=%1d Z=%1d P=%1d S=%1d \n", i.address, buffer, setSel==0?"ALPHA":"BETA", regSets[0].r.regA,regSets[0].r.regB,regSets[0].r.regC,regSets[0].r.regD,regSets[0].r.regE,regSets[0].r.regH,regSets[0].r.regL,flagCarry[0], flagZero[0], flagParity[0], flagSign[0], regSets[1].r.regA,regSets[1].r.regB,regSets[1].r.regC,regSets[1].r.regD,regSets[1].r.regE,regSets[1].r.regH,regSets[1].r.regL, flagCarry[1], flagZero[1], flagParity[1], flagSign[1]);
-    return halted;
+  /* call into four major instruction subgroups for decoding */
+
+  switch (inst >> 6) {
+  case 0:
+    halted = immediateplus(inst);
+    break;
+  case 1:
+    halted = iojmpcall(inst);
+    break;
+  case 2:
+    halted = mathboolean(inst);
+    break;
+  case 3:
+    halted = load(inst);
+    break;
   }
+  totalInstructionTime.tv_nsec+=timeForInstruction;
+  if (totalInstructionTime.tv_nsec >= 1000000000) {
+    totalInstructionTime.tv_nsec-=1000000000;
+    totalInstructionTime.tv_sec++;
+  }
+  if (traceEnabled) printLog("TRACE", "%04X %s -> %s | A=%02X B=%02X C=%02X D=%02X E=%02X H=%02X L=%02X C=%1d Z=%1d P=%1d S=%1d | A=%02X B=%02X C=%02X D=%02X E=%02X H=%02X L=%02X C=%1d Z=%1d P=%1d S=%1d \n", i.address, buffer, setSel==0?"ALPHA":"BETA", regSets[0].r.regA,regSets[0].r.regB,regSets[0].r.regC,regSets[0].r.regD,regSets[0].r.regE,regSets[0].r.regH,regSets[0].r.regL,flagCarry[0], flagZero[0], flagParity[0], flagSign[0], regSets[1].r.regA,regSets[1].r.regB,regSets[1].r.regC,regSets[1].r.regD,regSets[1].r.regE,regSets[1].r.regH,regSets[1].r.regL, flagCarry[1], flagZero[1], flagParity[1], flagSign[1]);
+  return halted;
+}
+
+int dp2200_cpu::blockTransfer(bool reverse) {
+  unsigned int sourceAddress = ((unsigned int)(regSets[setSel].r.regH) << 8) + regSets[setSel].r.regL;
+  unsigned int destinationAddress = ((unsigned int)(regSets[setSel].r.regD << 8)) + regSets[setSel].r.regE;
+  unsigned int count = (regSets[setSel].r.regC == 0)?256:regSets[setSel].r.regC;
+  unsigned int i=0;
+  printLog("INFO", "sourceAddress=%05o destinationAddress=%05o count=%03o i=%d\n", sourceAddress, destinationAddress, count, i);
+  while (i<count) {
+    printLog("INFO", "LOOP : sourceAddress=%05o destinationAddress=%05o count=%03o i=%d A=%03o\n", sourceAddress, destinationAddress, count, i, regSets[setSel].r.regA);
+    memory[destinationAddress] = memory[sourceAddress] + regSets[setSel].r.regA;
+    printLog("INFO", "B=%03o stored into memory=%03o condition=%03o \n", regSets[setSel].r.regB, memory[destinationAddress], (memory[destinationAddress] + regSets[setSel].r.regB) & 0xff);
+    if (regSets[setSel].r.regB !=0 && (((memory[destinationAddress] + regSets[setSel].r.regB) & 0xff) == 0)) {
+      printLog("INFO", "Leave loop.\n");
+      break;
+    }
+    if (reverse) {
+      sourceAddress = (sourceAddress-1) & 0xffff;
+      destinationAddress = (destinationAddress-1) & 0xffff;
+    } else {
+      sourceAddress = (sourceAddress+1) & 0xffff;
+      destinationAddress = (destinationAddress+1) & 0xffff;
+    }
+    i++;
+  }
+  printLog("INFO", "sourceAddress=%05o destinationAddress=%05o count=%03o i=%d\n", sourceAddress, destinationAddress, count, i);
+  if (i==256) {
+    regSets[setSel].r.regC = 0; 
+  } else {
+    regSets[setSel].r.regC = (unsigned char)(i & 0xff);
+  }
+  regSets[setSel].r.regH = (sourceAddress >> 8) & 0xff;
+  regSets[setSel].r.regL = sourceAddress & 0xff;
+  regSets[setSel].r.regD = (destinationAddress >> 8) & 0xff;
+  regSets[setSel].r.regE = destinationAddress & 0xff;
+  printLog("INFO", "C=%03o D=%03o E=%03o H=%03o L=%03o\n", regSets[setSel].r.regC, regSets[setSel].r.regD, regSets[setSel].r.regE, regSets[setSel].r.regH , regSets[setSel].r.regL);
+  return 0;
+}
 
 int dp2200_cpu::immediateplus(unsigned char inst) {
+    int r;
     unsigned int op;
+    unsigned char savedCarry;
     unsigned int reg;
     int carryzero;
     unsigned int sdata1, sdata2, result;
     unsigned int cc; /* condition code to check, if conditional operation */
-
+    unsigned short address;
     /* first check for halt */
     if ((inst & 0xfe) == 0x0) {
       return 1;
@@ -258,7 +337,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       case 7:
         /* PUSH */
         stack.stk[stackptr] =
-            ((unsigned int)(regSets[setSel].r.regH & 0x3f) << 8) +
+            ((unsigned int)(regSets[setSel].r.regH & hMask) << 8) +
             regSets[setSel].r.regL;
         stackptr = (stackptr + 1) & 0xf;
         break;
@@ -270,6 +349,9 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       case 0:
         /* HALT */
         return 1;
+      case 2:
+        blockTransfer(false);
+        break;
       default:
         /* Unimplemented */
         return 1;
@@ -290,6 +372,42 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         regSets[setSel].r.regA =
             (unsigned char)(((regSets[setSel].r.regA << 7) | result) & 0xff);
         break;
+      case 3:
+          switch (implicit) {
+            case 0:
+              r=0;
+              break;
+            case 0022:         
+              r=7;
+              break;
+            case 0062:        
+              r=2;
+              break;         
+            case 0111:
+              r=1;
+              break;    
+            case 0113: 
+              r=3;
+              break;         
+            case 0115:
+              r=5; 
+              break; 
+            case 0117:
+              r=0;  
+              break;              
+            case 0174:
+              r=4;     
+              break;
+            case 0176:
+              r=6;  
+              break;  
+            default:
+              return 1;                   
+          }
+          savedCarry = flagCarry[setSel];
+          flagCarry[setSel] = 0x1 & regSets[setSel].regs[r];
+          regSets[setSel].regs[r] = (regSets[setSel].regs[r] >> 1) | ((savedCarry << 7) & 0x80);
+        break;
       default: /*  unimplemented - handle as HALT for now. */
         return 1;
         break;
@@ -299,7 +417,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       cc = chkconditional(inst);
       if (cc) {
         stackptr = (stackptr - 1) & 0xf;
-        P = stack.stk[stackptr] & 0x3fff;
+        P = stack.stk[stackptr] & pMask;
       }
       break;
     case 4: /* math with immediate operands */
@@ -307,7 +425,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
                    .r.regA;              /* reg A is source and target */
       sdata1 = (unsigned char)memory[P]; /* source is immediate */
       P++;
-      P &= 0x3fff;
+      P &= pMask;
       fetches++;
 
       sdata1 = sdata1 & 0xff;
@@ -372,6 +490,54 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
     case 5:
       op = (inst & 0x38) >> 3;
       switch (op) {
+      case 1: // INCP HL
+        if (is2200) return 1; // halt if 2200.
+        switch (implicit) {
+          case 0:
+            if (regSets[setSel].r.regL == 0xff) {
+              regSets[setSel].r.regH++;
+              regSets[setSel].r.regL=0; 
+            } else {
+              regSets[setSel].r.regL++; 
+            }
+            break;
+          case 0022:
+            if (regSets[setSel].r.regA == 0xff) {
+              regSets[setSel].r.regX++;
+              regSets[setSel].r.regA=0; 
+            } else {
+              regSets[setSel].r.regA++; 
+            }          
+            break; 
+          case 0062:
+            if (regSets[setSel].r.regC == 0xff) {
+              regSets[setSel].r.regB++;
+              regSets[setSel].r.regC=0; 
+            } else {
+              regSets[setSel].r.regC++; 
+            }          
+            break;          
+          case 0111:
+            return 1;          
+          case 0113:
+            return 1;         
+          case 0115:
+            return 1;
+          case 0117:
+            return 1;
+          case 0174:
+            if (regSets[setSel].r.regE == 0xff) {
+              regSets[setSel].r.regD++;
+              regSets[setSel].r.regE=0; 
+            } else {
+              regSets[setSel].r.regE++; 
+            }          
+            break;
+          case 0176:
+            return 1;       
+        }
+
+        break;
       default:
         return 1;
       }
@@ -379,15 +545,15 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
     case 6:               /* load immediate */
       sdata1 = memory[P]; /* source is immediate */
       P++;
-      P &= 0x3fff;
+      P &= pMask;
       fetches++;
 
       reg = (inst >> 3) & 0x7;
-      if (reg == 7) { // reg 7 is not used in DP2200
-        // nop
-      } else {
-        regSets[setSel].regs[reg] = sdata1;
-      }
+      if (reg == 7 && is2200) { // reg 7 is not used in DP2200
+        return 1;
+      } 
+      regSets[setSel].regs[reg] = sdata1;
+      printLog("INFO", "regSets[%d].regs[%d] = %03o data=%03o \n", setSel, reg, regSets[setSel].regs[reg], sdata1);
       break;
     case 7:
       op = (inst & 0x38) >> 3;
@@ -395,8 +561,59 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       case 0:
         /* RETURN */
         stackptr = (stackptr - 1) & 0xf;
-        P = stack.stk[stackptr] & 0x3fff;
+        P = stack.stk[stackptr] & pMask;
         return 0;
+      case 2:
+          switch (implicit) {
+            case 0:
+              // DS DE,HL
+              address = ((regSets[setSel].r.regH << 8) | regSets[setSel].r.regL ) & pMask;
+              memory[address] = regSets[setSel].r.regE;
+              address++;
+              memory[address] = regSets[setSel].r.regD;              
+              break;
+            case 0022:         
+              return 1; 
+            case 0062:        
+              return 1;         
+            case 0111:
+              // DS BC,HL
+              address = ((regSets[setSel].r.regH << 8) | regSets[setSel].r.regL ) & pMask;
+              printLog("INFO", "address=%05o\n", address);
+              memory[address] = regSets[setSel].r.regC;
+              printLog("INFO", "memory[%05o]=%03o C=%03o\n", address, memory[address]);
+              address++;
+              memory[address] = regSets[setSel].r.regB;
+              printLog("INFO", "memory[%05o]=%03o B=%03o\n", address, memory[address]);
+              break;    
+            case 0113: 
+              address = ((regSets[setSel].r.regD << 8) | regSets[setSel].r.regE ) & pMask;
+              memory[address] = regSets[setSel].r.regC;
+              address++;
+              memory[address] = regSets[setSel].r.regB;  
+              break;         
+            case 0115: 
+              return 1; 
+            case 0117:
+              address = ((regSets[setSel].r.regD << 8) | regSets[setSel].r.regE ) & pMask;
+              memory[address] = regSets[setSel].r.regL;
+              address++;
+              memory[address] = regSets[setSel].r.regH; 
+              break;              
+            case 0174:
+              address = ((regSets[setSel].r.regB << 8) | regSets[setSel].r.regC ) & pMask;
+              memory[address] = regSets[setSel].r.regE;
+              address++;
+              memory[address] = regSets[setSel].r.regD;                       
+              break;
+            case 0176:
+              address = ((regSets[setSel].r.regB << 8) | regSets[setSel].r.regC ) & pMask;
+              memory[address] = regSets[setSel].r.regL;
+              address++;
+              memory[address] = regSets[setSel].r.regH; 
+              break;                     
+          }
+        break;
       default:
         /* Unimplemented */
         return 1;
@@ -407,28 +624,39 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
     return 0;
   }
 
+  inline unsigned short dp2200_cpu::getPagedAddress () {
+    unsigned char loc;
+    // Paged Load PL A, (loc)
+    loc = memory[P];
+    P++;
+    P &= pMask;
+    fetches++;
+    return ((regSets[setSel].r.regX << 8) | loc ) & pMask;
+  }
+
   int dp2200_cpu::iojmpcall(unsigned char inst) {
     unsigned int op;
     unsigned int cc; /* condition code to check, if conditional operation */
     unsigned int addrL, addrH;
 
+    unsigned short address;
     op = inst & 0x7;
     switch (op) {
     case 0: /* jump conditionally */
       cc = chkconditional(inst);
       addrL = (unsigned int)memory[P];
       P++;
-      P &= 0x3fff;
+      P &= pMask;
       fetches++;
 
       addrH = (unsigned int)memory[P];
       P++;
-      P &= 0x3fff;
+      P &= pMask;
       fetches++;
 
       if (cc) {
         timeForInstruction =instTimeInNsTaken[inst];
-        P = (addrL + (addrH << 8)) & 0x3fff;
+        P = (addrL + (addrH << 8)) & pMask;
       }
       break;
     case 1:
@@ -470,19 +698,19 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       cc = chkconditional(inst);
       addrL = (unsigned int)memory[P];
       P++;
-      P &= 0x3fff;
+      P &= pMask;
       fetches++;
 
       addrH = (unsigned int)memory[P];
       P++;
-      P &= 0x3fff;
+      P &= pMask;
       fetches++;
 
       if (cc) {
         timeForInstruction =instTimeInNsTaken[inst];
         stack.stk[stackptr] = P;
         stackptr = (stackptr + 1) & 0xf;
-        P = (addrL + (addrH << 8)) & 0x3fff;
+        P = (addrL + (addrH << 8)) & pMask;
       }
       break;
     case 3:
@@ -526,12 +754,48 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         /* JMP */
         addrL = (unsigned int)memory[P];
         P++;
-        P &= 0x3fff;
+        P &= pMask;
         fetches++;
         addrH = (unsigned int)memory[P];
-        P = (addrL + (addrH << 8)) & 0x3fff;
+        P = (addrL + (addrH << 8)) & pMask;
         fetches++;
         break;
+      case 1:
+        if (is2200) return 1;
+        // Paged Load PL B, (loc)
+        address = getPagedAddress();
+        regSets[setSel].r.regB = memory[address];
+        break;
+      case 2:
+        if (is2200) return 1;
+        // Paged Load PL V, (loc)
+        address = getPagedAddress();
+        regSets[setSel].r.regC = memory[address];
+        break;
+      case 3:
+        if (is2200) return 1;
+        // Paged Load PL D, (loc)
+        address = getPagedAddress();
+        regSets[setSel].r.regD = memory[address];
+        break;
+      case 4:
+        if (is2200) return 1;
+        // Paged Load PL E, (loc)
+        address = getPagedAddress();
+        regSets[setSel].r.regE = memory[address];
+        break;
+      case 5:
+        if (is2200) return 1;
+        // Paged Load PL H, (loc)
+        address = getPagedAddress();
+        regSets[setSel].r.regH = memory[address];
+        break;
+      case 6:
+        if (is2200) return 1;
+        // Paged Load PL L, (loc)
+        address = getPagedAddress();
+        regSets[setSel].r.regL = memory[address];
+        break;          
       default:
         /* Unimplemented */
         return 1;
@@ -541,8 +805,11 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       op = (inst & 0x38) >> 3;
       switch (op) {
       case 0:
-        /* Unimplemented */
-        return 1;
+        if (is2200) return 1;
+        // Paged Load PL L, (loc)
+        address = getPagedAddress();
+        regSets[setSel].r.regA = memory[address];
+        break;
       case 1:
         /* Unimplemented */
         return 1;
@@ -579,17 +846,82 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       case 0:
         addrL = (unsigned int)memory[P];
         P++;
-        P &= 0x3fff;
+        P &= pMask;
         fetches++;
 
         addrH = (unsigned int)memory[P];
         P++;
-        P &= 0x3fff;
+        P &= pMask;
         fetches++;
         stack.stk[stackptr] = P;
         stackptr = (stackptr + 1) & 0xf;
-        P = (addrL + (addrH << 8)) & 0x3fff;
+        P = (addrL + (addrH << 8)) & pMask;
         break;
+      case 1:
+        if (is2200) return 1;
+        // Paged Store PS B, (loc)
+        address = getPagedAddress();
+        memory[address] = regSets[setSel].r.regB;
+        break;            
+      case 2: 
+          if (is2200) return 1;
+          address = getPagedAddress();
+          switch (implicit) {
+            case 0:
+              // Paged Store PS C, (loc)
+              memory[address] = regSets[setSel].r.regC;
+              break;
+            case 0022:         
+              return 1; 
+            case 0062:        
+              return 1;         
+            case 0111:
+              memory[address] = regSets[setSel].r.regC;
+              printLog("INFO", "memory[address]=%03o C=%03o\n", memory[address], regSets[setSel].r.regC);
+              address++;
+              memory[address] = regSets[setSel].r.regB; 
+              printLog("INFO", "address=%05o memory[address]=%03o B=%03o\n", address, memory[address], regSets[setSel].r.regB);    
+              break;    
+            case 0113:
+              memory[address++] = regSets[setSel].r.regE;  
+              memory[address] = regSets[setSel].r.regD;     
+              break;         
+            case 0115:
+              memory[address++] = regSets[setSel].r.regL;  
+              memory[address] = regSets[setSel].r.regH;     
+              break; 
+            case 0117:
+              return 1;
+            case 0174:          
+              return 1;
+            case 0176:
+              return 1;       
+          }
+        break;
+      case 3:
+        if (is2200) return 1;
+        // Paged Store PS D, (loc)
+        address = getPagedAddress();
+        memory[address] = regSets[setSel].r.regD;
+        break;        
+      case 4:
+        if (is2200) return 1;
+        // Paged Store PS E, (loc)
+        address = getPagedAddress();
+        memory[address] = regSets[setSel].r.regE;
+        break;        
+      case 5:
+        if (is2200) return 1;
+        // Paged Store PS H, (loc)
+        address = getPagedAddress();
+        memory[address] = regSets[setSel].r.regH;
+        break;        
+      case 6:
+        if (is2200) return 1;
+        // Paged Store PS L, (loc)
+        address = getPagedAddress();
+        memory[address] = regSets[setSel].r.regL;
+        break;        
       default:
         /* Unimplemented */
         return 1;
@@ -599,8 +931,11 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       op = (inst & 0x38) >> 3;
       switch (op) {
       case 0:
-        /* Unimplemented */
-        return 1;
+        if (is2200) return 1;
+        // Paged Store PS A, (loc)
+        address = getPagedAddress();
+        memory[address] = regSets[setSel].r.regA;
+        break;
       case 1:
         /* Unimplemented */
         return 1;
@@ -641,7 +976,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
 
     src = inst & 0x7;
     if (src == 0x7) {
-      sdata1 = memory[((regSets[setSel].r.regH & 0x3f) << 8) +
+      sdata1 = memory[((regSets[setSel].r.regH & hMask) << 8) +
                       regSets[setSel].r.regL];
     } else {
       sdata1 = regSets[setSel].regs[src];
@@ -779,13 +1114,13 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       return 1;
     }
     if (src == 0x7) {
-      data = memory[((unsigned int)(regSets[setSel].r.regH & 0x3f) << 8) +
+      data = memory[((unsigned int)(regSets[setSel].r.regH & hMask) << 8) +
                     regSets[setSel].r.regL];
     } else {
       data = regSets[setSel].regs[src];
     }
     if (dest == 0x7) {
-      memory[((unsigned int)(regSets[setSel].r.regH & 0x3f) << 8) +
+      memory[((unsigned int)(regSets[setSel].r.regH & hMask) << 8) +
              regSets[setSel].r.regL] = data;
     } else {
       regSets[setSel].regs[dest] = data;

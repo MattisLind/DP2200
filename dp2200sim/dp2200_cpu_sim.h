@@ -6,10 +6,10 @@
 #include <string>
 
 class dp2200_cpu {
-  
+  int blockTransfer(bool);
 public:
   // Define Registerset
-  enum Reg { A, B, C, D, E, H, L };
+  enum Reg { A, B, C, D, E, H, L, X };
   // unsigned char regs[sizeof(Reg),2];
 
   // accumulator and scratch registers
@@ -21,6 +21,7 @@ public:
     unsigned char regE;
     unsigned char regH;
     unsigned char regL;
+    unsigned char regX;
   };
 
   
@@ -28,9 +29,9 @@ public:
   int setSel;
 
   union regs {
-    unsigned char regs[7];
+    unsigned char regs[8];
     struct r r;
-  } regs;
+  };
 
   union regs regSets[2];
 
@@ -58,8 +59,8 @@ public:
 
   unsigned short P;
 
-  // 16K memory
-  unsigned char memory[0x4000];
+  // 64K memory - works with 5500 as well.
+  unsigned char memory[0x10000];
   
   unsigned long instructions = 0;
   unsigned long fetches = 0;
@@ -85,6 +86,14 @@ public:
   bool keyboardButtonStatus=false;
   bool displayButtonStatus=false;
 
+
+
+  bool is5500;
+  bool is2200;
+  unsigned short pMask = 0x3fff;
+  unsigned char hMask = 0x3f;
+  int memorySize;
+  unsigned char implicit;
   // rather than having ioAddress and ioStatus in CPU class a ioController class is handling all IO.
   // This class handles ioStatus and ioAddress.
   // It has methods to handle read and all the other commands.
@@ -97,13 +106,13 @@ public:
       // 00xxxxxx  load (immediate), add/subtract (immediate), increment,
       // decrement,
       "HALT", "HALT", "SLC", "RFC", "AD ", "---", "LA ", "RETURN", 
-      "---","---", "SRC", "RFZ", "AC ", "---", "LB ", "---", 
-      "BETA", "---", "---","RFS", "SU ", "---", "LC ", "---", 
+      "---","---", "SRC", "RFZ", "AC ", "INCP HL", "LB ", "---", 
+      "BETA", "BT", "---","RFS", "SU ", "---", "LC ", "---", 
       "ALPHA", "---", "---", "RFP", "SB ","---", "LD ", "---", 
       "DI ", "---", "---", "RTC", "ND ", "---", "LE ","---", 
       "EI ", "---", "---", "RTZ", "XR ", "---", "LH ", "---", 
       "POP","---", "---", "RTS", "OR ", "---", "LL ", "---", 
-      "PUSH", "---", "---","RTP", "CP ", "---", "---", "---",
+      "PUSH", "---", "---","RTP", "CP ", "---", "LX ", "---",
       // 01xxxxxx jump, call, input, output
       "JFC", "INPUT", "CFC", "---", "JMP", "---", "CALL", "---", 
       "JFZ", "---",   "CFZ", "---", "---", "---", "---",  "---", 
@@ -211,6 +220,8 @@ public:
 
 
   void reset();
+  void setCPUtype2200 ();
+  void setCPUtype5500 ();
   int execute();
   void clear();
   char *  disassembleLine(char * outputBuf, int size, bool octal, unsigned short address);
@@ -219,6 +230,7 @@ public:
   int removeBreakpoint(unsigned short address);
   dp2200_cpu();
   private:
+  inline unsigned short getPagedAddress();
   int immediateplus(unsigned char inst);
   int iojmpcall(unsigned char inst);
   int mathboolean(unsigned char inst);

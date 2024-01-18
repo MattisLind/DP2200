@@ -9,7 +9,7 @@
 #include "dp2200_cpu_sim.h"
 
 typedef enum { STRING, NUMBER, BOOL } Type;
-typedef enum { DRIVE, FILENAME, ADDRESS, ENABLED, VALUE, TYPE, WRITEBACK, WRITEPROTECT } ParamId;
+typedef enum { DRIVE, FILENAME, ADDRESS, ENABLED, VALUE, TYPE, WRITEBACK, WRITEPROTECT, MEMORY, CPU } ParamId;
 class commandWindow;
 void printLog(const char *level, const char *fmt, ...);
 extern float yield;
@@ -70,6 +70,7 @@ class commandWindow : public virtual Window {
   void doYield(std::vector<Param> params);
   void doHex(std::vector<Param> params);
   void doOct(std::vector<Param> params);  
+  void doSet(std::vector<Param> params);
   void processCommand(char ch);
 
 public:

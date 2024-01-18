@@ -40,14 +40,42 @@ registerWindow::Form::octalShortPointerHookExecutor::octalShortPointerHookExecut
   rwf = r;
 }
 
+void registerWindow::OctalForm::set2200Mode(bool b) {
+  if (b) {
+    numRegs = 7;
+    set_field_buffer(regs[0][7], 0, "   ");
+    set_field_buffer(regs[1][7], 0, "   ");
+    set_field_buffer(regsIdents[0][7], 0, "  "); 
+    set_field_buffer(regsIdents[1][7], 0, "  "); 
+  } else {
+    numRegs = 8;
+    set_field_buffer(regsIdents[0][7], 0, "X:"); 
+    set_field_buffer(regsIdents[1][7], 0, "X:");    
+  }
+}
+
+void registerWindow::HexForm::set2200Mode(bool b) {
+  if (b) {
+    numRegs = 7;
+    set_field_buffer(regs[0][7], 0, "   ");
+    set_field_buffer(regs[1][7], 0, "   ");
+    set_field_buffer(regsIdents[0][7], 0, "  "); 
+    set_field_buffer(regsIdents[1][7], 0, "  "); 
+  } else {
+    numRegs = 8;
+    set_field_buffer(regsIdents[0][7], 0, "X:"); 
+    set_field_buffer(regsIdents[1][7], 0, "X:");    
+  }
+}
+
 void registerWindow::OctalForm::updateForm() {
   
   int i, k = 0, j;
   char b[7];
   unsigned char t;
   unsigned short startAddress = cpu.startAddress;
-  char asciiB[17], fieldB[19];
-  for (i = 0; i < 16 && startAddress < 0x4000; startAddress += 16, i++) {
+  char asciiB[24], fieldB[27];
+  for (i = 0; i < 16 && startAddress <= 0xFFFF; startAddress += 16, i++) {
     snprintf(b, 7, "%05o", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (j = 0; j < 16; j++) {
@@ -63,7 +91,7 @@ void registerWindow::OctalForm::updateForm() {
       asciiB[j] = (t >= 0x20 && t < 127) ? t : '.';
     }
     asciiB[j] = 0;
-    snprintf(fieldB, 19, "|%s|", asciiB);
+    snprintf(fieldB, 26, "|%s|", asciiB);
     set_field_buffer(asciiFields[i], 0, fieldB);
   }
   for (; i < 16; startAddress += 16, i++) {
@@ -87,12 +115,14 @@ void registerWindow::OctalForm::updateForm() {
   }
   // update registers.
   for (auto regset =0; regset<2; regset++) {
-    for (auto i=0; i<7; i++) {
+    int i;
+    for (i=0; i<numRegs; i++) {
       auto f = regs[regset][i];
       auto r = cpu.regSets[regset].regs[i];
       snprintf(b, 5, "%03o", r);
       set_field_buffer(f, 0, b);
     }
+
     snprintf(b, 3, "%01X", cpu.flagCarry[regset]);
     set_field_buffer(flagCarry[regset], 0, b);
     snprintf(b, 3, "%01X", cpu.flagZero[regset]);
@@ -125,12 +155,12 @@ void registerWindow::OctalForm::updateForm() {
 
   // update mnemonic
 
-  set_field_buffer(mnemonic, 0, cpu.disassembleLine(asciiB, 16, true, cpu.P)); 
+  set_field_buffer(mnemonic, 0, cpu.disassembleLine(asciiB, 23, true, cpu.P)); 
   i=0;
 
   // update trace
   for (auto it=cpu.instructionTrace.begin(); it<cpu.instructionTrace.end(); it++, i++) {
-    snprintf(fieldB, 18, "%05o %s", it->address, cpu.disassembleLine(asciiB, 16, true, it->data));
+    snprintf(fieldB, 23, "%05o %03o %s", it->address, it->data[0], cpu.disassembleLine(asciiB, 23, true, it->data));
     set_field_buffer(instructionTrace[i], 0, fieldB); 
   }
   i=0;
@@ -173,8 +203,8 @@ void registerWindow::HexForm::updateForm() {
   char b[5];
   unsigned char t;
   unsigned short startAddress = cpu.startAddress;
-  char asciiB[17], fieldB[19];
-  for (i = 0; i < 16 && startAddress < 0x4000; startAddress += 16, i++) {
+  char asciiB[24], fieldB[27];
+  for (i = 0; i < 16 && startAddress <= 0xFFFF; startAddress += 16, i++) {
     snprintf(b, 5, "%04X", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (j = 0; j < 16; j++) {
@@ -190,7 +220,7 @@ void registerWindow::HexForm::updateForm() {
       asciiB[j] = (t >= 0x20 && t < 127) ? t : '.';
     }
     asciiB[j] = 0;
-    snprintf(fieldB, 19, "|%s|", asciiB);
+    snprintf(fieldB, 26, "|%s|", asciiB);
     set_field_buffer(asciiFields[i], 0, fieldB);
   }
   for (; i < 16; startAddress += 16, i++) {
@@ -214,7 +244,8 @@ void registerWindow::HexForm::updateForm() {
   }
   // update registers.
   for (auto regset =0; regset<2; regset++) {
-    for (auto i=0; i<7; i++) {
+    int i;
+    for (i=0; i<numRegs; i++) {
       auto f = regs[regset][i];
       auto r = cpu.regSets[regset].regs[i];
       snprintf(b, 3, "%02X", r);
@@ -252,12 +283,12 @@ void registerWindow::HexForm::updateForm() {
 
   // update mnemonic
 
-  set_field_buffer(mnemonic, 0, cpu.disassembleLine(asciiB, 16, false, cpu.P)); 
+  set_field_buffer(mnemonic, 0, cpu.disassembleLine(asciiB, 23, false, cpu.P)); 
   i=0;
 
   // update trace
   for (auto it=cpu.instructionTrace.begin(); it<cpu.instructionTrace.end(); it++, i++) {
-    snprintf(fieldB, 18, "%04X %s", it->address, cpu.disassembleLine(asciiB, 16, false, it->data));
+    snprintf(fieldB, 23, "%04X %02X %s", it->address, it->data[0], cpu.disassembleLine(asciiB, 23, false, it->data));
     set_field_buffer(instructionTrace[i], 0, fieldB); 
   }
   i=0;
@@ -315,40 +346,40 @@ FIELD * registerWindow::Form::createAField(std::vector<FIELD *> * fields, int le
 }
 
 registerWindow::OctalForm::OctalForm () {
-  const char * rName[]={"A:","B:","C:","D:","E:","H:","L:"};
+  const char * rName[]={"A:","B:","C:","D:","E:","H:","L:","X:"};
   FIELD **f;
   int i;
   int offset=21;
-
+  numRegs = 7;
   createAField(&registerViewFields, 10,2,6, "REGISTERS");
-  createAField(&registerViewFields,38,3,31,"STACK    TRACE            BREAKPOINTS");
+  createAField(&registerViewFields,40,3,31,"STACK    TRACE                BREAKPOINTS");
   const char * alphaText = "ALPHA";
   mode[0] = createAField(&registerViewFields,strlen(alphaText), 3 , 3, alphaText);
   const char * betaText = "BETA";
   mode[1] = createAField(&registerViewFields,strlen(betaText), 3 , 18, betaText);  
 
   for (auto regset=0;regset < 2; regset++) {
-    for (auto reg=0; reg<7; reg++) {
-      createAField(&registerViewFields,2,4+reg, 3+15*regset,rName[reg]);
+    for (auto reg=0; reg<8; reg++) {
+      regsIdents[regset][reg] = createAField(&registerViewFields,2,4+reg, 3+15*regset,rName[reg]);
       regs[regset][reg]=createAField(&registerViewFields,3,4+reg, 5+15*regset, "000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalCharPointerHookExecutor(this, &cpu.regSets[regset].regs[reg]));
     }
     // flags
-    createAField(&registerViewFields,2, 12,3+15*regset, "P:" );
-    flagParity[regset]=createAField(&registerViewFields,1,12,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new octalCharPointerHookExecutor(this, &cpu.flagParity[regset]));
-    createAField(&registerViewFields,2, 12,8+15*regset, "S:" );
-    flagSign[regset]=createAField(&registerViewFields,1,12,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new octalCharPointerHookExecutor(this, &cpu.flagSign[regset]));
-    createAField(&registerViewFields,2, 13,3+15*regset, "C:" );
-    flagCarry[regset]=createAField(&registerViewFields,1,13,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new octalCharPointerHookExecutor(this, &cpu.flagCarry[regset]));
-    createAField(&registerViewFields,2, 13,8+15*regset, "Z:" );
-    flagZero[regset]=createAField(&registerViewFields,1,13,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new octalCharPointerHookExecutor(this, &cpu.flagZero[regset]));
+    createAField(&registerViewFields,2, 13,3+15*regset, "P:" );
+    flagParity[regset]=createAField(&registerViewFields,1,13,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new octalCharPointerHookExecutor(this, &cpu.flagParity[regset]));
+    createAField(&registerViewFields,2, 13,8+15*regset, "S:" );
+    flagSign[regset]=createAField(&registerViewFields,1,13,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new octalCharPointerHookExecutor(this, &cpu.flagSign[regset]));
+    createAField(&registerViewFields,2, 14,3+15*regset, "C:" );
+    flagCarry[regset]=createAField(&registerViewFields,1,14,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new octalCharPointerHookExecutor(this, &cpu.flagCarry[regset]));
+    createAField(&registerViewFields,2, 14,8+15*regset, "Z:" );
+    flagZero[regset]=createAField(&registerViewFields,1,14,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new octalCharPointerHookExecutor(this, &cpu.flagZero[regset]));
   }
 
-  createAField(&registerViewFields,2, 15,3, "P:" );
-  pc=createAField(&registerViewFields,5,15,5, "00000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalShortPointerHookExecutor(this, &cpu.P));
-  mnemonic = createAField(&registerViewFields,10, 15,12, "" );
+  createAField(&registerViewFields,2, 16,3, "P:" );
+  pc=createAField(&registerViewFields,5,16,5, "00000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalShortPointerHookExecutor(this, &cpu.P));
+  mnemonic = createAField(&registerViewFields,10, 16,12, "" );
 
   for (auto i=0; i<16; i++) {
-    stack[i] = createAField(&registerViewFields,5,4+i,32, "00000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalShortPointerHookExecutor(this, &cpu.stack.stk[i]));
+    stack[i] = createAField(&registerViewFields,5,4+i,31, "00000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalShortPointerHookExecutor(this, &cpu.stack.stk[i]));
   }
   
   for (auto line = 0; line < 16; line++) {
@@ -368,12 +399,12 @@ registerWindow::OctalForm::OctalForm () {
   const char * keyboardButtonText = "KEYBOARD BUTTON";
   keyboardButtonField = createAField(&registerViewFields,strlen(keyboardButtonText), 40 , 25, keyboardButtonText);    
   
-  for (auto i=0; i<8; i++) {
-    instructionTrace[i] = createAField(&registerViewFields,20,4+i,41, "" );
+  for (auto i=0; i<16; i++) {
+    instructionTrace[i] = createAField(&registerViewFields,20,4+i,40, "" );
   }
 
   for (auto i=0; i<8; i++) {
-    breakpoints[i] = createAField(&registerViewFields,5,4+i,58, "" );
+    breakpoints[i] = createAField(&registerViewFields,5,4+i,61, "" );
   }
   
 
@@ -389,47 +420,46 @@ registerWindow::OctalForm::OctalForm () {
   f[i] = NULL;
 
   frm = new_form(f);
-  set_field_term(frm, form_hook_proxy);
-  //return frm;  
-
+  set_field_term(frm, form_hook_proxy);  
+  set2200Mode(true);
 }
 
 
 registerWindow::HexForm::HexForm () {
-  const char * rName[]={"A:","B:","C:","D:","E:","H:","L:"};
+  const char * rName[]={"A:","B:","C:","D:","E:","H:","L:","X:"};
   FIELD **f;
   int i;
   int offset=21;
-
+  numRegs = 7;
   createAField(&registerViewFields, 10,2,6, "REGISTERS");
-  createAField(&registerViewFields,38,3,31,"STACK    TRACE            BREAKPOINTS");
+  createAField(&registerViewFields,40,3,31,"STACK    TRACE                BREAKPOINTS");
   const char * alphaText = "ALPHA";
   mode[0] = createAField(&registerViewFields,strlen(alphaText), 3 , 3, alphaText);
   const char * betaText = "BETA";
   mode[1] = createAField(&registerViewFields,strlen(betaText), 3 , 18, betaText);  
 
   for (auto regset=0;regset < 2; regset++) {
-    for (auto reg=0; reg<7; reg++) {
-      createAField(&registerViewFields,2,4+reg, 3+15*regset,rName[reg]);
+    for (auto reg=0; reg<8; reg++) {
+      regsIdents[regset][reg] = createAField(&registerViewFields,2,4+reg, 3+15*regset,rName[reg]);
       regs[regset][reg]=createAField(&registerViewFields,2,4+reg, 5+15*regset, "00", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexCharPointerHookExecutor(this, &cpu.regSets[regset].regs[reg]));
     }
     // flags
-    createAField(&registerViewFields,2, 12,3+15*regset, "P:" );
-    flagParity[regset]=createAField(&registerViewFields,1,12,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new hexCharPointerHookExecutor(this, &cpu.flagParity[regset]));
-    createAField(&registerViewFields,2, 12,8+15*regset, "S:" );
-    flagSign[regset]=createAField(&registerViewFields,1,12,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new hexCharPointerHookExecutor(this, &cpu.flagSign[regset]));
-    createAField(&registerViewFields,2, 13,3+15*regset, "C:" );
-    flagCarry[regset]=createAField(&registerViewFields,1,13,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new hexCharPointerHookExecutor(this, &cpu.flagCarry[regset]));
-    createAField(&registerViewFields,2, 13,8+15*regset, "Z:" );
-    flagZero[regset]=createAField(&registerViewFields,1,13,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new hexCharPointerHookExecutor(this, &cpu.flagZero[regset]));
+    createAField(&registerViewFields,2, 13,3+15*regset, "P:" );
+    flagParity[regset]=createAField(&registerViewFields,1,13,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new hexCharPointerHookExecutor(this, &cpu.flagParity[regset]));
+    createAField(&registerViewFields,2, 13,8+15*regset, "S:" );
+    flagSign[regset]=createAField(&registerViewFields,1,13,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new hexCharPointerHookExecutor(this, &cpu.flagSign[regset]));
+    createAField(&registerViewFields,2, 14,3+15*regset, "C:" );
+    flagCarry[regset]=createAField(&registerViewFields,1,14,5+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new hexCharPointerHookExecutor(this, &cpu.flagCarry[regset]));
+    createAField(&registerViewFields,2, 14,8+15*regset, "Z:" );
+    flagZero[regset]=createAField(&registerViewFields,1,14,10+15*regset, "0", O_EDIT | O_ACTIVE, "[0-1]", NO_JUSTIFICATION, (char *) new hexCharPointerHookExecutor(this, &cpu.flagZero[regset]));
   }
 
-  createAField(&registerViewFields,2, 15,3, "P:" );
-  pc=createAField(&registerViewFields,4,15,5, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexShortPointerHookExecutor(this, &cpu.P));
-  mnemonic = createAField(&registerViewFields,10, 15,10, "" );
+  createAField(&registerViewFields,2, 16,3, "P:" );
+  pc=createAField(&registerViewFields,4,16,5, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexShortPointerHookExecutor(this, &cpu.P));
+  mnemonic = createAField(&registerViewFields,10, 16,10, "" );
 
   for (auto i=0; i<16; i++) {
-    stack[i] = createAField(&registerViewFields,4,4+i,32, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexShortPointerHookExecutor(this, &cpu.stack.stk[i]));
+    stack[i] = createAField(&registerViewFields,4,4+i,31, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexShortPointerHookExecutor(this, &cpu.stack.stk[i]));
   }
   
   for (auto line = 0; line < 16; line++) {
@@ -449,12 +479,12 @@ registerWindow::HexForm::HexForm () {
   const char * keyboardButtonText = "KEYBOARD BUTTON";
   keyboardButtonField = createAField(&registerViewFields,strlen(keyboardButtonText), 40 , 25, keyboardButtonText);    
   
-  for (auto i=0; i<8; i++) {
-    instructionTrace[i] = createAField(&registerViewFields,15,4+i,41, "" );
+  for (auto i=0; i<16; i++) {
+    instructionTrace[i] = createAField(&registerViewFields,15,4+i,40, "" );
   }
 
   for (auto i=0; i<8; i++) {
-    breakpoints[i] = createAField(&registerViewFields,5,4+i,56, "" );
+    breakpoints[i] = createAField(&registerViewFields,5,4+i,61, "" );
   }
 
   f = (FIELD **)malloc(
@@ -470,7 +500,7 @@ registerWindow::HexForm::HexForm () {
 
   frm = new_form(f);
   set_field_term(frm, form_hook_proxy);
-  //return frm;
+  set2200Mode(true);
 }
 
 registerWindow::HexForm::~HexForm () {
@@ -697,4 +727,9 @@ void registerWindow::resize() {
   wrefresh(dwinoctal);
   wrefresh(dwinhex);
   refresh();
+}
+
+void registerWindow::set2200Mode (bool b) {
+  formHex->set2200Mode(b);
+  formOctal->set2200Mode(b);
 }

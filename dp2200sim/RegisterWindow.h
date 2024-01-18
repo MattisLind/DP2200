@@ -97,6 +97,7 @@ class registerWindow : public virtual Window {
     FIELD * createAField(std::vector<FIELD *> * fields, int length, int y, int x, const char * str);
     FIELD * createAField(std::vector<FIELD *> * fields, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h);
     public:
+    virtual void set2200Mode(bool) = 0;
     virtual void updateForm() = 0;
     virtual FORM *  getForm() = 0;
   };
@@ -106,7 +107,8 @@ class registerWindow : public virtual Window {
     std::vector<FIELD *> dataFields;
     std::vector<FIELD *> asciiFields;
     std::vector<FIELD *> registerViewFields;
-    FIELD * regs[2][7];
+    FIELD * regs[2][8];
+    FIELD * regsIdents[2][8];
     FIELD * stack[16];
     FIELD * flagParity[2];
     FIELD * flagSign[2];
@@ -116,7 +118,7 @@ class registerWindow : public virtual Window {
     //FIELD * interruptEnabled;
     //FIELD * interruptPending; 
     FIELD * mnemonic;
-    FIELD * instructionTrace[8];
+    FIELD * instructionTrace[16];
     FIELD * breakpoints[8];
     FIELD * displayLightField;
     FIELD * displayButtonField;
@@ -124,7 +126,9 @@ class registerWindow : public virtual Window {
     FIELD * keyboardButtonField;
     FIELD * mode[2];
     FORM *frm;
+    int numRegs;
     public:
+    void set2200Mode(bool);
     void updateForm();
     FORM * getForm();
     HexForm();
@@ -136,7 +140,8 @@ class registerWindow : public virtual Window {
     std::vector<FIELD *> dataFields;
     std::vector<FIELD *> asciiFields;
     std::vector<FIELD *> registerViewFields;
-    FIELD * regs[2][7];
+    FIELD * regs[2][8];
+    FIELD * regsIdents[2][8];    
     FIELD * stack[16];
     FIELD * flagParity[2];
     FIELD * flagSign[2];
@@ -146,7 +151,7 @@ class registerWindow : public virtual Window {
     //FIELD * interruptEnabled;
     //FIELD * interruptPending; 
     FIELD * mnemonic;
-    FIELD * instructionTrace[8];
+    FIELD * instructionTrace[16];
     FIELD * breakpoints[8];
     FIELD * displayLightField;
     FIELD * displayButtonField;
@@ -154,7 +159,9 @@ class registerWindow : public virtual Window {
     FIELD * keyboardButtonField;
     FIELD * mode[2];
     FORM *frm;
+    int numRegs;
     public:
+    void set2200Mode(bool);
     void updateForm();
     FORM * getForm();
     OctalForm();
@@ -191,7 +198,7 @@ public:
   ~registerWindow();
 
   void updateWindow();
-
+  void set2200Mode (bool);
   void hightlightWindow();
   void normalWindow();
   void resetCursor();

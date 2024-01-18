@@ -69,6 +69,29 @@ void commandWindow::doReset(std::vector<Param> params) {
 void commandWindow::doTrace(std::vector<Param> params) {
   cpu->traceEnabled=true;
 }
+
+void commandWindow::doSet(std::vector<Param> params) {
+  for (auto it = params.begin(); it < params.end(); it++) {
+    if (it->paramId == CPU) {
+      if (it->paramValue.i == 5500) {
+        cpu->setCPUtype5500();
+        rw->set2200Mode(false); 
+      } else if (it->paramValue.i == 2200) {
+        cpu->setCPUtype2200(); 
+        rw->set2200Mode(true); 
+      } else {
+        wprintw(innerWin, "Invalid CPU type: %d\n", it->paramValue.i);  
+      }
+    }
+    if (it->paramId == MEMORY) {
+      if (it->paramValue.i >= 2 && it->paramValue.i <= 64) {
+        cpu->memorySize = it->paramValue.i;
+      } else {
+        wprintw(innerWin, "Invalid memory size: %d \n", it->paramValue.i); 
+      }
+    }
+  }  
+}
 void commandWindow::doNoTrace(std::vector<Param> params) {
   cpu->traceEnabled=false; 
 }
@@ -407,9 +430,8 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
   commands.push_back({"NOTRACE", "Disable trace logging", {}, &commandWindow::doNoTrace}); 
   commands.push_back({"HEXADECIMAL", "Show in hexadecimal notation.\nAlso possible to toggle in the register view by pressing 'o'.", {}, &commandWindow::doHex});  
   commands.push_back({"OCTAL", "Show in Octal notation.\nAlso possible to toggle in the register view by pressing 'o'.", {}, &commandWindow::doOct});  
-
-  commands.push_back(
-      {"YIELD", "The amount of CPU time consumed byt the simulator. \n  VALUE parameter specify the amount. Value between 0 and 100.", {{"VALUE", VALUE, NUMBER, {.i = 100}}}, &commandWindow::doYield});         
+  commands.push_back({"SET", "Set various system parameters like cpu type and memory amount.\nCPU=2200 or CPU=5500 specify architecture. MEMORY=nn where nn=2 .. 64 (k) Memory.\n", {{"CPU", CPU, NUMBER, {.i=2200}}, {"MEMORY", MEMORY, NUMBER, {.i=16}}}, &commandWindow::doSet});
+  commands.push_back({"YIELD", "The amount of CPU time consumed byt the simulator. \n  VALUE parameter specify the amount. Value between 0 and 100.", {{"VALUE", VALUE, NUMBER, {.i = 100}}}, &commandWindow::doYield});         
   win = newwin(LINES - 14, 82, 14, 0);
   innerWin = newwin(LINES - 16, 80, 15, 1);
   normalWindow();
