@@ -1160,6 +1160,7 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
         then);
       return 0;
     case 6: // Select cylinder as per contents of EX COM2 Register 0-312 octal (9374 - Sets upper 8 bits of cylinder address)
+    // Need to simulate seek time here.
       cylinder = tmp;
       printLog("INFO", "9370: Selecting cyliner %d\n", sector);
       return 0;

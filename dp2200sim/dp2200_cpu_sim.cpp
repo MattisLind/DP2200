@@ -255,13 +255,13 @@ int dp2200_cpu::blockTransfer(bool reverse) {
   unsigned int destinationAddress = ((unsigned int)(regSets[setSel].r.regD << 8)) + regSets[setSel].r.regE;
   unsigned int count = (regSets[setSel].r.regC == 0)?256:regSets[setSel].r.regC;
   unsigned int i=0;
-  printLog("INFO", "sourceAddress=%05o destinationAddress=%05o count=%03o i=%d\n", sourceAddress, destinationAddress, count, i);
+  //printLog("INFO", "sourceAddress=%05o destinationAddress=%05o count=%03o i=%d\n", sourceAddress, destinationAddress, count, i);
   while (i<count) {
-    printLog("INFO", "LOOP : sourceAddress=%05o destinationAddress=%05o count=%03o i=%d A=%03o\n", sourceAddress, destinationAddress, count, i, regSets[setSel].r.regA);
+    //printLog("INFO", "LOOP : sourceAddress=%05o destinationAddress=%05o count=%03o i=%d A=%03o\n", sourceAddress, destinationAddress, count, i, regSets[setSel].r.regA);
     memory[destinationAddress] = memory[sourceAddress] + regSets[setSel].r.regA;
-    printLog("INFO", "B=%03o stored into memory=%03o condition=%03o \n", regSets[setSel].r.regB, memory[destinationAddress], (memory[destinationAddress] + regSets[setSel].r.regB) & 0xff);
+    //printLog("INFO", "B=%03o stored into memory=%03o condition=%03o \n", regSets[setSel].r.regB, memory[destinationAddress], (memory[destinationAddress] + regSets[setSel].r.regB) & 0xff);
     if (regSets[setSel].r.regB !=0 && (((memory[destinationAddress] + regSets[setSel].r.regB) & 0xff) == 0)) {
-      printLog("INFO", "Leave loop.\n");
+      //printLog("INFO", "Leave loop.\n");
       break;
     }
     if (reverse) {
@@ -273,7 +273,7 @@ int dp2200_cpu::blockTransfer(bool reverse) {
     }
     i++;
   }
-  printLog("INFO", "sourceAddress=%05o destinationAddress=%05o count=%03o i=%d\n", sourceAddress, destinationAddress, count, i);
+  //printLog("INFO", "sourceAddress=%05o destinationAddress=%05o count=%03o i=%d\n", sourceAddress, destinationAddress, count, i);
   if (i==256) {
     regSets[setSel].r.regC = 0; 
   } else {
@@ -283,7 +283,7 @@ int dp2200_cpu::blockTransfer(bool reverse) {
   regSets[setSel].r.regL = sourceAddress & 0xff;
   regSets[setSel].r.regD = (destinationAddress >> 8) & 0xff;
   regSets[setSel].r.regE = destinationAddress & 0xff;
-  printLog("INFO", "C=%03o D=%03o E=%03o H=%03o L=%03o\n", regSets[setSel].r.regC, regSets[setSel].r.regD, regSets[setSel].r.regE, regSets[setSel].r.regH , regSets[setSel].r.regL);
+  //printLog("INFO", "C=%03o D=%03o E=%03o H=%03o L=%03o\n", regSets[setSel].r.regC, regSets[setSel].r.regD, regSets[setSel].r.regE, regSets[setSel].r.regH , regSets[setSel].r.regL);
   return 0;
 }
 
@@ -553,7 +553,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       } 
       regSets[setSel].regs[reg] = sdata1;
-      printLog("INFO", "regSets[%d].regs[%d] = %03o data=%03o \n", setSel, reg, regSets[setSel].regs[reg], sdata1);
+      //printLog("INFO", "regSets[%d].regs[%d] = %03o data=%03o \n", setSel, reg, regSets[setSel].regs[reg], sdata1);
       break;
     case 7:
       op = (inst & 0x38) >> 3;
@@ -579,12 +579,12 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
             case 0111:
               // DS BC,HL
               address = ((regSets[setSel].r.regH << 8) | regSets[setSel].r.regL ) & pMask;
-              printLog("INFO", "address=%05o\n", address);
+              //printLog("INFO", "address=%05o\n", address);
               memory[address] = regSets[setSel].r.regC;
-              printLog("INFO", "memory[%05o]=%03o C=%03o\n", address, memory[address]);
+              //printLog("INFO", "memory[%05o]=%03o C=%03o\n", address, memory[address]);
               address++;
               memory[address] = regSets[setSel].r.regB;
-              printLog("INFO", "memory[%05o]=%03o B=%03o\n", address, memory[address]);
+              //printLog("INFO", "memory[%05o]=%03o B=%03o\n", address, memory[address]);
               break;    
             case 0113: 
               address = ((regSets[setSel].r.regD << 8) | regSets[setSel].r.regE ) & pMask;
@@ -877,10 +877,10 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
               return 1;         
             case 0111:
               memory[address] = regSets[setSel].r.regC;
-              printLog("INFO", "memory[address]=%03o C=%03o\n", memory[address], regSets[setSel].r.regC);
+              //printLog("INFO", "memory[address]=%03o C=%03o\n", memory[address], regSets[setSel].r.regC);
               address++;
               memory[address] = regSets[setSel].r.regB; 
-              printLog("INFO", "address=%05o memory[address]=%03o B=%03o\n", address, memory[address], regSets[setSel].r.regB);    
+              //printLog("INFO", "address=%05o memory[address]=%03o B=%03o\n", address, memory[address], regSets[setSel].r.regB);    
               break;    
             case 0113:
               memory[address++] = regSets[setSel].r.regE;  
