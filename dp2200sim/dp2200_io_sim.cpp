@@ -866,11 +866,23 @@ unsigned char IOController::Disk9350Device::input () {
   } else {
     printLog("INFO", "Reading data from 9350 bufferPage %d address %d = %02X\n", selectedBufferPage, bufferAddress, 0xff&buffer[selectedBufferPage][bufferAddress]);
     return buffer[selectedBufferPage][bufferAddress];
+    if (bufferAddress == 0377) {
+      bufferAddress=0;
+      statusRegister |= DISK9350_STATUS_OVERFLOW;
+    } else {
+      bufferAddress++;
+    }
   }
 }
 int IOController::Disk9350Device::exWrite(unsigned char data) {
   //printLog("INFO", "9350 Writing data %02X to address %d in bufferPage %d\n", data&0xff, bufferAddress, selectedBufferPage);
   buffer[selectedBufferPage][bufferAddress]=data;
+   if (bufferAddress == 0377) {
+      bufferAddress=0;
+      statusRegister |= DISK9350_STATUS_OVERFLOW;
+    } else {
+      bufferAddress++;
+    }  
   return 0;
 } 
 int IOController::Disk9350Device::exCom1(unsigned char data) {
@@ -900,6 +912,20 @@ int IOController::Disk9350Device::exCom1(unsigned char data) {
         buffer[selectedBufferPage][i]=0;
       }
       bufferAddress = 0;
+      printLog("INFO", "Clear buffer page %d from 9350 drive\n", selectedBufferPage);
+      statusRegister &= ~(DISK9350_STATUS_CONTROLLER_READY | DISK9350_STATUS_CRC_ERROR | DISK9350_STATUS_INVALID_SECTOR_ADDRESS);
+      address = cylinder * head * sector;
+      timeoutInNanosecs(&then, 500000);
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+          printLog("INFO", "500us timeout 9350 disk read is ready\n");
+          t->statusRegister |= (DISK9350_STATUS_CONTROLLER_READY);
+          t->statusRegister &= ~(DISK9350_STATUS_OVERFLOW);
+          for (int i=0; i<256; i++) {
+            t->buffer[t->selectedBufferPage][i]=0;
+          }
+          t->bufferAddress = 0;
+          return 0;
+        }, then);      
       return 0;
     case 5:
       // Read selected sector onto selected buffer page.
@@ -919,7 +945,7 @@ int IOController::Disk9350Device::exCom1(unsigned char data) {
       // Same as 6 followd by a read check of CRC. Implemented exactly as 6. No Read done. 
     case 7:
       printLog("INFO", "Writing to 9350 drive\n");
-      statusRegister &= ~(DISK9350_STATUS_CONTROLLER_READY | DISK9350_STATUS_CRC_ERROR | DISK9350_STATUS_INVALID_SECTOR_ADDRESS);
+      statusRegister &= ~(DISK9350_STATUS_CONTROLLER_READY | DISK9350_STATUS_CRC_ERROR | DISK9350_STATUS_INVALID_SECTOR_ADDRESS | DISK9350_STATUS_DRIVE_READY);
       address = cylinder * head * sector;
       timeoutInNanosecs(&then, 1000000);
       addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
@@ -929,23 +955,30 @@ int IOController::Disk9350Device::exCom1(unsigned char data) {
           if (ret!=0) {
             t->statusRegister |= DISK9350_STATUS_WRITE_PROTECT_ENABLE; 
           }
-          t->statusRegister |= DISK9350_STATUS_CONTROLLER_READY;
+          t->statusRegister |= (DISK9350_STATUS_CONTROLLER_READY | DISK9350_STATUS_DRIVE_READY);
           return 0;
         }, then);      
       return 0;
       // Restore selected drive.
     case 8:
       printLog("INFO", "Restoring drive %d\n", selectedDrive);
-      statusRegister &= ~DISK9350_STATUS_DRIVE_READY;
-      timeoutInNanosecs(&then, 1000000);
+      statusRegister &= ~(DISK9350_STATUS_DRIVE_READY | DISK9350_STATUS_CONTROLLER_READY);
+      timeoutInNanosecs(&then, 10000000);
       addToTimerQueue([t = this](class callbackRecord *c) -> int {
-          printLog("INFO", "1ms timeout 9350 restore drive is ready\n");
+          printLog("INFO", "10ms timeout 9350 restore drive is ready\n");
           t->cylinder = 0;
           t->statusRegister |= DISK9350_STATUS_DRIVE_READY;
           return 0;
         },
         then);
-
+      timeoutInNanosecs(&then, 50000);
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+          printLog("INFO", "50us controller timeout 9350 restore drive is ready\n");
+          t->cylinder = 0;
+          t->statusRegister |= DISK9350_STATUS_CONTROLLER_READY;
+          return 0;
+        },
+        then);      
       return 0;
       // Select buffer page specified by bits 6,7.
     case 9:
@@ -958,11 +991,34 @@ int IOController::Disk9350Device::exCom1(unsigned char data) {
 }
 int IOController::Disk9350Device::exCom2(unsigned char data){
   // Select Cylinder number (0..312 octal)
-  cylinder = data;
+  struct timespec then;
+  if (data > 0312) {
+    statusRegister |= DISK9350_STATUS_COMMAND_ERROR;
+    return 0; 
+  }
+  statusRegister &= ~(DISK9350_STATUS_DRIVE_READY | DISK9350_STATUS_CRC_ERROR | DISK9350_STATUS_INVALID_SECTOR_ADDRESS | DISK9350_STATUS_CONTROLLER_READY);
+  timeoutInNanosecs(&then, 1000000);
+  addToTimerQueue([t = this, data=data](class callbackRecord *c) -> int {
+      printLog("INFO", "10ms timeout 9350 disk seek, drive is ready new track is %d\n", t->cylinder); 
+      t->statusRegister |= DISK9350_STATUS_DRIVE_READY;
+      t->cylinder = data;
+      return 0;
+    }, then);  
+  timeoutInNanosecs(&then, 50000);
+  addToTimerQueue([t = this, data=data](class callbackRecord *c) -> int {
+      printLog("INFO", "50us timeout 9350 disk seek, controller is ready new track is %d\n", t->cylinder); 
+      t->statusRegister |= DISK9350_STATUS_CONTROLLER_READY;
+      t->cylinder = data;
+      return 0;
+    }, then);       
   return 0;
 }
 int IOController::Disk9350Device::exCom3(unsigned char data){
   // Select Sector number bits 0..4. Select track bit 5.
+  if ((0x1f & data) > 027) {
+    statusRegister |= DISK9350_STATUS_INVALID_SECTOR_ADDRESS;
+    return 0;
+  }
   sector = 0x1f & data;
   head = (data >> 5) & 1;
   return 0;
@@ -1086,6 +1142,8 @@ unsigned char IOController::Disk9370Device::input () {
     return statusRegister;
   } else if (status == 0) {
     return dataRegister;
+    bufferAddress++;
+    if (bufferAddress==256) bufferAddress=0;
   } else {
     return 001;
   }
@@ -1093,6 +1151,8 @@ unsigned char IOController::Disk9370Device::input () {
 int IOController::Disk9370Device::exWrite(unsigned char data) {
   //printLog("INFO", "9370 Writing data %02X to address %d in bufferPage %d\n", data&0xff, bufferAddress, selectedBufferPage);
   buffer[selectedBufferPage][bufferAddress]=data;
+  bufferAddress++;
+  if (bufferAddress==256) bufferAddress=0;  
   return 0;
 } 
 int IOController::Disk9370Device::exCom1(unsigned char data){
@@ -1102,6 +1162,9 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
     case 0: // Master clear
       tmp=0;
       statusRegister=0;
+      cylinder=0;
+      head=0;
+      sector=0;
       return 0;
     case 1: // Disk read
       printLog("INFO", "Reading from 9370 drive %d\n", selectedDrive);
@@ -1162,34 +1225,55 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
     case 6: // Select cylinder as per contents of EX COM2 Register 0-312 octal (9374 - Sets upper 8 bits of cylinder address)
     // Need to simulate seek time here.
       cylinder = tmp;
-      printLog("INFO", "9370: Selecting cyliner %d\n", sector);
+      printLog("INFO", "9370: Selecting cylinder %d\n", sector);
+      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
+      statusRegister |= (DISK9370_STATUS_DRIVE_BUSY);
+      timeoutInNanosecs(&then, 10000000);
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+          printLog("INFO", "10ms timeout 9370 disk cylinder select %d\n", t->selectedDrive); 
+          t->statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY);
+          return 0;
+        }, then);       
       return 0;
     case 7: // Verify Drive type 001 -> Datapoint 9370, 020 -> Datapoint 9374 ???? What is this??
       status=2;
       return 0; 
     case 8: // Format track 
       printLog("INFO", "Formatting a track on a 9370 drive %d\n", selectedDrive);
-      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
+      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND);
       statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
-      address = cylinder * head * sector;
       timeoutInNanosecs(&then, 3000000);
-      addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
-          int ret;
-          printLog("INFO", "3ms timeout 9370 disk track format is ready on drive %d\n", t->selectedDrive); 
+      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+        int ret;
+        long address = t->cylinder * t->head * t->sector;
+        printLog("INFO", "3ms timeout 9370 disk track format is ready on drive %d\n", t->selectedDrive); 
+        for (auto i=0; i<24; i++) {          
           ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
-          if (ret!=0) {
-            t->statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
-          }
+            address+=256;
+        }
+        if (ret!=0) {
+          t->statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
+        }
         t->statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
           return 0;
         }, then);      
       return 0;
     case 9: // Select head as per contents of EX COM2 Register 0-19 decimal 0.-23 octal (9364 - 0-17 octal)
+      if (tmp > 19) {
+        statusRegister |= DISK9370_STATUS_SECTOR_NOT_FOUND;
+        printLog("INFO", "9370: Selected invalid head: %d\n", head);
+        return 0;
+      }
       head = tmp;
       printLog("INFO", "9370: Selecting head %d\n", head);
-
       return 0;
     case 10: // Select Sector as per contents of EX COM2 Register (0-24 decimal, 0-27 octal) 9374 - Sets upper 5 bits of sector address
+
+      if (tmp > 23) {
+        statusRegister |= DISK9370_STATUS_SECTOR_NOT_FOUND;
+        printLog("INFO", "9370: Selected invalid sector %d\n", tmp);
+        return 0;
+      }
       sector = tmp;
       printLog("INFO", "9370: Selecting sector %d\n", sector);
       return 0;

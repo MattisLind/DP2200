@@ -421,8 +421,38 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       }
       break;
     case 4: /* math with immediate operands */
-      sdata2 = (unsigned char)regSets[setSel]
-                   .r.regA;              /* reg A is source and target */
+      switch (implicit) {
+        case 0:
+          r=0;
+          break;
+        case 0022:         
+          r=7;
+          break;
+        case 0062:        
+          r=2;
+          break;         
+        case 0111:
+          r=1;
+          break;    
+        case 0113: 
+          r=3;
+          break;         
+        case 0115:
+          r=5; 
+          break; 
+        case 0117:
+          r=0;  
+          break;              
+        case 0174:
+          r=4;     
+          break;
+        case 0176:
+          r=6;  
+          break;  
+        default:
+          return 1;                   
+      }
+      sdata2 = (unsigned char)regSets[setSel].regs[r]; /* reg A is source and target */
       sdata1 = (unsigned char)memory[P]; /* source is immediate */
       P++;
       P &= pMask;
@@ -437,43 +467,43 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         result = sdata1 + sdata2;
         //              printf ("mADD RA: %2.2x  RS: %2.2x RESULT:
         //              %2.2x",sdata2,sdata1, result);
-        regSets[setSel].r.regA = (unsigned char)result;
+        regSets[setSel].regs[r] = (unsigned char)result;
         carryzero = 0;
         break;
       case 1: /* add with carry, and set carry */
         result = sdata1 + sdata2 + flagCarry[setSel];
         //              printf ("mADC RA: %2.2x  RS: %2.2x CARRYIN: %d RESULT:
         //              %2.2x",sdata2,sdata1,flagCarry, result);
-        regSets[setSel].r.regA = (unsigned char)result;
+        regSets[setSel].regs[r] = (unsigned char)result;
         carryzero = 0;
         break;
       case 2: /* subtract with no borrow, but set borrow */
         result = sdata2 - sdata1;
         //              printf ("mSUB RA: %2.2x  RS: %2.2x RESULT:
         //              %2.2x",sdata2,sdata1, result);
-        regSets[setSel].r.regA = (unsigned char)result;
+        regSets[setSel].regs[r] = (unsigned char)result;
         carryzero = 0;
         break;
       case 3: /* subtract with borrow, and set borrow */
         result = sdata2 - sdata1 - flagCarry[setSel];
         //              printf ("mSBC RA: %2.2x  RS: %2.2x CARRYIN: %d RESULT:
         //              %2.2x",sdata2,sdata1,flagCarry, result);
-        regSets[setSel].r.regA = (unsigned char)result;
+        regSets[setSel].regs[r] = (unsigned char)result;
         carryzero = 0;
         break;
       case 4: /* logical and */
         result = sdata1 & sdata2;
-        regSets[setSel].r.regA = (unsigned char)result;
+        regSets[setSel].regs[r] = (unsigned char)result;
         carryzero = 1;
         break;
       case 5: /* exclusive or */
         result = sdata1 ^ sdata2;
-        regSets[setSel].r.regA = (unsigned char)result;
+        regSets[setSel].regs[r] = (unsigned char)result;
         carryzero = 1;
         break;
       case 6: /* or */
         result = sdata1 | sdata2;
-        regSets[setSel].r.regA = (unsigned char)result;
+        regSets[setSel].regs[r] = (unsigned char)result;
         carryzero = 1;
         break;
       case 7: /* compare (assume no borrow for now) */
