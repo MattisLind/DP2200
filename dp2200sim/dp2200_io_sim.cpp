@@ -1283,6 +1283,9 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       return 0;
     case 13: // Set Track Offset per contents pf EX COM2 register (9374 only)
       return 0;
+    case 14:
+      printLog("INFO", "Got an unknown EX_COM1 command : 14 (0Eh / 16o)\n");
+      return 1;
     default:
       return 1; 
   }
@@ -1301,10 +1304,12 @@ int IOController::Disk9370Device::exCom4(unsigned char data){
   return 0;
 }
 int IOController::Disk9370Device::exBeep(){
-  return 1;
+  printLog("INFO", "Disk 9370 Beep\n");
+  return 0;
 }
 int IOController::Disk9370Device::exClick(){
-  return 1;
+  printLog("INFO", "Disk 9370 Click\n");
+  return 0;
 }
 int IOController::Disk9370Device::exDeck1(){
   return 1;

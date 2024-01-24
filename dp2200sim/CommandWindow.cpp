@@ -27,11 +27,13 @@ void commandWindow::doExit(std::vector<Param> params) {
 void commandWindow::doOct(std::vector<Param> params) {
   rw->octal = true;
   rw->setOctal(rw->octal);
+  cpu->octal=true;
 }
 
 void commandWindow::doHex(std::vector<Param> params) {
   rw->octal=false;
-  rw->setOctal(rw->octal);  
+  rw->setOctal(rw->octal); 
+  cpu->octal=false; 
 }
 
 void commandWindow::doYield(std::vector<Param> params) { 

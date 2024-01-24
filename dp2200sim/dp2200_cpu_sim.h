@@ -87,7 +87,7 @@ public:
   bool displayButtonStatus=false;
 
 
-
+  bool octal;
   bool is5500;
   bool is2200;
   unsigned short pMask = 0x3fff;
@@ -230,6 +230,7 @@ public:
   int removeBreakpoint(unsigned short address);
   dp2200_cpu();
   private:
+  int registerFromImplict(int implict); 
   inline unsigned short getPagedAddress();
   int immediateplus(unsigned char inst);
   int iojmpcall(unsigned char inst);
