@@ -48,6 +48,33 @@ public:
 
   unsigned char stackptr;
 
+  struct doubleLoadStoreRegisterTable {
+    int dstH;
+    int dstL;
+    int indexH;
+    int indexL;
+  };
+
+  #define REG_A 0
+  #define REG_B 1
+  #define REG_C 2
+  #define REG_D 3
+  #define REG_E 4
+  #define REG_H 5
+  #define REG_L 6
+  #define REG_X 8
+
+  struct doubleLoadStoreRegisterTable t [10] = {{-1, -1, -1, -1},
+                                                { REG_D, REG_E, REG_H, REG_L},
+                                                { REG_B, REG_C, REG_H, REG_L},
+                                                { REG_B, REG_C, REG_B, REG_C},
+                                                { REG_B, REG_C, REG_D, REG_E},
+                                                { REG_D, REG_E, REG_B, REG_C}, 
+                                                { REG_D, REG_E, REG_D, REG_E},
+                                                { REG_H, REG_L, REG_B, REG_C},
+                                                { REG_H, REG_L, REG_D, REG_E},
+                                                { REG_H, REG_L, REG_H, REG_L}};
+
   // flags
   unsigned char flagParity[2];
   unsigned char flagSign[2];
@@ -230,7 +257,15 @@ public:
   int removeBreakpoint(unsigned short address);
   dp2200_cpu();
   private:
+  int doubleLoad();
+  int doubleStore();
+  int registerStore();
+  int registerLoad();
+  struct doubleLoadStoreRegisterTable getSourceAndIndex();
   int registerFromImplict(int implict); 
+  void incrementRegisterPair (int highReg, int lowReg, int decrement);
+  int getHighRegFromImplicit();
+  int getLowRegFromImplicit();
   inline unsigned short getPagedAddress();
   int immediateplus(unsigned char inst);
   int iojmpcall(unsigned char inst);

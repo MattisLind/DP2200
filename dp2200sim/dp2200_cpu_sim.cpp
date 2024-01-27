@@ -263,34 +263,142 @@ int dp2200_cpu::registerFromImplict(int implict) {
   switch (implicit) {
     case 0:
       return 0;
-      break;
     case 0022:         
       return 7;
-      break;
     case 0062:        
-      return 2;
-      break;         
+      return 2;        
     case 0111:
-      return 1;
-      break;    
+      return 1;   
     case 0113: 
-      return 3;
-      break;         
+      return 3;         
     case 0115:
-      return 5; 
-      break; 
+      return 5;  
     case 0117:
-      return 0;  
-      break;              
+      return 0;               
     case 0174:
       return 4;     
-      break;
     case 0176:
-      return 6;  
-      break;  
+      return 6;    
     default:
       return 0;                   
   }  
+}
+
+int dp2200_cpu::getHighRegFromImplicit() {
+  switch (implicit) {
+    case 0:
+      return 5;
+    case 0022:         
+      return 7;
+    case 0062:        
+      return 1;         
+    case 0111:
+      return 0;   
+    case 0113: 
+      return 0;        
+    case 0115:
+      return 0;  
+    case 0117:
+      return 0;               
+    case 0174:
+      return 3;     
+    case 0176:
+      return 0;   
+    default:
+      return 5;                   
+  }  
+}
+
+int dp2200_cpu::getLowRegFromImplicit() {
+  switch (implicit) {
+    case 0:
+      return 6;
+    case 0022:         
+      return 0;
+    case 0062:        
+      return 2;         
+    case 0111:
+      return 0;    
+    case 0113: 
+      return 0;        
+    case 0115:
+      return 0;  
+    case 0117:
+      return 0;               
+    case 0174:
+      return 4;     
+    case 0176:
+      return 0;   
+    default:
+      return 6;                   
+  }  
+}
+
+struct dp2200_cpu::doubleLoadStoreRegisterTable dp2200_cpu::getSourceAndIndex() {
+  switch (implicit) {
+    case 0:
+      return t[1];
+    case 1:
+      return t[9];
+    case 0022:         
+      return t[0];
+    case 0062:        
+      return t[3];        
+    case 0111:
+      return t[2];    
+    case 0113: 
+      return t[4];       
+    case 0115:
+      return t[6]; 
+    case 0117:
+      return t[8];             
+    case 0174:
+      return t[5];    
+    case 0176:
+      return t[7]; 
+    default:
+      return t[0];                 
+  } 
+}
+
+int dp2200_cpu::doubleLoad () {
+  struct doubleLoadStoreRegisterTable r = getSourceAndIndex();
+  if (r.dstH == -1) return 1;
+  unsigned short address = (regSets[setSel].regs[r.indexH] << 8) | (0xff & regSets[setSel].regs[r.indexL]);
+  regSets[setSel].regs[r.dstL] = memory[address];
+  address++; address &= pMask;
+  regSets[setSel].regs[r.dstH] = memory[address];
+  return 0;
+}
+
+int dp2200_cpu::doubleStore () {
+  struct doubleLoadStoreRegisterTable r = getSourceAndIndex();
+  if (r.dstH == -1) return 1;
+  unsigned short address = (regSets[setSel].regs[r.indexH] << 8) | (0xff & regSets[setSel].regs[r.indexL]);
+  printLog("INFO", "doubleStore address=%05o r.dstH = %d r.dstL = %dsrcH = %03o srcL=%03o\n", address,r.dstH, r.dstL, regSets[setSel].regs[r.dstH], regSets[setSel].regs[r.dstL] );
+  memory[address] = regSets[setSel].regs[r.dstL];
+  address++; address &= pMask;
+  memory[address] = regSets[setSel].regs[r.dstH];
+  return 0;
+}
+
+int dp2200_cpu::registerStore() {
+  int address = 0xffff & stack.stk[stackptr];
+  for (int i=7; i >= 0; i-- ) {
+    memory[address] = regSets[setSel].regs[i];
+    address--; address &= pMask; 
+  }  
+  stack.stk[stackptr] = 0xffff & address;
+  return 0;
+}
+
+int dp2200_cpu::registerLoad() {
+  int address = regSets[setSel].r.regH << 8 | (0xff & regSets[setSel].r.regL);
+  for (int i=7; i >= 0; i--) {
+    regSets[setSel].regs[i] = memory[address];
+    address--; address &= pMask; 
+  }
+  return 0;
 }
 
 int dp2200_cpu::blockTransfer(bool reverse) {
@@ -330,6 +438,14 @@ int dp2200_cpu::blockTransfer(bool reverse) {
   return 0;
 }
 
+void dp2200_cpu::incrementRegisterPair (int highReg, int lowReg, int decrement) {
+  int value = regSets[setSel].regs[REG_H] << 8 |  (0xff & regSets[setSel].regs[REG_L]);
+  value += decrement;
+  flagCarry[setSel] = 0x1 & (value >> 16);
+  regSets[setSel].regs[REG_H] = 0xff & (value >> 8);
+  regSets[setSel].regs[REG_L] = 0xff & value;
+}
+
 int dp2200_cpu::immediateplus(unsigned char inst) {
     int r;
     unsigned int op;
@@ -339,6 +455,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
     unsigned int sdata1, sdata2, result;
     unsigned int cc; /* condition code to check, if conditional operation */
     unsigned short address;
+    int rl, rh;
     /* first check for halt */
     if ((inst & 0xfe) == 0x0) {
       return 1;
@@ -373,15 +490,17 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         break;
       case 6:
         /* POP */
+        rh = getHighRegFromImplicit();
+        rl = getLowRegFromImplicit();        
         stackptr = (stackptr - 1) & 0xf;
-        regSets[setSel].r.regH = (stack.stk[stackptr] >> 8) & 0xff;
-        regSets[setSel].r.regL = stack.stk[stackptr] & 0xff;
+        regSets[setSel].regs[rh] = (stack.stk[stackptr] >> 8) & 0xff;
+        regSets[setSel].regs[rl] = stack.stk[stackptr] & 0xff;
         break;
       case 7:
         /* PUSH */
-        stack.stk[stackptr] =
-            ((unsigned int)(regSets[setSel].r.regH & hMask) << 8) +
-            regSets[setSel].r.regL;
+        rh = getHighRegFromImplicit();
+        rl = getLowRegFromImplicit();
+        stack.stk[stackptr] = ((unsigned int)(regSets[setSel].regs[rh] & hMask) << 8) + regSets[setSel].regs[rl];
         stackptr = (stackptr + 1) & 0xf;
         break;
       }
@@ -394,6 +513,15 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         blockTransfer(false);
+        break;
+      case 5: // PUSH IMMEDIATE
+        if (is2200) return 1;
+        sdata1 = 0xff & memory[P];
+        P++; P &= pMask; fetches++;
+        sdata1 |= 0xff00 & (memory[P]<<8);
+        P++; P &= pMask; fetches++;
+        stack.stk[stackptr] = sdata1;
+        stackptr = (stackptr + 1) & 0xf;
         break;
       default:
         /* Unimplemented */
@@ -532,73 +660,31 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
           return 1;
         }
       case 1: // INCP HL
-       if (is2200) return 1; // halt if 2200.
+        if (is2200) return 1; // halt if 2200.
         switch (implicit) {
           case 0:
-            if (regSets[setSel].r.regL == 0xff) {
-              if (regSets[setSel].r.regH == 0xff) {
-                regSets[setSel].r.regH=0;
-                flagCarry[setSel] = 1;
-              } else {
-                regSets[setSel].r.regH++;
-                flagCarry[setSel] = 0;
-              }
-              regSets[setSel].r.regL=0; 
-            } else {
-              regSets[setSel].r.regL++; 
-            }
+            incrementRegisterPair(REG_H, REG_L, 1);
             break;
           case 0022:
-            if (regSets[setSel].r.regA == 0xff) {
-              if (regSets[setSel].r.regX == 0xff) {
-                regSets[setSel].r.regX=0;
-                flagCarry[setSel] = 1;
-              } else {
-                regSets[setSel].r.regX++;
-                flagCarry[setSel] = 0;
-              }
-              regSets[setSel].r.regA=0; 
-            } else {
-              regSets[setSel].r.regA++; 
-            }          
+            incrementRegisterPair(REG_X, REG_A, 1);        
             break; 
           case 0062:
-            if (regSets[setSel].r.regC == 0xff) {
-              if (regSets[setSel].r.regB == 0xff) {
-                regSets[setSel].r.regB=0;
-                flagCarry[setSel] = 1;
-              } else {
-                regSets[setSel].r.regB++;
-                flagCarry[setSel] = 0;
-              }
-              regSets[setSel].r.regB++;
-              regSets[setSel].r.regC=0; 
-            } else {
-              regSets[setSel].r.regC++; 
-            }          
+            incrementRegisterPair(REG_B, REG_C, 1);        
             break;          
           case 0111:
-            return 1;          
+            incrementRegisterPair(REG_X, REG_A, 2);        
+            break;          
           case 0113:
-            return 1;         
+            incrementRegisterPair(REG_B, REG_C, 2);        
+            break;         
           case 0115:
-            return 1;
+            incrementRegisterPair(REG_D, REG_E, 2);         
+            break;
           case 0117:
-            return 1;
+            incrementRegisterPair(REG_H, REG_L, 2);
+            break;
           case 0174:
-            if (regSets[setSel].r.regE == 0xff) {
-              if (regSets[setSel].r.regD == 0xff) {
-                regSets[setSel].r.regD = 0;
-                flagCarry[setSel] = 1;
-              } else {
-                regSets[setSel].r.regD++;
-                flagCarry[setSel] = 0;
-              }
-              regSets[setSel].r.regD++;
-              regSets[setSel].r.regE=0; 
-            } else {
-              regSets[setSel].r.regE++; 
-            }          
+            incrementRegisterPair(REG_D, REG_E, 1);         
             break;
           case 0176:
             return 1;       
@@ -641,72 +727,64 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
        if (is2200) return 1; // halt if 2200.
         switch (implicit) {
           case 0:
-            if (regSets[setSel].r.regL == 0x00) {
-              if (regSets[setSel].r.regH == 0x00) {
-                regSets[setSel].r.regH=0xff;
-                flagCarry[setSel] = 1;
-              } else {
-                regSets[setSel].r.regH--;
-                flagCarry[setSel] = 0;
-              }
-              regSets[setSel].r.regL=0xff; 
-            } else {
-              regSets[setSel].r.regL--; 
-            }
+            incrementRegisterPair(REG_H, REG_L, -1);
             break;
           case 0022:
-            if (regSets[setSel].r.regA == 0x00) {
-              if (regSets[setSel].r.regX == 0x00) {
-                regSets[setSel].r.regX=0xff;
-                flagCarry[setSel] = 1;
-              } else {
-                regSets[setSel].r.regX--;
-                flagCarry[setSel] = 0;
-              }
-              regSets[setSel].r.regA=0xff; 
-            } else {
-              regSets[setSel].r.regA--; 
-            }          
+            incrementRegisterPair(REG_X, REG_A, -1);        
             break; 
           case 0062:
-            if (regSets[setSel].r.regC == 0x00) {
-              if (regSets[setSel].r.regB == 0x00) {
-                regSets[setSel].r.regB=0xff;
-                flagCarry[setSel] = 1;
-              } else {
-                regSets[setSel].r.regB--;
-                flagCarry[setSel] = 0;
-              }
-              regSets[setSel].r.regC=0xff; 
-            } else {
-              regSets[setSel].r.regC--; 
-            }          
+            incrementRegisterPair(REG_B, REG_C, -1);        
             break;          
           case 0111:
-            return 1;          
+            incrementRegisterPair(REG_X, REG_A, -2);        
+            break;          
           case 0113:
-            return 1;         
+            incrementRegisterPair(REG_B, REG_C, -2);        
+            break;         
           case 0115:
-            return 1;
+            incrementRegisterPair(REG_D, REG_E, -2);         
+            break;
           case 0117:
-            return 1;
+            incrementRegisterPair(REG_H, REG_L, -2);
+            break;
           case 0174:
-            if (regSets[setSel].r.regE == 0) {
-              if (regSets[setSel].r.regD == 0) {
-                regSets[setSel].r.regD = 0xff;
-                flagCarry[setSel] = 1;
-              } else {
-                regSets[setSel].r.regD--;
-                flagCarry[setSel] = 0;
-              }
-              regSets[setSel].r.regE=0xff; 
-            } else {
-              regSets[setSel].r.regE--; 
-            }          
+            incrementRegisterPair(REG_D, REG_E, -1);         
             break;
           case 0176:
             return 1;       
         }
+
+        break;
+      case 4: //NOP JUMP
+        P++; P &= pMask; fetches++;
+        P++; P &= pMask; fetches++;
+        break;
+      case 5:
+        if (is2200) return 1;
+        switch (implicit) {
+          case 0:
+            registerStore();
+            break;
+          case 0022:
+            return 1; 
+          case 0062:
+            return 1;          
+          case 0111:
+            registerLoad();
+            break;          
+          case 0113:
+            return 1;               
+          case 0115:
+            return 1;       
+          case 0117:
+            return 1;
+          case 0174:
+            return 1; 
+          case 0176:
+            return 1;       
+        }      
+        
+        break;
 
         break;
       default:
@@ -734,7 +812,36 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         stackptr = (stackptr - 1) & 0xf;
         P = stack.stk[stackptr] & pMask;
         return 0;
+      case 1:
+        if (is2200) return 1;
+        switch (implicit) {
+          case 0:
+            incrementRegisterPair(REG_H, REG_L, regSets[setSel].r.regA); //INCP HL,2
+            break;
+          case 0022:
+            incrementRegisterPair(REG_X, REG_A, regSets[setSel].r.regA);        
+            break; 
+          case 0062:
+            incrementRegisterPair(REG_B, REG_C, regSets[setSel].r.regA);        
+            break;          
+          case 0111:
+            return 1;          
+          case 0113:
+            return 1;               
+          case 0115:
+            return 1;       
+          case 0117:
+            return 1;
+          case 0174:
+            incrementRegisterPair(REG_D, REG_E, regSets[setSel].r.regA);         
+            break;
+          case 0176:
+            return 1;       
+        }      
+        
+        break;
       case 2:
+          printLog("INFO", "Double Store  implicit=%03o inst =%03o\n", implicit, inst);
           switch (implicit) {
             case 0:
               // DS DE,HL
@@ -785,6 +892,41 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
               break;                     
           }
         break;
+      case 3:
+        if (is2200) return 1; // halt if 2200.
+        switch (implicit) {
+          case 0:
+            incrementRegisterPair(REG_H, REG_L, -regSets[setSel].r.regA); //DECP HL,2
+            break;
+          case 0022:
+            incrementRegisterPair(REG_X, REG_A, -regSets[setSel].r.regA);        
+            break; 
+          case 0062:
+            incrementRegisterPair(REG_B, REG_C, -regSets[setSel].r.regA);        
+            break;          
+          case 0111:
+            return 1;          
+          case 0113:
+            return 1;               
+          case 0115:
+            return 1;       
+          case 0117:
+            return 1;
+          case 0174:
+            incrementRegisterPair(REG_D, REG_E, -regSets[setSel].r.regA);         
+            break;
+          case 0176:
+            return 1;       
+        }   
+        
+        break;
+      case 4:
+        if (is2200) return 1; 
+        return doubleLoad();
+      case 5:
+        if (is2200) return 1;
+        implicit = 1;
+        return doubleLoad();
       default:
         /* Unimplemented */
         return 1;
