@@ -236,8 +236,10 @@ void printLog(const char *level, const char *fmt, ...) {
 }
 
 void removeTimerCallback(class callbackRecord * c) {
+  printLog("INFO", "Trying to remove callbackRecord * %p,  size of timerQueue: %d\n", c, timerqueue.size());
   auto it = std::find(timerqueue.begin(), timerqueue.end(), c);
   if (it != timerqueue.end()) {
+    printLog("INFO", "Removing timerCallback.\n");
     timerqueue.erase(it);
   }
 }
@@ -262,8 +264,19 @@ char * getCpuTimeStr (char * buffer, int size) {
   return buffer;
 }
 
+std::function<int(class callbackRecord *)> interrupt = [](class callbackRecord * c)->int {
+  struct timespec then;
+  printLog("INFO", "1 ms Interrupt timer ENTRY\n");
+  cpu.interruptPending = 1;
+  timeoutInNanosecs(&then, 1000000);
+  addToTimerQueue(interrupt, then);
+  printLog("INFO", "1ms timeout after gap.  EXIT\n");
+  return 0;
+};
+
 int main(int argc, char *argv[]) {
-  struct timespec now,before, after, diff;
+  struct timespec now,before, after, diff, then;
+  
   //char buffer[100];
   struct winsize w;
   bool negative;
@@ -289,9 +302,11 @@ int main(int argc, char *argv[]) {
   windows[1] = rw;
   windows[2] = dpw;
   windows[activeWindow]->hightlightWindow();
+  timeoutInNanosecs(&then, 1000000);
+  addToTimerQueue(interrupt, then);
   //cpuRunner();
   while (1) { // event loop
-    cpu.interruptPending = 1;
+    //cpu.interruptPending = 1;
     clock_gettime(CLOCK_MONOTONIC, &before);
     addTimeSpec(&after, &before, (long) (yield/100 * 1000000));
     while (cpu.running && nowIsLessThan(&after)) {

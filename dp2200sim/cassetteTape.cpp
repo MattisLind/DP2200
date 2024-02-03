@@ -106,7 +106,8 @@ bool CassetteTape::isTapeOverGap() {
   return state ==  TAPE_GAP; 
 }
 
-void CassetteTape::readByte(bool forward, unsigned char * data) {
+bool CassetteTape::readByte(bool forward, unsigned char * data) {
+  bool ret=false;
   if (forward) {
     if (state == TAPE_GAP) {
       fread(&currentBlockSize, 4, 1, file);  
@@ -114,16 +115,19 @@ void CassetteTape::readByte(bool forward, unsigned char * data) {
       state = TAPE_DATA;
       fread(data, 1, 1, file);  
       readBytes=1;
-      printLog("INFO", "readByte %02X\n # bytes read= %d state is now=%s\n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");  
+      printLog("INFO", "readByte(forward) %02X # bytes read= %d state is now=%s\n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");  
     } else {
       fread(data, 1, 1, file); 
       readBytes++;
-      printLog("INFO", "readByte %02X\n # bytes read= %d state is now=%s\n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
+      printLog("INFO", "readByte(forward) %02X # bytes read= %d state is now=%s\n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
       if (readBytes >= currentBlockSize) {
         int dummy;
         state = TAPE_GAP;
         fread(&dummy, 4, 1, file); // read end of record size marker 
-        printLog("INFO", "readByte read the end of record blockSizemarker=%d state is now=%s\n", dummy, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
+        if (feof(file)) {
+          ret = true;
+        }
+        printLog("INFO", "readByte(forward) read the end of record blockSizemarker=%d state is now=%s direction=forward\n", dummy, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
       }
     }
   } else {
@@ -137,22 +141,26 @@ void CassetteTape::readByte(bool forward, unsigned char * data) {
       fread(data, 1, 1, file);
       fseek(file, -1, SEEK_CUR);
       readBytes=currentBlockSize-1;
-      printLog("INFO", "readByte %02X\n # bytes read= %d state is now=%s \n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA"); 
+      printLog("INFO", "readByte (backwards) %02X # bytes read= %d state is now=%s \n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA"); 
     } else {
       fseek(file, -1, SEEK_CUR);
       fread(data, 1, 1, file);
       fseek(file, -1, SEEK_CUR);
       readBytes--;
-      printLog("INFO", "readByte %02X\n # bytes read= %d state is now=%s \n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA"); 
+      printLog("INFO", "readByte (backwards) %02X # bytes read= %d state is now=%s \n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA"); 
       if (readBytes <= 0) {
         int dummy;
         state = TAPE_GAP;
         fseek(file, -4, SEEK_CUR);
         fread(&dummy, 4, 1, file); // read end of record size marker 
         fseek(file, -4, SEEK_CUR);
-        printLog("INFO", "readByte read the end of record blockSizemarker=%d state is now=%s \n", dummy, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
+        if (ftell(file)== 0L) {
+          return true;
+        }
+        printLog("INFO", "readByte (backwards) read the end of record blockSizemarker=%d state is now=%s direction=backwards\n", dummy, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
       }
     } 
     *data = (*data & 0x80) >> 7 | (*data & 0x40) >> 5 | (*data & 0x20) >> 3 | (*data & 0x10) >> 1 | (*data & 0x8) << 1 | (*data & 0x4) << 3 | (*data & 0x2) << 5 | (*data & 0x1) <<7;
   }  
+  return ret;
 }

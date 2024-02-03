@@ -102,6 +102,7 @@ class IOController {
     std::vector<class callbackRecord *>outStandingCallbacks;
     void removeFromOutstandCallbacks (class callbackRecord *);
     void removeAllCallbacks();
+    void printStatus(const char *);
     public:
     CassetteTape * tapeDrive[2];
     unsigned char input ();
@@ -126,7 +127,6 @@ class IOController {
     std::string getFileName (int);
     bool loadBoot (unsigned char * address);
     CassetteDevice();
-    void updateDataRegisterAndSetStatusRegister( unsigned char);
   };
 
     class ScreenKeyboardDevice : public virtual IODevice  {

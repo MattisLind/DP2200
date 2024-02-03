@@ -1420,6 +1420,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
   int dp2200_cpu::load(unsigned char inst) {
     unsigned int src, dest;
     unsigned char data;
+    
     src = inst & 0x7;
     dest = (inst >> 3) & 0x7;
 
@@ -1427,14 +1428,14 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       return 1;
     }
     if (src == 0x7) {
-      data = memory[((unsigned int)(regSets[setSel].r.regH & hMask) << 8) +
-                    regSets[setSel].r.regL];
+      unsigned short address = ((regSets[setSel].regs[getHighRegFromImplicit()] & hMask) << 8) + regSets[setSel].regs[getLowRegFromImplicit()];
+      data = memory[address];
     } else {
       data = regSets[setSel].regs[src];
     }
     if (dest == 0x7) {
-      memory[((unsigned int)(regSets[setSel].r.regH & hMask) << 8) +
-             regSets[setSel].r.regL] = data;
+      unsigned short address = ((regSets[setSel].regs[getHighRegFromImplicit()] & hMask) << 8) + regSets[setSel].regs[getLowRegFromImplicit()];
+      memory[address] = data;
     } else {
       regSets[setSel].regs[dest] = data;
     }
