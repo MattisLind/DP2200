@@ -12,7 +12,34 @@
 #include <functional>
 #include <algorithm>
 
+extern bool running; 
+
 void printLog(const char *level, const char *fmt, ...);
+
+unsigned char & dp2200_cpu::Memory::operator[](int address) {
+  //printLog("INFO", "Accessed address %05o\n", address);
+  if (memoryWatch[address]) {
+    printLog("INFO", "Accessed address %05o - halting\n", address);
+    running = false;
+  }
+  return memory[address];
+}
+
+dp2200_cpu::Memory::Memory() {
+  // clear the entire memoryWatch array
+  /*for (unsigned short address=0;address <=65535; address++) {
+    memoryWatch[address]=false;
+  }*/
+}
+
+void dp2200_cpu::Memory::addWatch(unsigned short address) {
+  memoryWatch[address]=true;
+}
+
+void dp2200_cpu::Memory::removeWatch(unsigned short address) {
+  memoryWatch[address]=false;  
+}
+
 
   /***************************************************************************
 
@@ -147,7 +174,7 @@ void dp2200_cpu::setCPUtype5500() {
 
 
 void dp2200_cpu::clear() {
-  for (unsigned long i=0; i<sizeof(memory);i++ ) memory[i]=0;
+  for (unsigned long i=0; i<sizeof(memory.memory);i++ ) memory[i]=0;
 }
 
 void dp2200_cpu::reset() {
@@ -383,12 +410,12 @@ int dp2200_cpu::doubleStore () {
 }
 
 int dp2200_cpu::registerStore() {
-  int address = 0xffff & stack.stk[stackptr];
+  int address = 0xffff & stack.stk[(stackptr-1) & 0xf];
   for (int i=7; i >= 0; i-- ) {
     memory[address] = regSets[setSel].regs[i];
     address--; address &= pMask; 
   }  
-  stack.stk[stackptr] = 0xffff & address;
+  stack.stk[(stackptr-1) & 0xf] = 0xffff & address;
   return 0;
 }
 
@@ -397,6 +424,41 @@ int dp2200_cpu::registerLoad() {
   for (int i=7; i >= 0; i--) {
     regSets[setSel].regs[i] = memory[address];
     address--; address &= pMask; 
+  }
+  return 0;
+}
+
+int dp2200_cpu::stackLoad() {
+  unsigned int address = ((unsigned int)(regSets[setSel].r.regH) << 8) + (0xff & regSets[setSel].r.regL);
+  int count = regSets[setSel].r.regC==0?16:regSets[setSel].r.regC;
+  count = count>16?16:count;
+  printLog("INFO", "stackLoad count=%d address=%05o stackptr=%d\n", count, address, stackptr);
+  for (int i=0; i<count;i++) {
+    stack.stk[stackptr] = (memory[address] & 0xff) << 8;
+    printLog("INFO", "Reading %03o from memort address %05o.\n",memory[address] & 0xff, address);
+    address--;
+    stack.stk[stackptr] |= memory[address] & 0xff;
+    printLog("INFO", "Reading %03o from memort address %05o.\n",memory[address] & 0xff, address);
+    address-- ;
+    printLog("INFO", "Storing %05o on stackLocation %d\n", stack.stk[stackptr], stackptr);
+    stackptr = (stackptr + 1) & 0xf;
+  }
+  return 0;
+}
+
+int dp2200_cpu::stackStore() {
+  unsigned int address = ((unsigned int)(regSets[setSel].r.regH) << 8) + (0xff & regSets[setSel].r.regL);
+  int count = regSets[setSel].r.regC==0?16:regSets[setSel].r.regC;
+  count = count>16?16:count;
+  printLog("INFO", "stackStore count=%d address=%03o stackptr=%d\n", count, address, stackptr);
+  for (int i=0; i<count;i++) {
+    stackptr = (stackptr - 1) & 0xf;
+    memory[address] = stack.stk[stackptr] & 0xff;
+    printLog("INFO", "Storing %03o into address %05o from stackptr=%d\n", memory[address], address, stackptr);
+    address++;
+    memory[address] = (stack.stk[stackptr] >> 8) & 0xff;
+    printLog("INFO", "Storing %03o into address %05o from stackptr=%d\n", memory[address], address, stackptr);
+    address++;
   }
   return 0;
 }
@@ -783,9 +845,16 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
           case 0176:
             return 1;       
         }      
-        
         break;
-
+      case 6: 
+        if (is2200) return 1;
+        if (implicit==0) {
+          return stackStore();
+        } else if (implicit==0111) {
+              return stackLoad();
+        } else {
+          return 1;
+        }
         break;
       default:
         return 1;
@@ -1031,8 +1100,9 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       op = (inst & 0x38) >> 3;
       switch (op) {
       case 0:
-        /* Unimplemented */
-        return 1;
+        /* PARITY INPUT - We don't care about input really.*/
+        regSets[setSel].regs[r]=ioCtrl->input();
+        return 0;
       case 1:
         /* Unimplemented */
         return 1;
@@ -1042,6 +1112,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         break;
       case 3:
         /* EX COM2 */
+        printLog("INFO", "implicit=%03o r=%d\n", implicit, r);
         return ioCtrl->exCom2(regSets[setSel].regs[r]);
         break;
       case 4:

@@ -26,6 +26,8 @@ void printLog(const char *level, const char *fmt, ...);
 float yield=100.0;
 FILE *logfile;
 
+bool running=false;
+
 class dp2200_cpu cpu;
 
 class dp2200Window *dpw;
@@ -309,14 +311,14 @@ int main(int argc, char *argv[]) {
     //cpu.interruptPending = 1;
     clock_gettime(CLOCK_MONOTONIC, &before);
     addTimeSpec(&after, &before, (long) (yield/100 * 1000000));
-    while (cpu.running && nowIsLessThan(&after)) {
+    while (running && nowIsLessThan(&after)) {
       // Run instructions
       if (cpu.execute()) {
-        cpu.running = false;
+        running = false;
       } 
       //printLog("INFO", "%s\n", getCpuTimeStr(buffer, 100));
       if (std::find(cpu.breakpoints.begin(), cpu.breakpoints.end(), cpu.P)!=cpu.breakpoints.end()) {
-        cpu.running = false;
+        running = false;
       } 
       //printLog("INFO", "%s size=%d \n", getCpuTimeStr(buffer, 100), timerqueue.size());
       if (timerqueue.size()>0 && compareTimeSpec(timerqueue.front()->deadline, cpu.totalInstructionTime)) {

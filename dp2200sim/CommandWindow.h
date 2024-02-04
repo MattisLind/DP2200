@@ -63,6 +63,8 @@ class commandWindow : public virtual Window {
   void doHalt(std::vector<Param> params);
   void doAddBreakpoint(std::vector<Param> params);
   void doRemoveBreakpoint(std::vector<Param> params);
+  void doAddWatch(std::vector<Param> params);
+  void doRemoveWatch(std::vector<Param> params);
   void doDetach(std::vector<Param> params);
   void doAttach(std::vector<Param> params);
   void doTrace(std::vector<Param> params);

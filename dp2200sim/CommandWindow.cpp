@@ -1,6 +1,7 @@
 #include "CommandWindow.h"
 #include <algorithm>
 
+extern bool running;
 
 void commandWindow::doHelp(std::vector<Param> params) {
   wprintw(innerWin, "All commands can be shorted until they becaome ambigous. \nFor example A for ATTACH.\n");
@@ -51,7 +52,7 @@ void commandWindow::doYield(std::vector<Param> params) {
 }
 
 void commandWindow::doLoadBoot(std::vector<Param> params) {
-  if (!cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory)) {
+  if (!cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory.memory)) {
     wprintw(innerWin, "Unable to load bootstrap into memory.\n");
   }
 }
@@ -61,11 +62,11 @@ void commandWindow::doClear(std::vector<Param> params) {
 void commandWindow::doRun(std::vector<Param> params) {
   cpu->totalInstructionTime.tv_nsec=0;
   cpu->totalInstructionTime.tv_sec=0;
-  cpu->running = true;
+  running = true;
 }
 void commandWindow::doReset(std::vector<Param> params) {
   cpu->reset();
-  cpu->running=false;
+  running=false;
 }
 
 void commandWindow::doTrace(std::vector<Param> params) {
@@ -99,15 +100,15 @@ void commandWindow::doNoTrace(std::vector<Param> params) {
 }
 
 void commandWindow::doRestart(std::vector<Param> params) {
-  cpu->running = false;
+  running = false;
   cpu->reset();
-  cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory);
+  cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory.memory);
   cpu->totalInstructionTime.tv_nsec=0;
   cpu->totalInstructionTime.tv_sec=0;
-  cpu->running = true;  
+  running = true;  
 }
 void commandWindow::doHalt(std::vector<Param> params) {
-  cpu->running = false;
+  running = false;
 }
 void commandWindow::doAddBreakpoint(std::vector<Param> params) {
   unsigned short address=0;
@@ -139,6 +140,38 @@ void commandWindow::doRemoveBreakpoint(std::vector<Param> params) {
     wprintw(innerWin, "Failed to remove breakpoint at address %04X\n", address);
   };   
 }
+
+void commandWindow::doAddWatch(std::vector<Param> params) {
+  unsigned short address=0;
+  for (auto it = params.begin(); it < params.end(); it++) {
+    if (it->paramId == ADDRESS) {
+      if (rw->octal) {
+        address = strtol(it->paramValue.s, NULL, 8);
+      } else {
+        address = strtol(it->paramValue.s, NULL, 16);  
+      }
+    }
+  }
+  if (cpu->addBreakpoint(address)) {
+    wprintw(innerWin, "Failed to add memory watch at address %04X\n", address);
+  };   
+}
+void commandWindow::doRemoveWatch(std::vector<Param> params) {
+  unsigned short address=0;
+  for (auto it = params.begin(); it < params.end(); it++) {
+    if (it->paramId == ADDRESS) {
+      if (rw->octal) {
+        address = strtol(it->paramValue.s, NULL, 8);
+      } else {
+        address = strtol(it->paramValue.s, NULL, 16);  
+      }
+    }
+  }
+  if (cpu->removeBreakpoint(address)) {
+    wprintw(innerWin, "Failed to remove memory watch at address %04X\n", address);
+  };   
+}
+
 
 void commandWindow::doDetach(std::vector<Param> params) {
   int drive=0; 
@@ -428,6 +461,10 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
       {"BREAK", "Add breakpoint. \n  Parameter ADDRESS is used for specifying the address of the breakpoint.", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doAddBreakpoint});
   commands.push_back(
       {"NOBREAK", "Remove breakpoint. \n  Parameter ADDRESS is used for specifying the address of the breakpoint.", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doRemoveBreakpoint});  
+  commands.push_back(
+      {"WATCH", "Add memory watch. \n  Parameter ADDRESS is used for specifying the address of the memory watch.", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doAddWatch});
+  commands.push_back(
+      {"NOWATCH", "Remove memory watch. \n  Parameter ADDRESS is used for specifying the address of the memory watch.", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doRemoveWatch});  
   commands.push_back({"TRACE", "Enable trace logging", {}, &commandWindow::doTrace});    
   commands.push_back({"NOTRACE", "Disable trace logging", {}, &commandWindow::doNoTrace}); 
   commands.push_back({"HEXADECIMAL", "Show in hexadecimal notation.\nAlso possible to toggle in the register view by pressing 'o'.", {}, &commandWindow::doHex});  

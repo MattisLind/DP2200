@@ -86,16 +86,26 @@ public:
 
   unsigned short P;
 
+  class Memory {
+    bool memoryWatch[65536];
+    public:
+    unsigned char memory[65536];
+    unsigned char & operator[](int);
+    void addWatch(unsigned short address);
+    void removeWatch (unsigned short address);
+    Memory(); 
+  };
+
   // 64K memory - works with 5500 as well.
-  unsigned char memory[0x10000];
-  
+  // unsigned char memory[0x10000];
+  class Memory memory;
   unsigned long instructions = 0;
   unsigned long fetches = 0;
   unsigned int outbitcnt = 0;
   unsigned int inbitcnt = 0;
   int timeForInstruction;
   struct timespec totalInstructionTime, startedTime;
-  bool running;
+  // bool running;
 
   struct inst {
     unsigned char data[3];
@@ -257,6 +267,8 @@ public:
   int removeBreakpoint(unsigned short address);
   dp2200_cpu();
   private:
+  int stackStore();
+  int stackLoad();
   int doubleLoad();
   int doubleStore();
   int registerStore();
