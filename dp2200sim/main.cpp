@@ -272,7 +272,7 @@ std::function<int(class callbackRecord *)> interrupt = [](class callbackRecord *
   cpu.interruptPending = 1;
   timeoutInNanosecs(&then, 1000000);
   addToTimerQueue(interrupt, then);
-  printLog("INFO", "1ms timeout after gap.  EXIT\n");
+  printLog("INFO", "1 ms Interrupt timer  EXIT\n");
   return 0;
 };
 

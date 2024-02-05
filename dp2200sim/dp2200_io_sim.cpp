@@ -970,7 +970,7 @@ int IOController::Disk9350Device::exCom1(unsigned char data) {
       bufferAddress = 0;
       printLog("INFO", "Clear buffer page %d from 9350 drive\n", selectedBufferPage);
       statusRegister &= ~(DISK9350_STATUS_CONTROLLER_READY | DISK9350_STATUS_CRC_ERROR | DISK9350_STATUS_INVALID_SECTOR_ADDRESS);
-      address = cylinder * head * sector;
+      address = (cylinder * 24 * 2 + head * 24 + sector) * 256;
       timeoutInNanosecs(&then, 500000);
       addToTimerQueue([t = this](class callbackRecord *c) -> int {
           printLog("INFO", "500us timeout 9350 disk read is ready\n");
@@ -987,7 +987,7 @@ int IOController::Disk9350Device::exCom1(unsigned char data) {
       // Read selected sector onto selected buffer page.
       printLog("INFO", "Reading from 9350 drive\n");
       statusRegister &= ~(DISK9350_STATUS_CONTROLLER_READY | DISK9350_STATUS_CRC_ERROR | DISK9350_STATUS_INVALID_SECTOR_ADDRESS);
-      address = cylinder * head * sector;
+      address = (cylinder * 24 * 2 + head * 24 + sector) * 256;
       timeoutInNanosecs(&then, 1000000);
       addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
           printLog("INFO", "10ms timeout 9350 disk read is ready\n");
@@ -1002,7 +1002,7 @@ int IOController::Disk9350Device::exCom1(unsigned char data) {
     case 7:
       printLog("INFO", "Writing to 9350 drive\n");
       statusRegister &= ~(DISK9350_STATUS_CONTROLLER_READY | DISK9350_STATUS_CRC_ERROR | DISK9350_STATUS_INVALID_SECTOR_ADDRESS | DISK9350_STATUS_DRIVE_READY);
-      address = cylinder * head * sector;
+      address = (cylinder * 24 * 2 + head * 24 + sector) * 256;
       timeoutInNanosecs(&then, 1000000);
       addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
           int ret;
@@ -1226,7 +1226,7 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       printLog("INFO", "Reading from 9370 drive %d\n", selectedDrive);
       statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
       statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
-      address = cylinder * head * sector;
+      address = (cylinder * 24 * 20 + head * 24 + sector) * 256;
       timeoutInNanosecs(&then, 1000000);
       addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
           printLog("INFO", "10ms timeout 9370 disk read is ready on drive %d\n", t->selectedDrive);
@@ -1240,7 +1240,7 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       printLog("INFO", "Writing to 9370 drive %d\n", selectedDrive);
       statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
       statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
-      address = cylinder * head * sector;
+      address = (cylinder * 24 * 20 + head * 24 + sector) * 256;
       timeoutInNanosecs(&then, 1000000);
       addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
           int ret;
@@ -1299,13 +1299,17 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND);
       statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
       timeoutInNanosecs(&then, 3000000);
-      addToTimerQueue([t = this](class callbackRecord *c) -> int {
+      address = (cylinder * 24 * 20 + head * 24) * 256;
+      printLog("INFO", "To format cylinder=%d head=%d address=%08X\n", cylinder, head, address);
+      addToTimerQueue([t = this, a=address](class callbackRecord *c) -> int {
         int ret;
-        long address = t->cylinder * t->head * t->sector;
-        printLog("INFO", "3ms timeout 9370 disk track format is ready on drive %d\n", t->selectedDrive); 
-        for (auto i=0; i<24; i++) {          
+        long address=a;
+        printLog("INFO", "3ms timeout 9370 disk track format is ready on drive %d address %08X\n", t->selectedDrive,address);
+        memset(t->buffer[t->selectedBufferPage],0150,256);   
+        for (auto i=0; i<24; i++) {  
+          printLog("INFO", "Formatting address=%08X\n",address);
           ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
-            address+=256;
+          address+=256;
         }
         if (ret!=0) {
           t->statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
