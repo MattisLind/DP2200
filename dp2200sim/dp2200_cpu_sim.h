@@ -90,9 +90,11 @@ public:
     bool memoryWatch[65536];
     public:
     unsigned char memory[65536];
-    unsigned char & operator[](int);
-    void addWatch(unsigned short address);
-    void removeWatch (unsigned short address);
+    //unsigned char & operator[](int);
+    bool addWatch(unsigned short address);
+    bool removeWatch (unsigned short address);
+    unsigned char read(unsigned short address);
+    void write(unsigned short address, unsigned char data);
     Memory(); 
   };
 

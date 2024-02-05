@@ -64,6 +64,11 @@ void commandWindow::doRun(std::vector<Param> params) {
   cpu->totalInstructionTime.tv_sec=0;
   running = true;
 }
+
+void commandWindow::doContinue(std::vector<Param> params) {
+  running = true;
+}
+
 void commandWindow::doReset(std::vector<Param> params) {
   cpu->reset();
   running=false;
@@ -152,7 +157,7 @@ void commandWindow::doAddWatch(std::vector<Param> params) {
       }
     }
   }
-  if (cpu->addBreakpoint(address)) {
+  if (cpu->memory.addWatch(address)) {
     wprintw(innerWin, "Failed to add memory watch at address %04X\n", address);
   };   
 }
@@ -167,7 +172,7 @@ void commandWindow::doRemoveWatch(std::vector<Param> params) {
       }
     }
   }
-  if (cpu->removeBreakpoint(address)) {
+  if (cpu->memory.removeWatch(address)) {
     wprintw(innerWin, "Failed to remove memory watch at address %04X\n", address);
   };   
 }
@@ -439,6 +444,7 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
                       {"TYPE", TYPE, STRING, {.s = {'C','A','S','S','E','T','T','E','\0'}}}},
                       &commandWindow::doDetach});
   commands.push_back({"STOP", "Stop execution", {}, &commandWindow::doHalt});
+  commands.push_back({"CONTINUE", "Continue execution", {}, &commandWindow::doContinue});
   commands.push_back(
       {"EXIT", "Exit the simulator", {}, &commandWindow::doExit});
   commands.push_back(

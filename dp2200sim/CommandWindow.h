@@ -73,6 +73,7 @@ class commandWindow : public virtual Window {
   void doHex(std::vector<Param> params);
   void doOct(std::vector<Param> params);  
   void doSet(std::vector<Param> params);
+  void doContinue(std::vector<Param> params);
   void processCommand(char ch);
 
 public:
