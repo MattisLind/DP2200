@@ -160,7 +160,8 @@ unsigned char IOController::CassetteDevice::input () {
 }
 
 int IOController::CassetteDevice::exWrite(unsigned char data) {
-  return 1;
+  printLog("INFO", "Writing to Cassette is not really supported yet.");
+  return 0;
 }
 
 int IOController::CassetteDevice::exCom1(unsigned char data) {
