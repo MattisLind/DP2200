@@ -13,6 +13,11 @@ extern class registerWindow * rw;
 
 void printLog(const char *level, const char *fmt, ...);
 
+void printBuffer(char * buffer) {
+  for (int i=0;i<16;i++) {
+    printLog("INFO", "Diskbuffer: %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o\n", buffer+i*16+0, buffer+i*16+1, buffer+i*16+2, buffer+i*16+3, buffer+i*16+4, buffer+i*16+5, buffer+i*16+6, buffer+i*16+7, buffer+i*16+8, buffer+i*16+9, buffer+i*16+10, buffer+i*16+11, buffer+i*16+12, buffer+i*16+13, buffer+i*16+14, buffer+i*16+15);
+  }  
+}
 
 IOController::IOController () {
   dev[0xf0] = cassetteDevice = new CassetteDevice();
@@ -920,14 +925,16 @@ unsigned char IOController::Disk9350Device::input () {
     }    
     return statusRegister;
   } else {
+    char tmp;
     printLog("INFO", "Reading data from 9350 bufferPage %d address %d = %02X\n", selectedBufferPage, bufferAddress, 0xff&buffer[selectedBufferPage][bufferAddress]);
-    return buffer[selectedBufferPage][bufferAddress];
+    tmp =  buffer[selectedBufferPage][bufferAddress];
     if (bufferAddress == 0377) {
       bufferAddress=0;
       statusRegister |= DISK9350_STATUS_OVERFLOW;
     } else {
       bufferAddress++;
     }
+    return tmp;
   }
 }
 int IOController::Disk9350Device::exWrite(unsigned char data) {
@@ -1197,9 +1204,12 @@ unsigned char IOController::Disk9370Device::input () {
     }     
     return statusRegister;
   } else if (status == 0) {
-    return dataRegister;
+    char tmp;
+    printLog("INFO", "Reading data (%03o) from buffer address (%d) in selectedBufferPage=%d\n", buffer[selectedBufferPage][bufferAddress], bufferAddress, selectedBufferPage);
+    tmp = buffer[selectedBufferPage][bufferAddress];
     bufferAddress++;
     if (bufferAddress==256) bufferAddress=0;
+    return tmp;
   } else {
     return 001;
   }
@@ -1223,7 +1233,7 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       sector=0;
       return 0;
     case 1: // Disk read
-      printLog("INFO", "Reading from 9370 drive %d\n", selectedDrive);
+      printLog("INFO", "Reading from 9370 drive %d cylinder=%d head=%d sector=%d\n", selectedDrive, cylinder, head, sector);
       statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
       statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
       address = (cylinder * 24 * 20 + head * 24 + sector) * 256;
@@ -1232,12 +1242,13 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
           printLog("INFO", "10ms timeout 9370 disk read is ready on drive %d\n", t->selectedDrive);
           t->statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
           t->drives[t->selectedDrive]->readSector(t->buffer[t->selectedBufferPage], address);
+          printBuffer(t->buffer[t->selectedBufferPage]);
           return 0;
         }, then);      
       return 0;
     case 2: // Disk write
     case 3: // Disk write verify. Same as 2 since we are not checking CRC in the simulator.
-      printLog("INFO", "Writing to 9370 drive %d\n", selectedDrive);
+      printLog("INFO", "Writing to 9370 drive %d cylinder=%d, head=%d, sector=%d\n", selectedDrive, cylinder, head, sector);
       statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
       statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
       address = (cylinder * 24 * 20 + head * 24 + sector) * 256;
@@ -1245,6 +1256,7 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
           int ret;
           printLog("INFO", "10ms timeout 9370 disk write is ready on drive %d\n", t->selectedDrive); 
+          printBuffer(t->buffer[t->selectedBufferPage]);
           ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
           if (ret!=0) {
             t->statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
@@ -1295,7 +1307,7 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
       status=2;
       return 0; 
     case 8: // Format track 
-      printLog("INFO", "Formatting a track on a 9370 drive %d\n", selectedDrive);
+      printLog("INFO", "Formatting a track on a 9370 drive %d cylinder=%d head=%d sector=%d\n", selectedDrive, cylinder, head, sector);
       statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND);
       statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
       timeoutInNanosecs(&then, 3000000);
@@ -1388,7 +1400,8 @@ int IOController::Disk9370Device::exBSP(){
   return 1;
 }
 int IOController::Disk9370Device::exSF(){
-  return 1;
+  printLog("INFO", "Got a EX_SF - undocumented 9370 event!");
+  return 0;
 }
 int IOController::Disk9370Device::exSB(){
   return 1;
