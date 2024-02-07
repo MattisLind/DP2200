@@ -16,9 +16,9 @@ class CassetteTape {
   int currentBlockSize;
   int readBytes;
   bool stopAtTapeGap;
-
+  bool writeProtect;
   public:
-
+  void setWriteProtected(bool);
   CassetteTape();
 
   bool openFile (std::string fileName);

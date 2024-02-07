@@ -26,6 +26,10 @@ void CassetteTape::closeFile() {
 
 std::string CassetteTape::getFileName() { return fileName; }
 
+void CassetteTape::setWriteProtected(bool wp) { 
+  writeProtect=wp;
+}
+
 
 bool  CassetteTape::readBlock (unsigned char * buffer, int * size) {
   int maxSize = *size;

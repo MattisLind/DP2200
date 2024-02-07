@@ -122,7 +122,7 @@ class IOController {
     int exSB();
     int exRewind();
     int exTStop();
-    bool openFile (int, std::string fileName);
+    bool openFile (int, std::string fileName, bool writeProtect);
     void closeFile (int);
     std::string getFileName (int);
     bool loadBoot (unsigned char * address);

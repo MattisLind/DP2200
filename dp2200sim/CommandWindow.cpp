@@ -245,7 +245,7 @@ void commandWindow::doAttach(std::vector<Param> params) {
                   ::toupper);
 
   if (type == "CASSETTE") {
-    if (cpu->ioCtrl->cassetteDevice->openFile(drive, fileName)) {
+    if (cpu->ioCtrl->cassetteDevice->openFile(drive, fileName, writeProtect)) {
       wprintw(innerWin, "Attaching file %s to drive %d\n", fileName.c_str(),drive);
     } else {
       wprintw(innerWin, "Failed to open file %s\n", fileName.c_str());      

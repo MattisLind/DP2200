@@ -15,7 +15,7 @@ void printLog(const char *level, const char *fmt, ...);
 
 void printBuffer(char * buffer) {
   for (int i=0;i<16;i++) {
-    printLog("INFO", "Diskbuffer: %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o\n", buffer+i*16+0, buffer+i*16+1, buffer+i*16+2, buffer+i*16+3, buffer+i*16+4, buffer+i*16+5, buffer+i*16+6, buffer+i*16+7, buffer+i*16+8, buffer+i*16+9, buffer+i*16+10, buffer+i*16+11, buffer+i*16+12, buffer+i*16+13, buffer+i*16+14, buffer+i*16+15);
+    printLog("INFO", "Diskbuffer: %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o %03o\n", 0xff & *(buffer+i*16+0), 0xff & *(buffer+i*16+1), 0xff & *(buffer+i*16+2), 0xff & *(buffer+i*16+3), 0xff & *(buffer+i*16+4), 0xff & *(buffer+i*16+5), 0xff & *(buffer+i*16+6), 0xff & *(buffer+i*16+7), 0xff& *(buffer+i*16+8), 0xff & *(buffer+i*16+9), 0xff & *(buffer+i*16+10), 0xff & *(buffer+i*16+11), 0xff & *(buffer+i*16+12), 0xff & *(buffer+i*16+13), 0xff & *(buffer+i*16+14), 0xff & *(buffer+i*16+15));
   }  
 }
 
@@ -74,37 +74,37 @@ int IOController::exCom4(unsigned char data) {
   return dev[ioAddress]->exCom4(data);
 }
 int IOController::exBeep() {
-  return dev[ioAddress]->exBeep();
+  return screenKeyboardDevice->exBeep();
 }
 int IOController::exClick() {
-  return dev[ioAddress]->exClick();
+  return screenKeyboardDevice->exClick();
 }
 int IOController::exDeck1() {
-  return dev[ioAddress]->exDeck1();
+  return cassetteDevice->exDeck1();
 }
 int IOController::exDeck2() {
-  return dev[ioAddress]->exDeck2();
+  return cassetteDevice->exDeck2();
 }
 int IOController::exRBK() {
-  return dev[ioAddress]->exRBK();
+  return cassetteDevice->exRBK();
 }
 int IOController::exWBK() {
-  return dev[ioAddress]->exWBK();
+  return cassetteDevice->exWBK();
 }
 int IOController::exBSP() {
-  return dev[ioAddress]->exBSP();
+  return cassetteDevice->exBSP();
 }
 int IOController::exSF() {
-  return dev[ioAddress]->exSF();
+  return cassetteDevice->exSF();
 }
 int IOController::exSB() {
-  return dev[ioAddress]->exSB();
+  return cassetteDevice->exSB();
 }
 int IOController::exRewind() {
-  return dev[ioAddress]->exRewind();
+  return cassetteDevice->exRewind();
 }
 int IOController::exTStop() {
-  return dev[ioAddress]->exTStop();
+  return cassetteDevice->exTStop();
 }
 
 unsigned char IOController::input () {
@@ -160,7 +160,7 @@ unsigned char IOController::CassetteDevice::input () {
 }
 
 int IOController::CassetteDevice::exWrite(unsigned char data) {
-  printLog("INFO", "Writing to Cassette is not really supported yet.");
+  printLog("INFO", "Writing to Cassette is not really supported yet.\n");
   return 0;
 }
 
@@ -347,8 +347,9 @@ IOController::CassetteDevice::CassetteDevice () {
 }
 
 
-bool IOController::CassetteDevice::openFile (int drive, std::string fileName) {
+bool IOController::CassetteDevice::openFile (int drive, std::string fileName, bool wp) {
   statusRegister |= (CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_CASSETTE_IN_PLACE);
+  tapeDrive[drive]->setWriteProtected(wp);
   return tapeDrive[drive]->openFile(fileName);
 }
 void IOController::CassetteDevice::closeFile (int drive) {
