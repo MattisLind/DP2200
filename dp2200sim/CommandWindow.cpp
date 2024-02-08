@@ -52,7 +52,7 @@ void commandWindow::doYield(std::vector<Param> params) {
 }
 
 void commandWindow::doLoadBoot(std::vector<Param> params) {
-  if (!cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory.memory)) {
+  if (!cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory->memory)) {
     wprintw(innerWin, "Unable to load bootstrap into memory.\n");
   }
 }
@@ -107,7 +107,7 @@ void commandWindow::doNoTrace(std::vector<Param> params) {
 void commandWindow::doRestart(std::vector<Param> params) {
   running = false;
   cpu->reset();
-  cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory.memory);
+  cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory->memory);
   cpu->totalInstructionTime.tv_nsec=0;
   cpu->totalInstructionTime.tv_sec=0;
   running = true;  
@@ -157,7 +157,7 @@ void commandWindow::doAddWatch(std::vector<Param> params) {
       }
     }
   }
-  if (cpu->memory.addWatch(address)) {
+  if (cpu->memory->addWatch(address)) {
     wprintw(innerWin, "Failed to add memory watch at address %04X\n", address);
   };   
 }
@@ -172,7 +172,7 @@ void commandWindow::doRemoveWatch(std::vector<Param> params) {
       }
     }
   }
-  if (cpu->memory.removeWatch(address)) {
+  if (cpu->memory->removeWatch(address)) {
     wprintw(innerWin, "Failed to remove memory watch at address %04X\n", address);
   };   
 }

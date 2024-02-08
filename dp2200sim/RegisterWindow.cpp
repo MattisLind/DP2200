@@ -79,7 +79,7 @@ void registerWindow::OctalForm::updateForm() {
     snprintf(b, 7, "%05o", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (j = 0; j < 16; j++) {
-      t = cpu.memory.memory[startAddress + j];
+      t = cpu.memory->memory[startAddress + j];
       if ((startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {
@@ -98,7 +98,7 @@ void registerWindow::OctalForm::updateForm() {
     snprintf(b, 7, "%05o", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (int j = 0; j < 16; j++) {
-      t = cpu.memory.memory[startAddress + j];
+      t = cpu.memory->memory[startAddress + j];
       if ((startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {
@@ -208,7 +208,7 @@ void registerWindow::HexForm::updateForm() {
     snprintf(b, 5, "%04X", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (j = 0; j < 16; j++) {
-      t = cpu.memory.memory[startAddress + j];
+      t = cpu.memory->memory[startAddress + j];
       if ((startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {
@@ -227,7 +227,7 @@ void registerWindow::HexForm::updateForm() {
     snprintf(b, 5, "%04X", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (int j = 0; j < 16; j++) {
-      t = cpu.memory.memory[startAddress + j];
+      t = cpu.memory->memory[startAddress + j];
       if ((startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {

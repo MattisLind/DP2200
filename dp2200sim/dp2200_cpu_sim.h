@@ -80,14 +80,27 @@ public:
   unsigned char flagSign[2];
   unsigned char flagCarry[2];
   unsigned char flagZero[2];
-
+  bool userMode;
+  bool accessViolation;
+  bool writeViolation;
   int interruptPending;
   int interruptEnabled;
 
   unsigned short P;
 
   class Memory {
+    struct SectorEntry {
+      bool writeEnable;
+      bool accessEnable;
+      unsigned char physicalPage;
+    };
+    bool * is5500;
+    bool * accessViolation;
+    bool * writeViolation;
+    bool * userMode;
     bool memoryWatch[65536];
+    struct SectorEntry sectorTable[16];
+    unsigned char baseRegister;
     public:
     unsigned char memory[65536];
     //unsigned char & operator[](int);
@@ -95,12 +108,12 @@ public:
     bool removeWatch (unsigned short address);
     unsigned char read(unsigned short address);
     void write(unsigned short address, unsigned char data);
-    Memory(); 
+    Memory(bool * is5500, bool * accessViolation, bool * writeViolation, bool * userMode); 
   };
 
   // 64K memory - works with 5500 as well.
   // unsigned char memory[0x10000];
-  class Memory memory;
+  class Memory *  memory;
   unsigned long instructions = 0;
   unsigned long fetches = 0;
   unsigned int outbitcnt = 0;
