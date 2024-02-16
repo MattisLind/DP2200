@@ -11,6 +11,7 @@
 #include "dp2200_cpu_sim.h"
 #include <functional>
 #include <algorithm>
+#include "5500firmware.h"
 
 extern bool running; 
 
@@ -25,8 +26,69 @@ void printLog(const char *level, const char *fmt, ...);
   return memory[address];
 }*/
 
-unsigned char inline dp2200_cpu::Memory::read(unsigned short virtualAddress) {
+
+unsigned char dp2200_cpu::Memory::physicalMemoryRead(int physicalAddress) {
+  if (*is5500) {
+    if ((physicalAddress >= 0) && ( physicalAddress< 0xC000)) {
+      return memory[physicalAddress]; 
+    } else if (physicalAddress >= 0xE000 && (physicalAddress < 0xF000) ) {
+      return memory[physicalAddress]; 
+    } else if ((physicalAddress >= 0xF000) && ( physicalAddress<= 0xFFFF)) {
+      return firmware[physicalAddress & 0xFFF];
+    }
+  }
+  return memory[physicalAddress];
+} 
+
+void dp2200_cpu::Memory::physicalMemoryWrite(int physicalAddress, unsigned char data) {
+
+  if (*is5500) {
+    if ((physicalAddress >= 0) && ( physicalAddress< 0xC000)) {
+      memory[physicalAddress]= data; 
+    } else if (physicalAddress >= 0xE000 && (physicalAddress < 0xF000) ) {
+      memory[physicalAddress]=data; 
+    } else if ((physicalAddress >= 0xF000) && ( physicalAddress<= 0xFFFF)) {
+      firmware[physicalAddress & 0xFFF]=data;
+    }
+  } else {
+    if (physicalAddress < 0x4000) {
+      memory[physicalAddress] = data;
+    }
+  }
+
+}
+
+unsigned char inline dp2200_cpu::Memory::read(unsigned short virtualAddress, bool performChecks) {
   int physicalAddress, logicalPage, physicalPage;
+
+  if (*is5500) {
+    if ((virtualAddress & 0xC000) == 0x8000) {
+      physicalAddress = 0xffff &  ((virtualAddress + (baseRegister<<8))  | (virtualAddress & 0xff)); 
+    } else {
+      physicalAddress = virtualAddress; 
+    }
+    logicalPage = (physicalAddress & 0xF000) >> 12;
+    if (logicalPage == 017) { // Fixed mapped
+      physicalPage = 017;
+    } else {
+      physicalPage = sectorTable[logicalPage].physicalPage;
+      physicalAddress = ((0xf & physicalPage) << 12) | (physicalAddress & 0xfff);
+      if (!sectorTable[logicalPage].accessEnable && *userMode && performChecks) {
+        *accessViolation = true;
+      } else {
+        *accessViolation = false;
+      }
+    }
+  } else {
+    physicalAddress = virtualAddress;
+  }
+  return physicalMemoryRead(physicalAddress);
+}
+
+
+void inline dp2200_cpu::Memory::write(unsigned short virtualAddress, unsigned char data) {
+  int physicalAddress, logicalPage, physicalPage;
+
   if (*is5500) {
     if ((virtualAddress & 0xC000) == 0x8000) {
       physicalAddress = 0xffff &  ((virtualAddress + (baseRegister<<8))  | (virtualAddress & 0xff)); 
@@ -44,22 +106,21 @@ unsigned char inline dp2200_cpu::Memory::read(unsigned short virtualAddress) {
       } else {
         *accessViolation = false;
       }
+      if (sectorTable[logicalPage].writeEnable) {
+        *writeViolation = false;
+      } else {
+        *writeViolation = true;
+      }      
     }
-    
   } else {
     physicalAddress = virtualAddress;
-  }
-  return memory[virtualAddress];
-}
-
-
-void inline dp2200_cpu::Memory::write(unsigned short address, unsigned char data) {
-  if (memoryWatch[address]) {
-    printLog("INFO", "Writing to address %05o - halting\n", address);
+  } 
+  if (memoryWatch[physicalAddress]) {
+    printLog("INFO", "Writing to address %05o - halting\n", physicalAddress);
     running=false;
-  }
-  
-  memory[address]=data;
+    return;
+  }   
+  physicalMemoryWrite(physicalAddress, data);
 }
 
 dp2200_cpu::Memory::Memory(bool * is, bool * av, bool * wv, bool * um) {
@@ -69,7 +130,7 @@ dp2200_cpu::Memory::Memory(bool * is, bool * av, bool * wv, bool * um) {
   }
   baseRegister = 0;
   for (int i=0; i<16; i++) { 
-    sectorTable[i].physicalPage=0; 
+    sectorTable[i].physicalPage=i; 
     sectorTable[i].accessEnable=true;
     sectorTable[i].writeEnable=true;
   }
@@ -78,6 +139,10 @@ dp2200_cpu::Memory::Memory(bool * is, bool * av, bool * wv, bool * um) {
   writeViolation = wv;
   is5500 = is;
   userMode = um;
+}
+
+int dp2200_cpu::Memory::size() {
+  return sizeof(memory);
 }
 
 bool dp2200_cpu::Memory::addWatch(unsigned short address) {
@@ -160,33 +225,38 @@ bool dp2200_cpu::Memory::removeWatch(unsigned short address) {
 
 
 
-char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, unsigned char * address) {
-    unsigned char instruction = *address;
-    switch (instr_l[instruction]) {
+char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, int address, std::function<unsigned char(int)> readMem) {
+    unsigned char instruction = readMem(address);
+    int r=registerFromImplict(implicit); 
+    switch (instr_l[r][instruction]) {
     case 0:
     case 1:
-      snprintf(outputBuf, size, "%s", mnems[instruction]);
+      snprintf(outputBuf, size, "%s", mnems[r][instruction]);
     break;
     case 2:
       if (octal) {
-        snprintf(outputBuf, size, "%s %03o", mnems[instruction], *(address+1));
+        snprintf(outputBuf, size, "%s %03o", mnems[r][instruction], readMem(address+1));
       } else {
-        snprintf(outputBuf, size, "%s %02X", mnems[instruction], *(address+1));
+        snprintf(outputBuf, size, "%s %02X", mnems[r][instruction], readMem(address+1));
       }
     break;
     case 3:
       if (octal) {
-        snprintf(outputBuf, size, "%s %05o", mnems[instruction], (*(address+2) << 8) | *(address+1));
+        snprintf(outputBuf, size, "%s %05o", mnems[r][instruction], (readMem(address+2) << 8) | readMem(address+1));
       } else {
-        snprintf(outputBuf, size, "%s %04X", mnems[instruction], (*(address+2) << 8) | *(address+1));
+        snprintf(outputBuf, size, "%s %04X", mnems[r][instruction], (readMem(address+2) << 8) | readMem(address+1));
       }
     break;
   }
   return outputBuf;
 }
 
-char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, unsigned short address) {
-  return disassembleLine(outputBuf, size, octal,  &(memory->memory[address]));
+char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, int address) {
+  return disassembleLine(outputBuf, size, octal,  address, [memory=memory](int address)->unsigned char { return memory->read(address, false);} );
+}
+
+char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, unsigned char * buffer) {
+  return disassembleLine(outputBuf, size, octal,  0 , [buffer=buffer](int address)->unsigned char { return *(buffer+address);} );
 }
 
 int dp2200_cpu::addBreakpoint(unsigned short address) {
@@ -224,7 +294,7 @@ void dp2200_cpu::setCPUtype5500() {
 
 
 void dp2200_cpu::clear() {
-  for (unsigned long i=0; i<sizeof(memory->memory);i++ ) memory->write(i,0);
+  for (int i=0; i<memory->size();i++ ) memory->write(i,0);
 }
 
 void dp2200_cpu::reset() {

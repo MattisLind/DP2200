@@ -101,12 +101,15 @@ public:
     bool memoryWatch[65536];
     struct SectorEntry sectorTable[16];
     unsigned char baseRegister;
-    public:
     unsigned char memory[65536];
+    public:
     //unsigned char & operator[](int);
+    unsigned char physicalMemoryRead(int address);
+    int size();
+    void physicalMemoryWrite(int address, unsigned char data);
     bool addWatch(unsigned short address);
     bool removeWatch (unsigned short address);
-    unsigned char read(unsigned short address);
+    unsigned char read(unsigned short address, bool performChecks=true);
     void write(unsigned short address, unsigned char data);
     Memory(bool * is5500, bool * accessViolation, bool * writeViolation, bool * userMode); 
   };
@@ -153,14 +156,49 @@ public:
   // Each device instance handles all the peculiarities of the device as well as dispatching tasks to be run on the main thread
   // when delays are needed.
 
+  #include "datapoint_instruction_set.h"
 
-  const char *mnems[256] = {
+  const char *mnems[8][256] = {
       // 00xxxxxx  load (immediate), add/subtract (immediate), increment,
-      // decrement,
-      "HALT", "HALT", "SLC", "RFC", "AD ", "---", "LA ", "RETURN", 
-      "---","---", "SRC", "RFZ", "AC ", "INCP HL", "LB ", "---", 
-      "BETA", "BT", "---","RFS", "SU ", "---", "LC ", "---", 
-      "ALPHA", "---", "---", "RFP", "SB ","---", "LD ", "---", 
+      // decrement,  
+      {"HALT", "HALT", "SLC", "RFC", "AD ", "INCI", "LA ", "RETURN", 
+      "---","___", "SRC", "RFZ", "AC ", "INCP HL", "LB ", "---", 
+      "BETA", "BT", "---","RFS", "SU ", "DECI", "LC ", "---", 
+      "ALPHA", "---", "SRE", "RFP", "SB ","---", "LD ", "---", 
+      "DI ", "---", "---", "RTC", "ND ", "---", "LE ","---", 
+      "EI ", "PUSH", "---", "RTZ", "XR ", "---", "LH ", "---", 
+      "POP","---", "---", "RTS", "OR ", "---", "LL ", "---", 
+      "PUSH", "---", "---","RTP", "CP ", "---", "LX ", "---",
+      // 01xxxxxx jump, call, input, output
+      "JFC", "INPUT", "CFC", "---", "JMP", "---", "CALL", "---", 
+      "JFZ", "---",   "CFZ", "---", "---", "---", "---",  "---", 
+      "JFS", "EX_ADR", "CFS","EX_STAT", "---", "EX_DATA", "---", "EX_WRITE", 
+      "JFP", "EX_COM1", "CFP","EX_COM2", "---", "EX_COM3", "---", "EX_COM4", 
+      "JTC", "---", "CTC", "---","---", "---", "---", "---", 
+      "JTZ", "EX_BEEP", "CTZ", "EX_CLICK", "---","EX_DECK1", "---", "EX_DECK2", 
+      "JTS", "EX_RBK", "CTS", "EX_WBK", "---", "---", "---", "EX_BSP", 
+      "JTP", "EX_SF", "CTP", "EX_SB", "---", "EX_RWND","---", "EX_TSTOP",
+      // 10xxxxxx add/subtract (not immediate), and/or/eor/cmp (not immediate)
+      "ADA", "ADB", "ADC", "ADD", "ADE", "ADH", "ADL", "ADM", "ACA", "ACB",
+      "ACC", "ACD", "ACE", "ACH", "ACL", "ACM", "SUA", "SUB", "SUC", "SUD",
+      "SUE", "SUH", "SUL", "SUM", "SBA", "SBB", "SBC", "SBD", "SBE", "SBH",
+      "SBL", "SBM", "NDA", "NDB", "NDC", "NDD", "NDE", "NDH", "NDL", "NDM",
+      "XRA", "XRB", "XRC", "XRD", "XRE", "XRH", "XRL", "XRM", "ORA", "ORB",
+      "ORC", "ORD", "ORE", "ORH", "ORL", "ORM", "CPA", "CPB", "CPC", "CPD",
+      "CPE", "CPH", "CPL", "CPM",
+      // 11xxxxxx load (not immediate), halt
+      "NOP", "LAB", "LAC", "LAD", "LAE", "LAH", "LAL", "LAM", "LBA", "---",
+      "LBC", "LBD", "LBE", "LBH", "LBL", "LBM", "LCA", "LCB", "---", "LCD",
+      "LCE", "LCH", "LCL", "LCM", "LDA", "LDB", "LDC", "---", "LDE", "LDH",
+      "LDL", "LDM", "LEA", "LEB", "LEC", "LED", "---", "LEH", "LEL", "LEM",
+      "LHA", "LHB", "LHC", "LHD", "LHE", "---", "LHL", "LHM", "LLA", "LLB",
+      "LLC", "LLD", "LLE", "LLH", "---", "LLM", "LMA", "LMB", "LMC", "LMD",
+      "LME", "LMH", "LML", "HALT"},
+      //111 / 1 / B
+      {"HALT", "HALT", "SLCB", "RFC", "AD ", "INCI", "LA ", "RETURN", 
+      "---","___", "SRCB", "RFZ", "AC ", "INCP HL", "LB ", "---", 
+      "BETA", "BTR", "---","RFS", "SU ", "DECI", "LC ", "---", 
+      "ALPHA", "---", "SREB", "RFP", "SB ","---", "LD ", "---", 
       "DI ", "---", "---", "RTC", "ND ", "---", "LE ","---", 
       "EI ", "---", "---", "RTZ", "XR ", "---", "LH ", "---", 
       "POP","---", "---", "RTS", "OR ", "---", "LL ", "---", 
@@ -189,7 +227,212 @@ public:
       "LDL", "LDM", "LEA", "LEB", "LEC", "LED", "---", "LEH", "LEL", "LEM",
       "LHA", "LHB", "LHC", "LHD", "LHE", "---", "LHL", "LHM", "LLA", "LLB",
       "LLC", "LLD", "LLE", "LLH", "---", "LLM", "LMA", "LMB", "LMC", "LMD",
-      "LME", "LMH", "LML", "HALT"};
+      "LME", "LMH", "LML", "HALT"},
+      // 62   / 2  / C /BC
+      {"HALT", "HALT", "SLCC", "RFC", "AD ", "---", "LA ", "RETURN", 
+      "---","---", "SRCC", "RFZ", "AC ", "INCP HL", "LB ", "---", 
+      "BETA", "BT", "---","RFS", "SU ", "---", "LC ", "---", 
+      "ALPHA", "---", "SREC", "RFP", "SB ","---", "LD ", "---", 
+      "DI ", "---", "---", "RTC", "ND ", "---", "LE ","---", 
+      "EI ", "---", "---", "RTZ", "XR ", "---", "LH ", "---", 
+      "POP BC","---", "---", "RTS", "OR ", "---", "LL ", "---", 
+      "PUSH BC", "---", "---","RTP", "CP ", "---", "LX ", "---",
+      // 01xxxxxx jump, call, input, output
+      "JFC", "INPUT", "CFC", "---", "JMP", "---", "CALL", "---", 
+      "JFZ", "---",   "CFZ", "---", "---", "---", "---",  "---", 
+      "JFS", "EX_ADR", "CFS","EX_STAT", "---", "EX_DATA", "---", "EX_WRITE", 
+      "JFP", "EX_COM1", "CFP","EX_COM2", "---", "EX_COM3", "---", "EX_COM4", 
+      "JTC", "---", "CTC", "---","---", "---", "---", "---", 
+      "JTZ", "EX_BEEP", "CTZ", "EX_CLICK", "---","EX_DECK1", "---", "EX_DECK2", 
+      "JTS", "EX_RBK", "CTS", "EX_WBK", "---", "---", "---", "EX_BSP", 
+      "JTP", "EX_SF", "CTP", "EX_SB", "---", "EX_RWND","---", "EX_TSTOP",
+      // 10xxxxxx add/subtract (not immediate), and/or/eor/cmp (not immediate)
+      "ADA", "ADB", "ADC", "ADD", "ADE", "ADH", "ADL", "ADM", "ACA", "ACB",
+      "ACC", "ACD", "ACE", "ACH", "ACL", "ACM", "SUA", "SUB", "SUC", "SUD",
+      "SUE", "SUH", "SUL", "SUM", "SBA", "SBB", "SBC", "SBD", "SBE", "SBH",
+      "SBL", "SBM", "NDA", "NDB", "NDC", "NDD", "NDE", "NDH", "NDL", "NDM",
+      "XRA", "XRB", "XRC", "XRD", "XRE", "XRH", "XRL", "XRM", "ORA", "ORB",
+      "ORC", "ORD", "ORE", "ORH", "ORL", "ORM", "CPA", "CPB", "CPC", "CPD",
+      "CPE", "CPH", "CPL", "CPM",
+      // 11xxxxxx load (not immediate), halt
+      "NOP", "LAB", "LAC", "LAD", "LAE", "LAH", "LAL", "LAM", "LBA", "---",
+      "LBC", "LBD", "LBE", "LBH", "LBL", "LBM", "LCA", "LCB", "---", "LCD",
+      "LCE", "LCH", "LCL", "LCM", "LDA", "LDB", "LDC", "---", "LDE", "LDH",
+      "LDL", "LDM", "LEA", "LEB", "LEC", "LED", "---", "LEH", "LEL", "LEM",
+      "LHA", "LHB", "LHC", "LHD", "LHE", "---", "LHL", "LHM", "LLA", "LLB",
+      "LLC", "LLD", "LLE", "LLH", "---", "LLM", "LMA", "LMB", "LMC", "LMD",
+      "LME", "LMH", "LML", "HALT"},
+      // 113 / 3  / D 
+      {"HALT", "HALT", "SLCD", "RFC", "AD ", "---", "LA ", "RETURN", 
+      "---","---", "SRCD", "RFZ", "AC ", "INCP HL", "LB ", "---", 
+      "BETA", "BT", "---","RFS", "SU ", "---", "LC ", "---", 
+      "ALPHA", "---", "SRED", "RFP", "SB ","---", "LD ", "---", 
+      "DI ", "---", "---", "RTC", "ND ", "---", "LE ","---", 
+      "EI ", "---", "---", "RTZ", "XR ", "---", "LH ", "---", 
+      "POP","---", "---", "RTS", "OR ", "---", "LL ", "---", 
+      "PUSH", "---", "---","RTP", "CP ", "---", "LX ", "---",
+      // 01xxxxxx jump, call, input, output
+      "JFC", "INPUT", "CFC", "---", "JMP", "---", "CALL", "---", 
+      "JFZ", "---",   "CFZ", "---", "---", "---", "---",  "---", 
+      "JFS", "EX_ADR", "CFS","EX_STAT", "---", "EX_DATA", "---", "EX_WRITE", 
+      "JFP", "EX_COM1", "CFP","EX_COM2", "---", "EX_COM3", "---", "EX_COM4", 
+      "JTC", "---", "CTC", "---","---", "---", "---", "---", 
+      "JTZ", "EX_BEEP", "CTZ", "EX_CLICK", "---","EX_DECK1", "---", "EX_DECK2", 
+      "JTS", "EX_RBK", "CTS", "EX_WBK", "---", "---", "---", "EX_BSP", 
+      "JTP", "EX_SF", "CTP", "EX_SB", "---", "EX_RWND","---", "EX_TSTOP",
+      // 10xxxxxx add/subtract (not immediate), and/or/eor/cmp (not immediate)
+      "ADA", "ADB", "ADC", "ADD", "ADE", "ADH", "ADL", "ADM", "ACA", "ACB",
+      "ACC", "ACD", "ACE", "ACH", "ACL", "ACM", "SUA", "SUB", "SUC", "SUD",
+      "SUE", "SUH", "SUL", "SUM", "SBA", "SBB", "SBC", "SBD", "SBE", "SBH",
+      "SBL", "SBM", "NDA", "NDB", "NDC", "NDD", "NDE", "NDH", "NDL", "NDM",
+      "XRA", "XRB", "XRC", "XRD", "XRE", "XRH", "XRL", "XRM", "ORA", "ORB",
+      "ORC", "ORD", "ORE", "ORH", "ORL", "ORM", "CPA", "CPB", "CPC", "CPD",
+      "CPE", "CPH", "CPL", "CPM",
+      // 11xxxxxx load (not immediate), halt
+      "NOP", "LAB", "LAC", "LAD", "LAE", "LAH", "LAL", "LAM", "LBA", "---",
+      "LBC", "LBD", "LBE", "LBH", "LBL", "LBM", "LCA", "LCB", "---", "LCD",
+      "LCE", "LCH", "LCL", "LCM", "LDA", "LDB", "LDC", "---", "LDE", "LDH",
+      "LDL", "LDM", "LEA", "LEB", "LEC", "LED", "---", "LEH", "LEL", "LEM",
+      "LHA", "LHB", "LHC", "LHD", "LHE", "---", "LHL", "LHM", "LLA", "LLB",
+      "LLC", "LLD", "LLE", "LLH", "---", "LLM", "LMA", "LMB", "LMC", "LMD",
+      "LME", "LMH", "LML", "HALT"},
+      // 174 / 4  / E /DE
+      {"HALT", "HALT", "SLCE", "RFC", "AD ", "---", "LA ", "RETURN", 
+      "---","---", "SRCE", "RFZ", "AC ", "INCP HL", "LB ", "---", 
+      "BETA", "BT", "---","RFS", "SU ", "---", "LC ", "---", 
+      "ALPHA", "---", "SREE", "RFP", "SB ","---", "LD ", "---", 
+      "DI ", "---", "---", "RTC", "ND ", "---", "LE ","---", 
+      "EI ", "---", "---", "RTZ", "XR ", "---", "LH ", "---", 
+      "POP DE","---", "---", "RTS", "OR ", "---", "LL ", "---", 
+      "PUSH DE", "---", "---","RTP", "CP ", "---", "LX ", "---",
+      // 01xxxxxx jump, call, input, output
+      "JFC", "INPUT", "CFC", "---", "JMP", "---", "CALL", "---", 
+      "JFZ", "---",   "CFZ", "---", "---", "---", "---",  "---", 
+      "JFS", "EX_ADR", "CFS","EX_STAT", "---", "EX_DATA", "---", "EX_WRITE", 
+      "JFP", "EX_COM1", "CFP","EX_COM2", "---", "EX_COM3", "---", "EX_COM4", 
+      "JTC", "---", "CTC", "---","---", "---", "---", "---", 
+      "JTZ", "EX_BEEP", "CTZ", "EX_CLICK", "---","EX_DECK1", "---", "EX_DECK2", 
+      "JTS", "EX_RBK", "CTS", "EX_WBK", "---", "---", "---", "EX_BSP", 
+      "JTP", "EX_SF", "CTP", "EX_SB", "---", "EX_RWND","---", "EX_TSTOP",
+      // 10xxxxxx add/subtract (not immediate), and/or/eor/cmp (not immediate)
+      "ADA", "ADB", "ADC", "ADD", "ADE", "ADH", "ADL", "ADM", "ACA", "ACB",
+      "ACC", "ACD", "ACE", "ACH", "ACL", "ACM", "SUA", "SUB", "SUC", "SUD",
+      "SUE", "SUH", "SUL", "SUM", "SBA", "SBB", "SBC", "SBD", "SBE", "SBH",
+      "SBL", "SBM", "NDA", "NDB", "NDC", "NDD", "NDE", "NDH", "NDL", "NDM",
+      "XRA", "XRB", "XRC", "XRD", "XRE", "XRH", "XRL", "XRM", "ORA", "ORB",
+      "ORC", "ORD", "ORE", "ORH", "ORL", "ORM", "CPA", "CPB", "CPC", "CPD",
+      "CPE", "CPH", "CPL", "CPM",
+      // 11xxxxxx load (not immediate), halt
+      "NOP", "LAB", "LAC", "LAD", "LAE", "LAH", "LAL", "LAM", "LBA", "---",
+      "LBC", "LBD", "LBE", "LBH", "LBL", "LBM", "LCA", "LCB", "---", "LCD",
+      "LCE", "LCH", "LCL", "LCM", "LDA", "LDB", "LDC", "---", "LDE", "LDH",
+      "LDL", "LDM", "LEA", "LEB", "LEC", "LED", "---", "LEH", "LEL", "LEM",
+      "LHA", "LHB", "LHC", "LHD", "LHE", "---", "LHL", "LHM", "LLA", "LLB",
+      "LLC", "LLD", "LLE", "LLH", "---", "LLM", "LMA", "LMB", "LMC", "LMD",
+      "LME", "LMH", "LML", "HALT"},
+      // 115 / 5 / H
+      {"HALT", "HALT", "SLCH", "RFC", "AD ", "---", "LA ", "RETURN", 
+      "---","---", "SRCH", "RFZ", "AC ", "INCP HL", "LB ", "---", 
+      "BETA", "BT", "---","RFS", "SU ", "---", "LC ", "---", 
+      "ALPHA", "---", "SREH", "RFP", "SB ","---", "LD ", "---", 
+      "DI ", "---", "---", "RTC", "ND ", "---", "LE ","---", 
+      "EI ", "---", "---", "RTZ", "XR ", "---", "LH ", "---", 
+      "POP","---", "---", "RTS", "OR ", "---", "LL ", "---", 
+      "PUSH", "---", "---","RTP", "CP ", "---", "LX ", "---",
+      // 01xxxxxx jump, call, input, output
+      "JFC", "INPUT", "CFC", "---", "JMP", "---", "CALL", "---", 
+      "JFZ", "---",   "CFZ", "---", "---", "---", "---",  "---", 
+      "JFS", "EX_ADR", "CFS","EX_STAT", "---", "EX_DATA", "---", "EX_WRITE", 
+      "JFP", "EX_COM1", "CFP","EX_COM2", "---", "EX_COM3", "---", "EX_COM4", 
+      "JTC", "---", "CTC", "---","---", "---", "---", "---", 
+      "JTZ", "EX_BEEP", "CTZ", "EX_CLICK", "---","EX_DECK1", "---", "EX_DECK2", 
+      "JTS", "EX_RBK", "CTS", "EX_WBK", "---", "---", "---", "EX_BSP", 
+      "JTP", "EX_SF", "CTP", "EX_SB", "---", "EX_RWND","---", "EX_TSTOP",
+      // 10xxxxxx add/subtract (not immediate), and/or/eor/cmp (not immediate)
+      "ADA", "ADB", "ADC", "ADD", "ADE", "ADH", "ADL", "ADM", "ACA", "ACB",
+      "ACC", "ACD", "ACE", "ACH", "ACL", "ACM", "SUA", "SUB", "SUC", "SUD",
+      "SUE", "SUH", "SUL", "SUM", "SBA", "SBB", "SBC", "SBD", "SBE", "SBH",
+      "SBL", "SBM", "NDA", "NDB", "NDC", "NDD", "NDE", "NDH", "NDL", "NDM",
+      "XRA", "XRB", "XRC", "XRD", "XRE", "XRH", "XRL", "XRM", "ORA", "ORB",
+      "ORC", "ORD", "ORE", "ORH", "ORL", "ORM", "CPA", "CPB", "CPC", "CPD",
+      "CPE", "CPH", "CPL", "CPM",
+      // 11xxxxxx load (not immediate), halt
+      "NOP", "LAB", "LAC", "LAD", "LAE", "LAH", "LAL", "LAM", "LBA", "---",
+      "LBC", "LBD", "LBE", "LBH", "LBL", "LBM", "LCA", "LCB", "---", "LCD",
+      "LCE", "LCH", "LCL", "LCM", "LDA", "LDB", "LDC", "---", "LDE", "LDH",
+      "LDL", "LDM", "LEA", "LEB", "LEC", "LED", "---", "LEH", "LEL", "LEM",
+      "LHA", "LHB", "LHC", "LHD", "LHE", "---", "LHL", "LHM", "LLA", "LLB",
+      "LLC", "LLD", "LLE", "LLH", "---", "LLM", "LMA", "LMB", "LMC", "LMD",
+      "LME", "LMH", "LML", "HALT"},
+      // 176 / 6 / L
+      {"HALT", "HALT", "SLCL", "RFC", "AD ", "---", "LA ", "RETURN", 
+      "---","---", "SRCL", "RFZ", "AC ", "INCP HL", "LB ", "---", 
+      "BETA", "BT", "---","RFS", "SU ", "---", "LC ", "---", 
+      "ALPHA", "---", "SREL", "RFP", "SB ","---", "LD ", "---", 
+      "DI ", "---", "---", "RTC", "ND ", "---", "LE ","---", 
+      "EI ", "---", "---", "RTZ", "XR ", "---", "LH ", "---", 
+      "POP","---", "---", "RTS", "OR ", "---", "LL ", "---", 
+      "PUSH", "---", "---","RTP", "CP ", "---", "LX ", "---",
+      // 01xxxxxx jump, call, input, output
+      "JFC", "INPUT", "CFC", "---", "JMP", "---", "CALL", "---", 
+      "JFZ", "---",   "CFZ", "---", "---", "---", "---",  "---", 
+      "JFS", "EX_ADR", "CFS","EX_STAT", "---", "EX_DATA", "---", "EX_WRITE", 
+      "JFP", "EX_COM1", "CFP","EX_COM2", "---", "EX_COM3", "---", "EX_COM4", 
+      "JTC", "---", "CTC", "---","---", "---", "---", "---", 
+      "JTZ", "EX_BEEP", "CTZ", "EX_CLICK", "---","EX_DECK1", "---", "EX_DECK2", 
+      "JTS", "EX_RBK", "CTS", "EX_WBK", "---", "---", "---", "EX_BSP", 
+      "JTP", "EX_SF", "CTP", "EX_SB", "---", "EX_RWND","---", "EX_TSTOP",
+      // 10xxxxxx add/subtract (not immediate), and/or/eor/cmp (not immediate)
+      "ADA", "ADB", "ADC", "ADD", "ADE", "ADH", "ADL", "ADM", "ACA", "ACB",
+      "ACC", "ACD", "ACE", "ACH", "ACL", "ACM", "SUA", "SUB", "SUC", "SUD",
+      "SUE", "SUH", "SUL", "SUM", "SBA", "SBB", "SBC", "SBD", "SBE", "SBH",
+      "SBL", "SBM", "NDA", "NDB", "NDC", "NDD", "NDE", "NDH", "NDL", "NDM",
+      "XRA", "XRB", "XRC", "XRD", "XRE", "XRH", "XRL", "XRM", "ORA", "ORB",
+      "ORC", "ORD", "ORE", "ORH", "ORL", "ORM", "CPA", "CPB", "CPC", "CPD",
+      "CPE", "CPH", "CPL", "CPM",
+      // 11xxxxxx load (not immediate), halt
+      "NOP", "LAB", "LAC", "LAD", "LAE", "LAH", "LAL", "LAM", "LBA", "---",
+      "LBC", "LBD", "LBE", "LBH", "LBL", "LBM", "LCA", "LCB", "---", "LCD",
+      "LCE", "LCH", "LCL", "LCM", "LDA", "LDB", "LDC", "---", "LDE", "LDH",
+      "LDL", "LDM", "LEA", "LEB", "LEC", "LED", "---", "LEH", "LEL", "LEM",
+      "LHA", "LHB", "LHC", "LHD", "LHE", "---", "LHL", "LHM", "LLA", "LLB",
+      "LLC", "LLD", "LLE", "LLH", "---", "LLM", "LMA", "LMB", "LMC", "LMD",
+      "LME", "LMH", "LML", "HALT"},
+      // 22 / 7 / X /XA
+      {"HALT", "HALT", "SLCX", "RFC", "AD ", "---", "LA ", "RETURN", 
+      "---","---", "SRCX", "RFZ", "AC ", "INCP HL", "LB ", "---", 
+      "BETA", "BT", "---","RFS", "SU ", "---", "LC ", "---", 
+      "ALPHA", "---", "SREX", "RFP", "SB ","---", "LD ", "---", 
+      "DI ", "---", "---", "RTC", "ND ", "---", "LE ","---", 
+      "EI ", "---", "---", "RTZ", "XR ", "---", "LH ", "---", 
+      "POP XA","---", "---", "RTS", "OR ", "---", "LL ", "---", 
+      "PUSH XA", "---", "---","RTP", "CP ", "---", "LX ", "---",
+      // 01xxxxxx jump, call, input, output
+      "JFC", "INPUT", "CFC", "---", "JMP", "---", "CALL", "---", 
+      "JFZ", "---",   "CFZ", "---", "---", "---", "---",  "---", 
+      "JFS", "EX_ADR", "CFS","EX_STAT", "---", "EX_DATA", "---", "EX_WRITE", 
+      "JFP", "EX_COM1", "CFP","EX_COM2", "---", "EX_COM3", "---", "EX_COM4", 
+      "JTC", "---", "CTC", "---","---", "---", "---", "---", 
+      "JTZ", "EX_BEEP", "CTZ", "EX_CLICK", "---","EX_DECK1", "---", "EX_DECK2", 
+      "JTS", "EX_RBK", "CTS", "EX_WBK", "---", "---", "---", "EX_BSP", 
+      "JTP", "EX_SF", "CTP", "EX_SB", "---", "EX_RWND","---", "EX_TSTOP",
+      // 10xxxxxx add/subtract (not immediate), and/or/eor/cmp (not immediate)
+      "ADA", "ADB", "ADC", "ADD", "ADE", "ADH", "ADL", "ADM", "ACA", "ACB",
+      "ACC", "ACD", "ACE", "ACH", "ACL", "ACM", "SUA", "SUB", "SUC", "SUD",
+      "SUE", "SUH", "SUL", "SUM", "SBA", "SBB", "SBC", "SBD", "SBE", "SBH",
+      "SBL", "SBM", "NDA", "NDB", "NDC", "NDD", "NDE", "NDH", "NDL", "NDM",
+      "XRA", "XRB", "XRC", "XRD", "XRE", "XRH", "XRL", "XRM", "ORA", "ORB",
+      "ORC", "ORD", "ORE", "ORH", "ORL", "ORM", "CPA", "CPB", "CPC", "CPD",
+      "CPE", "CPH", "CPL", "CPM",
+      // 11xxxxxx load (not immediate), halt
+      "NOP", "LAB", "LAC", "LAD", "LAE", "LAH", "LAL", "LAM", "LBA", "---",
+      "LBC", "LBD", "LBE", "LBH", "LBL", "LBM", "LCA", "LCB", "---", "LCD",
+      "LCE", "LCH", "LCL", "LCM", "LDA", "LDB", "LDC", "---", "LDE", "LDH",
+      "LDL", "LDM", "LEA", "LEB", "LEC", "LED", "---", "LEH", "LEL", "LEM",
+      "LHA", "LHB", "LHC", "LHD", "LHE", "---", "LHL", "LHM", "LLA", "LLB",
+      "LLC", "LLD", "LLE", "LLH", "---", "LLM", "LMA", "LMB", "LMC", "LMD",
+      "LME", "LMH", "LML", "HALT"}                     
+};
   int instTimeInNsTaken[256] = {   0,    0, 3200, 3200, 4800,    0, 3200, 3200, 
                                    0,    0, 3200, 3200, 4800,    0, 3200,    0,
                                 3200,    0,    0, 3200, 4800,    0, 3200,    0, 
@@ -252,8 +495,29 @@ public:
                                 3200, 3200, 3200, 3200, 3200, 3200,    0, 4800,
                                 4800, 4800, 4800, 4800, 4800, 4800, 4800,    0,
   };
-  int instr_l[256] = {
-      1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1,
+  int instr_l[8][256] = {{
+      1, 1, 1, 1, 2, 2, 2, 1, 
+      1, 1, 1, 1, 2, 1, 2, 1, 
+      1, 1, 1, 1, 2, 2, 2, 1, 
+      1, 1, 1, 1, 2, 1, 2, 1, 
+      1, 1, 0, 1, 2, 1, 2, 1, 
+      1, 3, 0, 1, 2, 1, 2, 1, 
+      1, 1, 0, 1, 2, 1, 2, 1, 
+      0, 0, 0, 1, 2, 1, 2, 1,
+      //
+      3, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3,
+      1, 3, 1, 0, 1, 0, 1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3, 1,
+      3, 1, 0, 0, 0, 1, 3, 1, 3, 1, 0, 1, 0, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+      1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+      1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+      //111 / 1 / B
+      {1, 1, 1, 1, 2, 3, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 3, 2, 1, 1,
       1, 1, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1,
       0, 1, 2, 1, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1,
       //
@@ -267,7 +531,107 @@ public:
       //
       1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
       1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
-      1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+      1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+      // 62   / 2  / C
+      {1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1,
+      1, 1, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1,
+      0, 1, 2, 1, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1,
+      //
+      3, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3,
+      1, 3, 1, 0, 1, 0, 1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3, 1,
+      3, 1, 0, 0, 0, 1, 3, 1, 3, 1, 0, 1, 0, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+      1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+      1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+      // 113 / 3  / D     
+      {1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1,
+      1, 1, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1,
+      0, 1, 2, 1, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1,
+      //
+      3, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3,
+      1, 3, 1, 0, 1, 0, 1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3, 1,
+      3, 1, 0, 0, 0, 1, 3, 1, 3, 1, 0, 1, 0, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+      1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+      1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+      // 174 / 4  / E
+      {1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1,
+      1, 1, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1,
+      0, 1, 2, 1, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1,
+      //
+      3, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3,
+      1, 3, 1, 0, 1, 0, 1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3, 1,
+      3, 1, 0, 0, 0, 1, 3, 1, 3, 1, 0, 1, 0, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+      1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+      1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+      // 115 / 5 / H
+      {1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1,
+      1, 1, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1,
+      0, 1, 2, 1, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1,
+      //
+      3, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3,
+      1, 3, 1, 0, 1, 0, 1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3, 1,
+      3, 1, 0, 0, 0, 1, 3, 1, 3, 1, 0, 1, 0, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+      1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+      1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+      // 176 / 6 / L
+      {1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1,
+      1, 1, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1,
+      0, 1, 2, 1, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1,
+      //
+      3, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3,
+      1, 3, 1, 0, 1, 0, 1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3, 1,
+      3, 1, 0, 0, 0, 1, 3, 1, 3, 1, 0, 1, 0, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+      1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+      1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+      // 22 / 7 / X
+      {1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1,
+      1, 1, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1,
+      0, 1, 2, 1, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1,
+      //
+      3, 1, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3,
+      1, 3, 1, 0, 1, 0, 1, 3, 0, 3, 0, 0, 0, 0, 0, 3, 1, 3, 1, 0, 1, 0, 1, 3, 1,
+      3, 1, 0, 0, 0, 1, 3, 1, 3, 1, 0, 1, 0, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+      1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+      1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+      
+      
+      
+      };
 
 
 
@@ -276,7 +640,8 @@ public:
   void setCPUtype5500 ();
   int execute();
   void clear();
-  char *  disassembleLine(char * outputBuf, int size, bool octal, unsigned short address);
+  char *  disassembleLine(char * outputBuf, int size, bool octal, int address, std::function<unsigned char(int)> readMem);
+  char *  disassembleLine(char * outputBuf, int size, bool octal, int address);
   char *  disassembleLine(char * outputBuf, int size, bool octal, unsigned char * address);
   int addBreakpoint(unsigned short address);
   int removeBreakpoint(unsigned short address);

@@ -54,7 +54,7 @@ void registerWindow::Form::hexMemoryAddressHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 16);
   printLog("INFO", "memoryAddressHookExecutor string=%s value=%d\n", bufferString, value);
-  cpu.startAddress = (value - address * 16) & 0x3ff0;
+  cpu.startAddress = (value - address * 16) & 0xfff0;
   rwf->updateForm();
   wrefresh(r->win);
 }
@@ -62,7 +62,7 @@ void registerWindow::Form::hexMemoryAddressHookExecutor::exec(FIELD *field) {
 void registerWindow::Form::hexMemoryDataHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 16);
-  cpu.memory->memory[cpu.startAddress + data] = value;
+  cpu.memory->physicalMemoryWrite(cpu.startAddress + data, value);
   rwf->updateForm();
   wrefresh(r->getWin());
 }
@@ -72,7 +72,7 @@ void registerWindow::Form::octalMemoryAddressHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 8);
   printLog("INFO", "memoryAddressHookExecutor string=%s value=%d\n", bufferString, value);
-  cpu.startAddress = (value - address * 16) & 0x3ff0;
+  cpu.startAddress = (value - address * 16) & 0xfff0;
   rwf->updateForm();
   wrefresh(r->win);
 }
@@ -80,7 +80,7 @@ void registerWindow::Form::octalMemoryAddressHookExecutor::exec(FIELD *field) {
 void registerWindow::Form::octalMemoryDataHookExecutor::exec(FIELD *field) {
   char *bufferString = field_buffer(field, 0);
   int value = strtol(bufferString, NULL, 8);
-  cpu.memory->memory[cpu.startAddress + data] = value;
+  cpu.memory->physicalMemoryWrite(cpu.startAddress + data, value);
   rwf->updateForm();
   wrefresh(r->getWin());
 }

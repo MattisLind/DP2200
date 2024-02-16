@@ -28,12 +28,12 @@ class CassetteTape {
 
   std::string getFileName ();
 
-  bool loadBoot (unsigned char * address);
+  bool loadBoot (std::function<void(int address, unsigned char)> writeMem);
 
   void stopTapeMotion();
 
   bool readBlock (unsigned char * address,  int * size);
-
+  bool readBlock (int address, std::function<void(int address, unsigned char)> writeMem,  int * size);
   unsigned char * readBlock (int * size); 
 
   int isFileHeader(unsigned char * buffer);

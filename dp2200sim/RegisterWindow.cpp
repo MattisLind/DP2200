@@ -74,12 +74,12 @@ void registerWindow::OctalForm::updateForm() {
   char b[7];
   unsigned char t;
   unsigned short startAddress = cpu.startAddress;
-  char asciiB[24], fieldB[27];
+  char asciiB[24], fieldB[28];
   for (i = 0; i < 16 && startAddress <= 0xFFFF; startAddress += 16, i++) {
-    snprintf(b, 7, "%05o", startAddress);
+    snprintf(b, 7, "%06o", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (j = 0; j < 16; j++) {
-      t = cpu.memory->memory[startAddress + j];
+      t = cpu.memory->physicalMemoryRead(startAddress + j);
       if ((startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {
@@ -98,7 +98,7 @@ void registerWindow::OctalForm::updateForm() {
     snprintf(b, 7, "%05o", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (int j = 0; j < 16; j++) {
-      t = cpu.memory->memory[startAddress + j];
+      t = cpu.memory->physicalMemoryRead(startAddress + j);
       if ((startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {
@@ -132,11 +132,11 @@ void registerWindow::OctalForm::updateForm() {
     snprintf(b, 3, "%01X", cpu.flagSign[regset]);
     set_field_buffer(flagSign[regset], 0, b);                  
   }
-  snprintf(b, 7, "%05o", cpu.P);
+  snprintf(b, 7, "%06o", cpu.P);
   set_field_buffer(pc, 0, b);
 
   for (auto i = 0; i<16; i++) {
-    snprintf(b, 7, "%05o", cpu.stack.stk[i]);
+    snprintf(b, 7, "%06o", cpu.stack.stk[i]);
     set_field_buffer(stack[i], 0, b);
     if (i == cpu.stackptr ) {
       set_field_back(stack[i], A_UNDERLINE);
@@ -160,7 +160,7 @@ void registerWindow::OctalForm::updateForm() {
 
   // update trace
   for (auto it=cpu.instructionTrace.begin(); it<cpu.instructionTrace.end(); it++, i++) {
-    snprintf(fieldB, 23, "%05o %03o %s", it->address, it->data[0], cpu.disassembleLine(asciiB, 23, true, it->data));
+    snprintf(fieldB, 27, "%06o %03o %s", it->address, it->data[0], cpu.disassembleLine(asciiB, 27, true, it->data));
     set_field_buffer(instructionTrace[i], 0, fieldB); 
   }
   i=0;
@@ -208,7 +208,7 @@ void registerWindow::HexForm::updateForm() {
     snprintf(b, 5, "%04X", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (j = 0; j < 16; j++) {
-      t = cpu.memory->memory[startAddress + j];
+      t = cpu.memory->physicalMemoryRead(startAddress + j);
       if ((startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {
@@ -227,7 +227,7 @@ void registerWindow::HexForm::updateForm() {
     snprintf(b, 5, "%04X", startAddress);
     set_field_buffer(addressFields[i], 0, b);
     for (int j = 0; j < 16; j++) {
-      t = cpu.memory->memory[startAddress + j];
+      t = cpu.memory->physicalMemoryRead(startAddress + j);
       if ((startAddress + j) == cpu.P ) {
         set_field_back(dataFields[k], A_UNDERLINE);
       } else {
@@ -352,7 +352,7 @@ registerWindow::OctalForm::OctalForm () {
   int offset=21;
   numRegs = 7;
   createAField(&registerViewFields, 10,2,6, "REGISTERS");
-  createAField(&registerViewFields,40,3,31,"STACK    TRACE                BREAKPOINTS");
+  createAField(&registerViewFields,44,3,31,"STACK    TRACE                    BREAKPOINTS");
   const char * alphaText = "ALPHA";
   mode[0] = createAField(&registerViewFields,strlen(alphaText), 3 , 3, alphaText);
   const char * betaText = "BETA";
@@ -375,19 +375,19 @@ registerWindow::OctalForm::OctalForm () {
   }
 
   createAField(&registerViewFields,2, 16,3, "P:" );
-  pc=createAField(&registerViewFields,5,16,5, "00000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalShortPointerHookExecutor(this, &cpu.P));
+  pc=createAField(&registerViewFields,6,16,5, "000000", O_EDIT | O_ACTIVE, "[0-1][0-7][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalShortPointerHookExecutor(this, &cpu.P));
   mnemonic = createAField(&registerViewFields,10, 16,12, "" );
 
   for (auto i=0; i<16; i++) {
-    stack[i] = createAField(&registerViewFields,5,4+i,31, "00000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalShortPointerHookExecutor(this, &cpu.stack.stk[i]));
+    stack[i] = createAField(&registerViewFields,6,4+i,31, "000000", O_EDIT | O_ACTIVE, "[0-1][0-7][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalShortPointerHookExecutor(this, &cpu.stack.stk[i]));
   }
   
   for (auto line = 0; line < 16; line++) {
-    addressFields.push_back(createAField(&registerViewFields,5,line+offset, 3, "00000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalMemoryAddressHookExecutor(this, line)));
+    addressFields.push_back(createAField(&registerViewFields,6,line+offset, 3, "000000", O_EDIT | O_ACTIVE, "[0-7][0-7][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalMemoryAddressHookExecutor(this, line)));
     for (auto column = 0; column < 16; column++) {
-      dataFields.push_back(createAField(&registerViewFields,3,line+offset, 9 + 4 * column, "000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalMemoryDataHookExecutor(this, line * 16 + column)));
+      dataFields.push_back(createAField(&registerViewFields,3,line+offset, 10 + 4 * column, "000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalMemoryDataHookExecutor(this, line * 16 + column)));
     }
-    asciiFields.push_back(createAField(&registerViewFields,18, line+offset,74,"|................|" ));
+    asciiFields.push_back(createAField(&registerViewFields,18, line+offset,75,"|................|" ));
   }
   
   const char * displayLightText = "DISPLAY LIGHT";
@@ -400,11 +400,11 @@ registerWindow::OctalForm::OctalForm () {
   keyboardButtonField = createAField(&registerViewFields,strlen(keyboardButtonText), 40 , 25, keyboardButtonText);    
   
   for (auto i=0; i<16; i++) {
-    instructionTrace[i] = createAField(&registerViewFields,20,4+i,40, "" );
+    instructionTrace[i] = createAField(&registerViewFields,24,4+i,40, "" );
   }
 
   for (auto i=0; i<8; i++) {
-    breakpoints[i] = createAField(&registerViewFields,5,4+i,61, "" );
+    breakpoints[i] = createAField(&registerViewFields,5,4+i,65, "" );
   }
   
 
@@ -455,7 +455,7 @@ registerWindow::HexForm::HexForm () {
   }
 
   createAField(&registerViewFields,2, 16,3, "P:" );
-  pc=createAField(&registerViewFields,4,16,5, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexShortPointerHookExecutor(this, &cpu.P));
+  pc=createAField(&registerViewFields,4,16,5, "0000", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexShortPointerHookExecutor(this, &cpu.P));
   mnemonic = createAField(&registerViewFields,10, 16,10, "" );
 
   for (auto i=0; i<16; i++) {
@@ -463,7 +463,7 @@ registerWindow::HexForm::HexForm () {
   }
   
   for (auto line = 0; line < 16; line++) {
-    addressFields.push_back(createAField(&registerViewFields,4,line+offset, 3, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexMemoryAddressHookExecutor(this, line)));
+    addressFields.push_back(createAField(&registerViewFields,4,line+offset, 3, "0000", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexMemoryAddressHookExecutor(this, line)));
     for (auto column = 0; column < 16; column++) {
       dataFields.push_back(createAField(&registerViewFields,2,line+offset, 8 + 3 * column, "00", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexMemoryDataHookExecutor(this, line * 16 + column)));
     }

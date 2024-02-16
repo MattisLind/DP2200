@@ -49,6 +49,33 @@ bool  CassetteTape::readBlock (unsigned char * buffer, int * size) {
   return true;
 }
 
+bool  CassetteTape::readBlock (int address, std::function<void(int address, unsigned char)> writeMem, int * size) {
+  int maxSize = *size;
+  unsigned char tmp;
+  int count;
+  count = fread(size, 4, 1, file);
+  if (count != 1) return false;
+  if (*size>maxSize) {
+    for (int i=0; i < maxSize; i++) {
+      if (fread(&tmp, 1, 1, file)!=1) {
+        return false;
+      }
+      writeMem(address+i, tmp);
+    }
+  } else {
+    for (int i=0; i < *size; i++) {
+      if (fread(&tmp, 1, 1, file)!=1) {
+        return false;
+      }
+      writeMem(address+i, tmp);
+    }
+  }
+  count = fread(size, 4, 1, file);
+  if (count != 1) return false;
+  state=TAPE_GAP;
+  return true;
+}
+
 
 
 void CassetteTape::rewind() {
@@ -56,11 +83,11 @@ void CassetteTape::rewind() {
   ::rewind(file);
 }
 
-bool CassetteTape::loadBoot(unsigned char *  address) {
+bool CassetteTape::loadBoot(std::function<void(int address, unsigned char)> writeMem) {
   int size=16384;
   if (file==NULL) return false;
   rewind();
-  return readBlock(address, &size);
+  return readBlock(0, writeMem, &size);
 }
 
 int CassetteTape::isFileHeader(unsigned char * buffer) {

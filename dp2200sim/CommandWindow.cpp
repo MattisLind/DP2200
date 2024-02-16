@@ -52,7 +52,7 @@ void commandWindow::doYield(std::vector<Param> params) {
 }
 
 void commandWindow::doLoadBoot(std::vector<Param> params) {
-  if (!cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory->memory)) {
+  if (!cpu->ioCtrl->cassetteDevice->loadBoot([memory=cpu->memory](int address, unsigned char data)->void { memory->physicalMemoryWrite(address, data);})) {
     wprintw(innerWin, "Unable to load bootstrap into memory.\n");
   }
 }
@@ -107,7 +107,7 @@ void commandWindow::doNoTrace(std::vector<Param> params) {
 void commandWindow::doRestart(std::vector<Param> params) {
   running = false;
   cpu->reset();
-  cpu->ioCtrl->cassetteDevice->loadBoot(cpu->memory->memory);
+  cpu->ioCtrl->cassetteDevice->loadBoot([memory=cpu->memory](int address, unsigned char data)->void { return memory->physicalMemoryWrite(address,data);});
   cpu->totalInstructionTime.tv_nsec=0;
   cpu->totalInstructionTime.tv_sec=0;
   running = true;  

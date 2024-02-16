@@ -125,7 +125,7 @@ class IOController {
     bool openFile (int, std::string fileName, bool writeProtect);
     void closeFile (int);
     std::string getFileName (int);
-    bool loadBoot (unsigned char * address);
+    bool loadBoot (std::function<void(int address, unsigned char)> writeMem);
     CassetteDevice();
   };
 

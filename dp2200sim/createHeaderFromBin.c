@@ -2,7 +2,7 @@
 
 int main () {
   int i,j;
-  printf("char firmware[] = {\n");
+  printf("unsigned char firmware[] = {\n");
   for (j = 0; j < 240; j++) {
     printf("             0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o,\n", getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar());
   }
