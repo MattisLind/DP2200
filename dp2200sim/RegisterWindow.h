@@ -93,6 +93,22 @@ class registerWindow : public virtual Window {
       void exec(FIELD *field);
     };  
 
+    class accessibleHookExecutor : hookExecutor {
+      bool *  address;
+      class registerWindow::Form * rwf;
+      public:
+      accessibleHookExecutor(class registerWindow::Form * r, bool * a);
+      void exec(FIELD *field);
+    }; 
+
+    class writeableHookExecutor : hookExecutor {
+      bool *  address;
+      class registerWindow::Form * rwf;
+      public:
+      writeableHookExecutor(class registerWindow::Form * r, bool * a);
+      void exec(FIELD *field);
+    };
+
 
     FIELD * createAField(std::vector<FIELD *> * fields, int length, int y, int x, const char * str);
     FIELD * createAField(std::vector<FIELD *> * fields, int length, int y, int x, const char * str, Field_Options f, const char * regexp, int just, char * h);
@@ -103,6 +119,15 @@ class registerWindow : public virtual Window {
   };
 
   class HexForm : public virtual Form {
+    struct sectorTableFieldStruct {
+      FIELD * ident;
+      FIELD * writeable;
+      FIELD * accessible;
+      FIELD * physicalSector;
+    };
+    FIELD * sectorTableHeader;
+    typedef struct sectorTableFieldStruct S;
+    S sectorTableFields[16];    
     std::vector<FIELD *> addressFields;
     std::vector<FIELD *> dataFields;
     std::vector<FIELD *> asciiFields;
@@ -117,6 +142,8 @@ class registerWindow : public virtual Window {
     FIELD * pc;
     //FIELD * interruptEnabled;
     //FIELD * interruptPending; 
+    FIELD * base;
+    FIELD * baseIdents;    
     FIELD * mnemonic;
     FIELD * instructionTrace[16];
     FIELD * breakpoints[8];
@@ -136,6 +163,15 @@ class registerWindow : public virtual Window {
   };
 
   class OctalForm : public virtual Form {
+    struct sectorTableFieldStruct {
+      FIELD * ident;
+      FIELD * writeable;
+      FIELD * accessible;
+      FIELD * physicalSector;
+    };
+    FIELD * sectorTableHeader;
+    typedef struct sectorTableFieldStruct S;
+    S sectorTableFields[16];
     std::vector<FIELD *> addressFields;
     std::vector<FIELD *> dataFields;
     std::vector<FIELD *> asciiFields;
@@ -148,6 +184,8 @@ class registerWindow : public virtual Window {
     FIELD * flagCarry[2];
     FIELD * flagZero[2];
     FIELD * pc;
+    FIELD * base;
+    FIELD * baseIdents;
     //FIELD * interruptEnabled;
     //FIELD * interruptPending; 
     FIELD * mnemonic;
@@ -159,7 +197,6 @@ class registerWindow : public virtual Window {
     FIELD * keyboardButtonField;
     FIELD * mode[2];
     FORM *frm;
-    int numRegs;
     public:
     void set2200Mode(bool);
     void updateForm();

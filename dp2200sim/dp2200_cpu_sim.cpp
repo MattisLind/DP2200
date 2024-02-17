@@ -130,7 +130,7 @@ dp2200_cpu::Memory::Memory(bool * is, bool * av, bool * wv, bool * um) {
   }
   baseRegister = 0;
   for (int i=0; i<16; i++) { 
-    sectorTable[i].physicalPage=i; 
+    sectorTable[i].physicalPage=0; 
     sectorTable[i].accessEnable=true;
     sectorTable[i].writeEnable=true;
   }

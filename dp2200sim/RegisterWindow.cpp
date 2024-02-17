@@ -40,31 +40,81 @@ registerWindow::Form::octalShortPointerHookExecutor::octalShortPointerHookExecut
   rwf = r;
 }
 
+registerWindow::Form::accessibleHookExecutor::accessibleHookExecutor(class registerWindow::Form * r, bool * a) { 
+  address = a; 
+  rwf = r;
+}
+
+registerWindow::Form::writeableHookExecutor::writeableHookExecutor(class registerWindow::Form * r, bool * a) { 
+  address = a; 
+  rwf = r;
+}
+
 void registerWindow::OctalForm::set2200Mode(bool b) {
   if (b) {
-    numRegs = 7;
-    set_field_buffer(regs[0][7], 0, "   ");
-    set_field_buffer(regs[1][7], 0, "   ");
-    set_field_buffer(regsIdents[0][7], 0, "  "); 
-    set_field_buffer(regsIdents[1][7], 0, "  "); 
+    set_field_opts(regs[0][7],  O_PUBLIC  | O_STATIC); 
+    set_field_opts(regs[1][7],  O_PUBLIC  | O_STATIC);
+    set_field_opts(regsIdents[0][7],  O_PUBLIC  | O_STATIC); 
+    set_field_opts(regsIdents[1][7],  O_PUBLIC  | O_STATIC); 
+    set_field_opts(base, O_PUBLIC  | O_STATIC); 
+    set_field_opts(baseIdents, O_PUBLIC  | O_STATIC); 
+    // SECTOR TABLE
+    set_field_opts(sectorTableHeader, O_PUBLIC  | O_STATIC);
+    for (int i=0; i<16; i++) {
+      set_field_opts(sectorTableFields[i].ident,O_PUBLIC  | O_STATIC);
+      set_field_opts(sectorTableFields[i].accessible, O_PUBLIC  | O_STATIC);
+      set_field_opts(sectorTableFields[i].writeable, O_PUBLIC  | O_STATIC);
+      set_field_opts(sectorTableFields[i].physicalSector, O_PUBLIC  | O_STATIC);
+    }    
   } else {
-    numRegs = 8;
-    set_field_buffer(regsIdents[0][7], 0, "X:"); 
-    set_field_buffer(regsIdents[1][7], 0, "X:");    
+    set_field_opts(regs[0][7], O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE); 
+    set_field_opts(regs[1][7], O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE); 
+    set_field_opts(regsIdents[0][7],  O_VISIBLE | O_PUBLIC  | O_STATIC); 
+    set_field_opts(regsIdents[1][7],  O_VISIBLE | O_PUBLIC  | O_STATIC); 
+    set_field_opts(base, O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE);
+    set_field_opts(baseIdents, O_VISIBLE | O_PUBLIC  | O_STATIC);    
+    // SECTOR TABLE
+    set_field_opts(sectorTableHeader, O_VISIBLE | O_PUBLIC  | O_STATIC);
+    for (int i=0; i<16; i++) {
+      set_field_opts(sectorTableFields[i].ident, O_VISIBLE | O_PUBLIC  | O_STATIC);
+      set_field_opts(sectorTableFields[i].accessible, O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE);
+      set_field_opts(sectorTableFields[i].writeable, O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE);
+      set_field_opts(sectorTableFields[i].physicalSector, O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE);
+    }
   }
 }
 
 void registerWindow::HexForm::set2200Mode(bool b) {
   if (b) {
-    numRegs = 7;
-    set_field_buffer(regs[0][7], 0, "   ");
-    set_field_buffer(regs[1][7], 0, "   ");
-    set_field_buffer(regsIdents[0][7], 0, "  "); 
-    set_field_buffer(regsIdents[1][7], 0, "  "); 
+    set_field_opts(regs[0][7],  O_PUBLIC  | O_STATIC); 
+    set_field_opts(regs[1][7],  O_PUBLIC  | O_STATIC);
+    set_field_opts(regsIdents[0][7],  O_PUBLIC  | O_STATIC); 
+    set_field_opts(regsIdents[1][7],  O_PUBLIC  | O_STATIC); 
+    set_field_opts(base, O_PUBLIC  | O_STATIC); 
+    set_field_opts(baseIdents, O_PUBLIC  | O_STATIC); 
+    // SECTOR TABLE
+    set_field_opts(sectorTableHeader, O_PUBLIC  | O_STATIC);
+    for (int i=0; i<16; i++) {
+      set_field_opts(sectorTableFields[i].ident,O_PUBLIC  | O_STATIC);
+      set_field_opts(sectorTableFields[i].accessible, O_PUBLIC  | O_STATIC);
+      set_field_opts(sectorTableFields[i].writeable, O_PUBLIC  | O_STATIC);
+      set_field_opts(sectorTableFields[i].physicalSector, O_PUBLIC  | O_STATIC);
+    }    
   } else {
-    numRegs = 8;
-    set_field_buffer(regsIdents[0][7], 0, "X:"); 
-    set_field_buffer(regsIdents[1][7], 0, "X:");    
+    set_field_opts(regs[0][7], O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE); 
+    set_field_opts(regs[1][7], O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE); 
+    set_field_opts(regsIdents[0][7],  O_VISIBLE | O_PUBLIC  | O_STATIC); 
+    set_field_opts(regsIdents[1][7],  O_VISIBLE | O_PUBLIC  | O_STATIC); 
+    set_field_opts(base, O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE);
+    set_field_opts(baseIdents, O_VISIBLE | O_PUBLIC  | O_STATIC);    
+    // SECTOR TABLE
+    set_field_opts(sectorTableHeader, O_VISIBLE | O_PUBLIC  | O_STATIC);
+    for (int i=0; i<16; i++) {
+      set_field_opts(sectorTableFields[i].ident, O_VISIBLE | O_PUBLIC  | O_STATIC);
+      set_field_opts(sectorTableFields[i].accessible, O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE);
+      set_field_opts(sectorTableFields[i].writeable, O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE);
+      set_field_opts(sectorTableFields[i].physicalSector, O_VISIBLE | O_PUBLIC  | O_STATIC | O_EDIT | O_ACTIVE);
+    }
   }
 }
 
@@ -116,7 +166,7 @@ void registerWindow::OctalForm::updateForm() {
   // update registers.
   for (auto regset =0; regset<2; regset++) {
     int i;
-    for (i=0; i<numRegs; i++) {
+    for (i=0; i<7; i++) {
       auto f = regs[regset][i];
       auto r = cpu.regSets[regset].regs[i];
       snprintf(b, 5, "%03o", r);
@@ -132,6 +182,22 @@ void registerWindow::OctalForm::updateForm() {
     snprintf(b, 3, "%01X", cpu.flagSign[regset]);
     set_field_buffer(flagSign[regset], 0, b);                  
   }
+
+  // Sector table
+
+  for (int i=0; i<16; i++) {
+    snprintf(b, 4, "%02o", cpu.memory->sectorTable[i].physicalPage);
+    set_field_buffer(sectorTableFields[i].physicalSector, 0, b);
+    snprintf(b, 2, "%c", cpu.memory->sectorTable[i].accessEnable?'U':'S');
+    set_field_buffer(sectorTableFields[i].accessible, 0, b);
+    snprintf(b, 2, "%c", cpu.memory->sectorTable[i].writeEnable?'W':'R');
+    set_field_buffer(sectorTableFields[i].writeable, 0, b);    
+  }
+  
+  // Base register
+  snprintf(b, 4, "%03o", cpu.memory->baseRegister);
+  set_field_buffer(base, 0, b);
+
   snprintf(b, 7, "%06o", cpu.P);
   set_field_buffer(pc, 0, b);
 
@@ -245,7 +311,7 @@ void registerWindow::HexForm::updateForm() {
   // update registers.
   for (auto regset =0; regset<2; regset++) {
     int i;
-    for (i=0; i<numRegs; i++) {
+    for (i=0; i<7; i++) {
       auto f = regs[regset][i];
       auto r = cpu.regSets[regset].regs[i];
       snprintf(b, 3, "%02X", r);
@@ -260,6 +326,23 @@ void registerWindow::HexForm::updateForm() {
     snprintf(b, 3, "%01X", cpu.flagSign[regset]);
     set_field_buffer(flagSign[regset], 0, b);                  
   }
+
+  // Sector table
+
+  for (int i=0; i<16; i++) {
+    snprintf(b, 4, "%02X", cpu.memory->sectorTable[i].physicalPage);
+    set_field_buffer(sectorTableFields[i].physicalSector, 0, b);
+    snprintf(b, 2, "%c", cpu.memory->sectorTable[i].accessEnable?'U':'S');
+    set_field_buffer(sectorTableFields[i].accessible, 0, b);
+    snprintf(b, 2, "%c", cpu.memory->sectorTable[i].writeEnable?'W':'R');
+    set_field_buffer(sectorTableFields[i].writeable, 0, b);    
+  }
+  
+  // Base register
+  snprintf(b, 4, "%02X", cpu.memory->baseRegister);
+  set_field_buffer(base, 0, b);
+
+
   snprintf(b, 5, "%04X", cpu.P);
   set_field_buffer(pc, 0, b);
 
@@ -349,8 +432,7 @@ registerWindow::OctalForm::OctalForm () {
   const char * rName[]={"A:","B:","C:","D:","E:","H:","L:","X:"};
   FIELD **f;
   int i;
-  int offset=21;
-  numRegs = 7;
+  int offset=26;
   createAField(&registerViewFields, 10,2,6, "REGISTERS");
   createAField(&registerViewFields,44,3,31,"STACK    TRACE                    BREAKPOINTS");
   const char * alphaText = "ALPHA";
@@ -377,7 +459,22 @@ registerWindow::OctalForm::OctalForm () {
   createAField(&registerViewFields,2, 16,3, "P:" );
   pc=createAField(&registerViewFields,6,16,5, "000000", O_EDIT | O_ACTIVE, "[0-1][0-7][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalShortPointerHookExecutor(this, &cpu.P));
   mnemonic = createAField(&registerViewFields,10, 16,12, "" );
-
+  // BASE REGISTER
+  baseIdents = createAField(&registerViewFields,5, 17,3, "BASE:" );
+  base=createAField(&registerViewFields,3,17,8, "000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalCharPointerHookExecutor(this, &(cpu.memory->baseRegister)));
+  // SECTOR TABLE
+  sectorTableHeader = createAField(&registerViewFields,13, 20,3, "SECTOR TABLE:" );
+  for (int i=0; i<4; i++) {
+    for (int j=0; j<4; j++) {
+      char buffer[32];
+      snprintf(buffer, 32, "%02o:", i*4+j);
+      sectorTableFields[i*4+j].ident = createAField(&registerViewFields,3, 21+i,3+j*8, buffer);
+      sectorTableFields[i*4+j].accessible = createAField(&registerViewFields,1,21+i,6+j*8, "S", O_EDIT | O_ACTIVE, "[US]", JUSTIFY_LEFT, (char *) new accessibleHookExecutor(this, &(cpu.memory->sectorTable[i*4+j].accessEnable)));
+      sectorTableFields[i*4+j].writeable = createAField(&registerViewFields,1,21+i,7+j*8, "R", O_EDIT | O_ACTIVE, "[RW]", JUSTIFY_LEFT, (char *) new writeableHookExecutor(this, &(cpu.memory->sectorTable[i*4+j].writeEnable)));
+      sectorTableFields[i*4+j].physicalSector = createAField(&registerViewFields,2,21+i,8+j*8, "00", O_EDIT | O_ACTIVE, "[0-7][0-7]", JUSTIFY_LEFT, (char *) new octalCharPointerHookExecutor(this, &(cpu.memory->sectorTable[i*4+j].physicalPage)));
+    }
+  }
+  // STACK
   for (auto i=0; i<16; i++) {
     stack[i] = createAField(&registerViewFields,6,4+i,31, "000000", O_EDIT | O_ACTIVE, "[0-1][0-7][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalShortPointerHookExecutor(this, &cpu.stack.stk[i]));
   }
@@ -391,13 +488,13 @@ registerWindow::OctalForm::OctalForm () {
   }
   
   const char * displayLightText = "DISPLAY LIGHT";
-  displayLightField = createAField(&registerViewFields,strlen(displayLightText), 39 , 4, displayLightText);
+  displayLightField = createAField(&registerViewFields,strlen(displayLightText), 43 , 4, displayLightText);
   const char * displayButtonText = "DISPLAY BUTTON";
-  displayButtonField = createAField(&registerViewFields,strlen(displayButtonText), 40 , 4, displayButtonText);
+  displayButtonField = createAField(&registerViewFields,strlen(displayButtonText), 44 , 4, displayButtonText);
   const char * keyboardLightText = "KEYBOARD LIGHT";
-  keyboardLightField = createAField(&registerViewFields,strlen(keyboardLightText), 39 , 25, keyboardLightText);
+  keyboardLightField = createAField(&registerViewFields,strlen(keyboardLightText), 43 , 25, keyboardLightText);
   const char * keyboardButtonText = "KEYBOARD BUTTON";
-  keyboardButtonField = createAField(&registerViewFields,strlen(keyboardButtonText), 40 , 25, keyboardButtonText);    
+  keyboardButtonField = createAField(&registerViewFields,strlen(keyboardButtonText), 44 , 25, keyboardButtonText);    
   
   for (auto i=0; i<16; i++) {
     instructionTrace[i] = createAField(&registerViewFields,24,4+i,40, "" );
@@ -406,6 +503,8 @@ registerWindow::OctalForm::OctalForm () {
   for (auto i=0; i<8; i++) {
     breakpoints[i] = createAField(&registerViewFields,5,4+i,65, "" );
   }
+
+
   
 
   f = (FIELD **)malloc(
@@ -429,7 +528,7 @@ registerWindow::HexForm::HexForm () {
   const char * rName[]={"A:","B:","C:","D:","E:","H:","L:","X:"};
   FIELD **f;
   int i;
-  int offset=21;
+  int offset=26;
   numRegs = 7;
   createAField(&registerViewFields, 10,2,6, "REGISTERS");
   createAField(&registerViewFields,40,3,31,"STACK    TRACE                BREAKPOINTS");
@@ -458,6 +557,22 @@ registerWindow::HexForm::HexForm () {
   pc=createAField(&registerViewFields,4,16,5, "0000", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexShortPointerHookExecutor(this, &cpu.P));
   mnemonic = createAField(&registerViewFields,10, 16,10, "" );
 
+  // BASE REGISTER
+  baseIdents = createAField(&registerViewFields,5, 17,3, "BASE:" );
+  base=createAField(&registerViewFields,2,17,8, "00", O_EDIT | O_ACTIVE, "[0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexCharPointerHookExecutor(this, &(cpu.memory->baseRegister)));
+  // SECTOR TABLE
+  sectorTableHeader = createAField(&registerViewFields,13, 20,3, "SECTOR TABLE:" );
+  for (int i=0; i<4; i++) {
+    for (int j=0; j<4; j++) {
+      char buffer[32];
+      snprintf(buffer, 32, "%01X:", i*4+j);
+      sectorTableFields[i*4+j].ident = createAField(&registerViewFields,3, 21+i,3+j*7, buffer);
+      sectorTableFields[i*4+j].accessible = createAField(&registerViewFields,1,21+i,5+j*7, "S", O_EDIT | O_ACTIVE, "[US]", JUSTIFY_LEFT, (char *) new accessibleHookExecutor(this, &(cpu.memory->sectorTable[i*4+j].accessEnable)));
+      sectorTableFields[i*4+j].writeable = createAField(&registerViewFields,1,21+i,6+j*7, "R", O_EDIT | O_ACTIVE, "[RW]", JUSTIFY_LEFT, (char *) new writeableHookExecutor(this, &(cpu.memory->sectorTable[i*4+j].writeEnable)));
+      sectorTableFields[i*4+j].physicalSector = createAField(&registerViewFields,2,21+i,7+j*7, "00", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexCharPointerHookExecutor(this, &(cpu.memory->sectorTable[i*4+j].physicalPage)));
+    }
+  }
+
   for (auto i=0; i<16; i++) {
     stack[i] = createAField(&registerViewFields,4,4+i,31, "0000", O_EDIT | O_ACTIVE, "[0-3][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", JUSTIFY_LEFT, (char *) new hexShortPointerHookExecutor(this, &cpu.stack.stk[i]));
   }
@@ -471,13 +586,13 @@ registerWindow::HexForm::HexForm () {
   }
   
   const char * displayLightText = "DISPLAY LIGHT";
-  displayLightField = createAField(&registerViewFields,strlen(displayLightText), 39 , 4, displayLightText);
+  displayLightField = createAField(&registerViewFields,strlen(displayLightText), 43 , 4, displayLightText);
   const char * displayButtonText = "DISPLAY BUTTON";
-  displayButtonField = createAField(&registerViewFields,strlen(displayButtonText), 40 , 4, displayButtonText);
+  displayButtonField = createAField(&registerViewFields,strlen(displayButtonText), 44 , 4, displayButtonText);
   const char * keyboardLightText = "KEYBOARD LIGHT";
-  keyboardLightField = createAField(&registerViewFields,strlen(keyboardLightText), 39 , 25, keyboardLightText);
+  keyboardLightField = createAField(&registerViewFields,strlen(keyboardLightText), 43 , 25, keyboardLightText);
   const char * keyboardButtonText = "KEYBOARD BUTTON";
-  keyboardButtonField = createAField(&registerViewFields,strlen(keyboardButtonText), 40 , 25, keyboardButtonText);    
+  keyboardButtonField = createAField(&registerViewFields,strlen(keyboardButtonText), 44 , 25, keyboardButtonText);    
   
   for (auto i=0; i<16; i++) {
     instructionTrace[i] = createAField(&registerViewFields,15,4+i,40, "" );
@@ -538,8 +653,8 @@ registerWindow::registerWindow(class dp2200_cpu *c) {
   formHex = createHexForm ();
   formOctal = createOctalForm ();
   currentForm = formOctal;
-  dwinoctal=derwin(win, 44, 95, 1, 1);
-  dwinhex=derwin(win, 44, 95, 1, 1);
+  dwinoctal=derwin(win, 48, 95, 1, 1);
+  dwinhex=derwin(win, 48, 95, 1, 1);
   set_form_win(formHex->getForm(), win);
   set_form_sub(formHex->getForm(), dwinhex);
   set_form_win(formOctal->getForm(), win);
@@ -662,7 +777,9 @@ void registerWindow::handleKey(int key) {
 
   default:
     if ((key >= '0' && key <= '9') || (key >= 'A' && key <= 'F') ||
-        (key >= 'a' && key <= 'f')) {
+        (key >= 'a' && key <= 'f') || (key == 'r') || (key == 'R') || 
+        (key == 'w') || (key == 'W') || (key == 'U') || (key == 'u') ||
+        (key == 'S') || (key == 's')) {
       form_driver(currentForm->getForm(), toupper(key));
     }
     break;

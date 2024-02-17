@@ -99,11 +99,11 @@ public:
     bool * writeViolation;
     bool * userMode;
     bool memoryWatch[65536];
-    struct SectorEntry sectorTable[16];
-    unsigned char baseRegister;
+
     unsigned char memory[65536];
     public:
-    //unsigned char & operator[](int);
+    struct SectorEntry sectorTable[16];
+    unsigned char baseRegister;
     unsigned char physicalMemoryRead(int address);
     int size();
     void physicalMemoryWrite(int address, unsigned char data);

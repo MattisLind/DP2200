@@ -109,7 +109,31 @@ void registerWindow::Form::octalShortPointerHookExecutor::exec(FIELD *field) {
   *address = value;
 }
 
+void registerWindow::Form::accessibleHookExecutor::exec(FIELD *field) {
+  char *bufferString = field_buffer(field, 0);
+  switch (bufferString[0]) {
+    case 'U':
+    case 'u':
+      *address=true;
+      break;
+    case 'S':
+    case 's':
+      *address=false;
+  }
+}
 
+void registerWindow::Form::writeableHookExecutor::exec(FIELD *field) {
+  char *bufferString = field_buffer(field, 0);
+  switch (bufferString[0]) {
+    case 'W':
+    case 'w':
+      *address=true;
+      break;
+    case 'R':
+    case 'r':
+      *address=false;
+  }
+}
 
 class callbackRecord {
   public:
