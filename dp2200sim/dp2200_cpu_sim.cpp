@@ -129,12 +129,14 @@ dp2200_cpu::Memory::Memory(bool * is, bool * av, bool * wv, bool * um) {
     memoryWatch[address]=false;
   }
   baseRegister = 0;
-  for (int i=0; i<16; i++) { 
+  for (int i=0; i<15; i++) { 
     sectorTable[i].physicalPage=0; 
     sectorTable[i].accessEnable=true;
     sectorTable[i].writeEnable=true;
   }
   sectorTable[017].writeEnable=false;
+  sectorTable[017].accessEnable=true;  
+  sectorTable[017].physicalPage=017;
   accessViolation = av;
   writeViolation = wv;
   is5500 = is;
@@ -367,13 +369,28 @@ void dp2200_cpu::reset() {
         regSets[j].regs[i] = 0;
     for (i = 0; i < 16; i++)
       stack.stk[i] = 0;
-    P = 0;
+    if (is2200) {
+      P=0;
+    } else if (is5500) { 
+      P = 0170036;
+    }
     stackptr = 0;
     setSel = 0;
     interruptPending = 0;
     interruptEnabled = 0;
 }
-
+// 5500
+// 170000 (167400) Memory parity Failure Vector
+// 170003 (167406) Input Parity Failure Vector
+// 170006 (167414) Output Parity Failure Vector
+// 170011 (167422) Write Protect Violation Vector
+// 170014 (167430) Access Protect Violation Vector
+// 170017 (167436) Priviledged Instruction Violation Vector
+// 170022 (167444) One Milliseconf Clock Vector
+// 170025 (167452) User System Call Vector
+// 170030 (167460) Breakpoint Vector 
+// 170033 Jumps to HALT!
+// 170036 Startup routine most likely
 int dp2200_cpu::execute() {
   unsigned char inst;
   char buffer[32]; 
@@ -383,13 +400,24 @@ int dp2200_cpu::execute() {
   unsigned char instructionData;
   /* Handle interrupt*/
 
-  if (interruptEnabled && interruptPending) {
+  if ((interruptEnabled && interruptPending) || accessViolation || writeViolation) {
     interruptPending = 0;
 
     /* now bump stack to use new pc and save it */
     stack.stk[stackptr] = P;
     stackptr = (stackptr + 1) & 0xf;
-    P = 0;
+    if (accessViolation) {
+      P=0170014;
+    } else if (writeViolation) {
+      P=0170011;
+    } else if (interruptPending && is5500) {
+      P=0170022;
+    } else if (interruptPending && is2200) {
+      P=0;
+    } else {
+      printLog("INFO", "Unknown interrupt.");
+      return 1;
+    }
   }
   inst = memory->read(P);
 
@@ -700,6 +728,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
     unsigned int cc; /* condition code to check, if conditional operation */
     unsigned short address;
     int rl, rh;
+    int count, data, i;
     /* first check for halt */
     if ((inst & 0xfe) == 0x0) {
       return 1;
@@ -1178,6 +1207,27 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         if (is2200) return 1;
         implicit = 1;
         return doubleLoad();
+      case 7:
+        // Sector table load
+        count = regSets[setSel].r.regC;
+        address = ((regSets[setSel].r.regH << 8) & 0xff00) | (regSets[setSel].r.regL & 0xff);
+        printLog("INFO", "STL: count=%d address=%06o\n");
+        for (i=0; i<count; i++) {
+          data = memory->read(address);
+          printLog("INFO", "STL: data=%03o i=%d\n", data, i);
+          memory->sectorTable[i].physicalPage = (data >> 4) & 0xf;
+          if (data & 0x4) {
+            memory->sectorTable[i].accessEnable=true;
+          } else {
+            memory->sectorTable[i].accessEnable=false;
+          }
+          if (data & 0x8) {
+            memory->sectorTable[i].writeEnable=true;
+          } else {
+            memory->sectorTable[i].writeEnable=false;
+          }
+          address++;
+        } 
       default:
         /* Unimplemented */
         return 1;
