@@ -225,38 +225,100 @@ bool dp2200_cpu::Memory::removeWatch(unsigned short address) {
 
 
 
-char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, int address, std::function<unsigned char(int)> readMem) {
+char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, int address, std::function<unsigned char(int)> readMem, int implicitNum) {
     unsigned char instruction = readMem(address);
-    int r=registerFromImplict(implicit); 
-    switch (instr_l[r][instruction]) {
+    int set;
+    switch (implicitNum) {
+      case 0:
+        set=0;
+        break;
+      case 022:
+        set=1;
+        break;
+      case 062:
+        set=2;
+        break;
+      case 0111:
+        set=3;
+        break;
+      case 0113:
+        set=4;
+        break;
+      case 0115:
+        set=5;
+        break;
+      case 0117:
+        set=6;
+        break;
+      case 0174:
+        set=7;
+        break;
+      case 0176:
+        set=8;
+        break;
+      default:
+        set=0;
+        break;
+    }
+    switch (instructionSet[set*256+instruction].type) {
     case 0:
+      snprintf(outputBuf, size, "%s", instructionSet[set*256+instruction].mnemonic);
+    break;
     case 1:
-      snprintf(outputBuf, size, "%s", mnems[r][instruction]);
+      if (octal) {
+        snprintf(outputBuf, size, "%s %03o", instructionSet[set*256+instruction].mnemonic, readMem(address+1));
+      } else {
+        snprintf(outputBuf, size, "%s %02X", instructionSet[set*256+instruction].mnemonic, readMem(address+1));
+      }
     break;
     case 2:
       if (octal) {
-        snprintf(outputBuf, size, "%s %03o", mnems[r][instruction], readMem(address+1));
+        snprintf(outputBuf, size, "%s %05o", instructionSet[set*256+instruction].mnemonic, (readMem(address+2) << 8) | readMem(address+1));
       } else {
-        snprintf(outputBuf, size, "%s %02X", mnems[r][instruction], readMem(address+1));
-      }
-    break;
-    case 3:
-      if (octal) {
-        snprintf(outputBuf, size, "%s %05o", mnems[r][instruction], (readMem(address+2) << 8) | readMem(address+1));
-      } else {
-        snprintf(outputBuf, size, "%s %04X", mnems[r][instruction], (readMem(address+2) << 8) | readMem(address+1));
+        snprintf(outputBuf, size, "%s %04X", instructionSet[set*256+instruction].mnemonic, (readMem(address+2) << 8) | readMem(address+1));
       }
     break;
   }
   return outputBuf;
 }
 
+char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, int address, std::function<unsigned char(int)> readMem) {
+  int imp;
+  unsigned char instruction = readMem(address);
+  switch (instruction) {
+    case 022:
+    case 062:
+    case 0111:
+    case 0113:
+    case 0115:
+    case 0117:
+    case 0174:
+    case 0176:
+      imp = instruction;
+      address++;
+      break;
+    default:
+      imp=0;
+      break;
+  }
+  return disassembleLine(outputBuf, size, octal, address, readMem, imp);
+}
+
+char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, int address, int imp) {
+  return disassembleLine(outputBuf, size, octal,  address, [memory=memory](int address)->unsigned char { return memory->read(address, false);}, imp);
+}
+
 char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, int address) {
-  return disassembleLine(outputBuf, size, octal,  address, [memory=memory](int address)->unsigned char { return memory->read(address, false);} );
+  return disassembleLine(outputBuf, size, octal,  address, [memory=memory](int address)->unsigned char { return memory->read(address, false);});
+}
+
+
+char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, unsigned char * buffer, int imp) {
+  return disassembleLine(outputBuf, size, octal,  0 , [buffer=buffer](int address)->unsigned char { return *(buffer+address);}, imp);
 }
 
 char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, unsigned char * buffer) {
-  return disassembleLine(outputBuf, size, octal,  0 , [buffer=buffer](int address)->unsigned char { return *(buffer+address);} );
+  return disassembleLine(outputBuf, size, octal,  0 , [buffer=buffer](int address)->unsigned char { return *(buffer+address);});
 }
 
 int dp2200_cpu::addBreakpoint(unsigned short address) {
@@ -366,7 +428,7 @@ int dp2200_cpu::execute() {
 
   instructionTrace.push_back(i);
   timeForInstruction = instTimeInNsNotTkn[inst];
-  disassembleLine(buffer, 32, false, P);
+  disassembleLine(buffer, 32, false, P, implicit);
   instructionData = memory->read(P);
   P++;
   P &= pMask;
