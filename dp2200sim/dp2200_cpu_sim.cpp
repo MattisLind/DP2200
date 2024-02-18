@@ -101,17 +101,20 @@ void inline dp2200_cpu::Memory::write(unsigned short virtualAddress, unsigned ch
     } else {
       physicalPage = sectorTable[logicalPage].physicalPage;
       physicalAddress = ((0xf & physicalPage) << 12) | (physicalAddress & 0xfff);
-      if (!sectorTable[logicalPage].accessEnable & *userMode) {
-        *accessViolation = true;
-      } else {
-        *accessViolation = false;
-      }
-      if (sectorTable[logicalPage].writeEnable) {
-        *writeViolation = false;
-      } else {
-        *writeViolation = true;
-      }      
     }
+    if (!sectorTable[logicalPage].accessEnable && *userMode) {
+      *accessViolation = true;
+    } else {
+      *accessViolation = false;
+    }
+    if (sectorTable[logicalPage].writeEnable) {
+      *writeViolation = false;
+    } else {
+      *writeViolation = true;
+    } 
+    if ((*accessViolation) || (*writeViolation)) {
+      return;
+    }     
   } else {
     physicalAddress = virtualAddress;
   } 
@@ -119,7 +122,8 @@ void inline dp2200_cpu::Memory::write(unsigned short virtualAddress, unsigned ch
     printLog("INFO", "Writing to address %05o - halting\n", physicalAddress);
     running=false;
     return;
-  }   
+  }
+  if (physicalAddress & 0xf000) return; // This is ROM. We cannot change the ROM...  
   physicalMemoryWrite(physicalAddress, data);
 }
 
@@ -460,7 +464,7 @@ int dp2200_cpu::execute() {
 
   instructionTrace.push_back(i);
   timeForInstruction = instTimeInNsNotTkn[inst];
-  disassembleLine(buffer, 32, false, P, implicit);
+  disassembleLine(buffer, 32, octal, P, implicit);
   instructionData = memory->read(P);
   P++;
   P &= pMask;
@@ -1219,7 +1223,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         // Sector table load
         count = regSets[setSel].r.regC;
         address = ((regSets[setSel].r.regH << 8) & 0xff00) | (regSets[setSel].r.regL & 0xff);
-        printLog("INFO", "STL: count=%d address=%06o\n");
+        printLog("INFO", "STL: count=%d address=%06o\n", count, address);
         for (i=0; i<count; i++) {
           data = memory->read(address);
           printLog("INFO", "STL: data=%03o i=%d\n", data, i);
