@@ -62,7 +62,7 @@ public:
   #define REG_E 4
   #define REG_H 5
   #define REG_L 6
-  #define REG_X 8
+  #define REG_X 7
 
   struct doubleLoadStoreRegisterTable t [10] = {{-1, -1, -1, -1},
                                                 { REG_D, REG_E, REG_H, REG_L},
@@ -126,7 +126,7 @@ public:
   // bool running;
 
   struct inst {
-    unsigned char data[3];
+    unsigned char data[5];
     unsigned short address;
   };
 

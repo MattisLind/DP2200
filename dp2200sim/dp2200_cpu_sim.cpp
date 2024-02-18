@@ -395,7 +395,7 @@ int dp2200_cpu::execute() {
   unsigned char inst;
   char buffer[32]; 
   int timeForInstruction;
-  int halted;
+  int halted, j;
   struct inst i;
   unsigned char instructionData;
   /* Handle interrupt*/
@@ -445,10 +445,14 @@ int dp2200_cpu::execute() {
     default:
       implicit = 0;
   }
-
-  i.data[0] = memory->read(P);
-  i.data[1] = memory->read(P+1);
-  i.data[2] = memory->read(P+2);
+  j=0;
+  if (implicit !=0) {
+    i.data[j++]=implicit;  
+  }
+  i.data[j++] = memory->read(P);
+  i.data[j++] = memory->read(P+1);
+  i.data[j++] = memory->read(P+2);
+  i.data[j++] = memory->read(P+3);
   i.address = P;
   if (instructionTrace.size()>=16) {
     instructionTrace.erase(instructionTrace.begin());
@@ -711,11 +715,11 @@ int dp2200_cpu::blockTransfer(bool reverse) {
 }
 
 void dp2200_cpu::incrementRegisterPair (int highReg, int lowReg, int decrement) {
-  int value = regSets[setSel].regs[REG_H] << 8 |  (0xff & regSets[setSel].regs[REG_L]);
+  int value = regSets[setSel].regs[highReg] << 8 |  (0xff & regSets[setSel].regs[lowReg]);
   value += decrement;
   flagCarry[setSel] = 0x1 & (value >> 16);
-  regSets[setSel].regs[REG_H] = 0xff & (value >> 8);
-  regSets[setSel].regs[REG_L] = 0xff & value;
+  regSets[setSel].regs[highReg] = 0xff & (value >> 8);
+  regSets[setSel].regs[lowReg] = 0xff & value;
 }
 
 int dp2200_cpu::immediateplus(unsigned char inst) {
@@ -822,6 +826,10 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
           flagCarry[setSel] = 0x1 & regSets[setSel].regs[r];
           regSets[setSel].regs[r] = (regSets[setSel].regs[r] >> 1) | ((savedCarry << 7) & 0x80);
         break;
+      case 7: // BRL
+         r=registerFromImplict(implicit);
+         memory->baseRegister = regSets[setSel].regs[r];
+         break;
       default: /*  unimplemented - handle as HALT for now. */
         return 1;
         break;
@@ -1228,6 +1236,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
           }
           address++;
         } 
+        break;
       default:
         /* Unimplemented */
         return 1;
