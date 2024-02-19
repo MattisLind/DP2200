@@ -599,7 +599,7 @@ registerWindow::HexForm::HexForm () {
   }
 
   for (auto i=0; i<8; i++) {
-    breakpoints[i] = createAField(&registerViewFields,5,4+i,61, "" );
+    breakpoints[i] = createAField(&registerViewFields,6,4+i,61, "" );
   }
 
   f = (FIELD **)malloc(

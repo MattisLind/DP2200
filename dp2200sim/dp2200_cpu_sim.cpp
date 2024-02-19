@@ -123,7 +123,7 @@ void inline dp2200_cpu::Memory::write(unsigned short virtualAddress, unsigned ch
     running=false;
     return;
   }
-  if (physicalAddress & 0xf000) return; // This is ROM. We cannot change the ROM...  
+  if (*is5500 & ((physicalAddress & 0xf000) == 0xf000)) return; // This is ROM. We cannot change the ROM...  
   physicalMemoryWrite(physicalAddress, data);
 }
 
@@ -279,7 +279,7 @@ char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, int 
     break;
     case 2:
       if (octal) {
-        snprintf(outputBuf, size, "%s %05o", instructionSet[set*256+instruction].mnemonic, (readMem(address+2) << 8) | readMem(address+1));
+        snprintf(outputBuf, size, "%s %06o", instructionSet[set*256+instruction].mnemonic, (readMem(address+2) << 8) | readMem(address+1));
       } else {
         snprintf(outputBuf, size, "%s %04X", instructionSet[set*256+instruction].mnemonic, (readMem(address+2) << 8) | readMem(address+1));
       }
@@ -405,8 +405,7 @@ int dp2200_cpu::execute() {
   /* Handle interrupt*/
 
   if ((interruptEnabled && interruptPending) || accessViolation || writeViolation) {
-    interruptPending = 0;
-
+    
     /* now bump stack to use new pc and save it */
     stack.stk[stackptr] = P;
     stackptr = (stackptr + 1) & 0xf;
@@ -415,8 +414,10 @@ int dp2200_cpu::execute() {
     } else if (writeViolation) {
       P=0170011;
     } else if (interruptPending && is5500) {
+      interruptPending = 0;
       P=0170022;
     } else if (interruptPending && is2200) {
+      interruptPending = 0;
       P=0;
     } else {
       printLog("INFO", "Unknown interrupt.");
@@ -728,6 +729,7 @@ void dp2200_cpu::incrementRegisterPair (int highReg, int lowReg, int decrement) 
 
 int dp2200_cpu::immediateplus(unsigned char inst) {
     int r;
+    unsigned int addrL, addrH;
     unsigned int op;
     unsigned char savedCarry;
     unsigned int reg;
@@ -767,7 +769,29 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         break;
       case 5:
         /* EI */
-        interruptEnabled = 1;
+        switch (implicit) {
+          case 0:
+            interruptEnabled = 1;
+            break;
+          case 062:
+            /* EUR */
+            interruptEnabled = 1;
+            stackptr = (stackptr - 1) & 0xf;
+            P = stack.stk[stackptr] & pMask;          
+            break;
+          case 0111:
+            interruptEnabled = 1;  /* EJMP */
+            addrL = (unsigned int)memory->read(P);
+            P++;
+            P &= pMask;
+            fetches++;
+            addrH = (unsigned int)memory->read(P);
+            P = (addrL + (addrH << 8)) & pMask;
+            fetches++;          
+            break;
+          default:
+            return 1;
+        }
         break;
       case 6:
         /* POP */
