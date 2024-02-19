@@ -372,6 +372,7 @@ class IOController {
   class IODevice * dev[256];
   int ioAddress; 
   std::vector<unsigned char> supportedDevices;
+  bool isDeviceSupported(unsigned char address);
   public:
   class CassetteDevice * cassetteDevice;
   class ScreenKeyboardDevice * screenKeyboardDevice;
