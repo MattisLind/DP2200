@@ -458,7 +458,7 @@ registerWindow::OctalForm::OctalForm () {
 
   createAField(&registerViewFields,2, 16,3, "P:" );
   pc=createAField(&registerViewFields,6,16,5, "000000", O_EDIT | O_ACTIVE, "[0-1][0-7][0-7][0-7][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalShortPointerHookExecutor(this, &cpu.P));
-  mnemonic = createAField(&registerViewFields,10, 16,12, "" );
+  mnemonic = createAField(&registerViewFields,12, 16,12, "" );
   // BASE REGISTER
   baseIdents = createAField(&registerViewFields,5, 17,3, "BASE:" );
   base=createAField(&registerViewFields,3,17,8, "000", O_EDIT | O_ACTIVE, "[0-3][0-7][0-7]", JUSTIFY_LEFT, (char *) new octalCharPointerHookExecutor(this, &(cpu.memory->baseRegister)));
