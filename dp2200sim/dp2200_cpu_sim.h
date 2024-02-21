@@ -87,6 +87,7 @@ public:
   int interruptEnabled;
 
   unsigned short P;
+  unsigned short previousP;
 
   class Memory {
     struct SectorEntry {
@@ -109,8 +110,8 @@ public:
     void physicalMemoryWrite(int address, unsigned char data);
     bool addWatch(unsigned short address);
     bool removeWatch (unsigned short address);
-    unsigned char read(unsigned short address, bool performChecks=true);
-    void write(unsigned short address, unsigned char data);
+    unsigned char read(unsigned short address, bool performChecks=true, bool fetch=false, int from=0);
+    void write(unsigned short address, unsigned char data, int from=0);
     Memory(bool * is5500, bool * accessViolation, bool * writeViolation, bool * userMode); 
   };
 
