@@ -239,11 +239,11 @@ public:
   private:
   int stackStore();
   int stackLoad();
-  int doubleLoad();
-  int doubleStore();
+  int doubleLoad(int);
+  int doubleStore(int);
   int registerStore();
   int registerLoad();
-  struct doubleLoadStoreRegisterTable getSourceAndIndex();
+  struct doubleLoadStoreRegisterTable getSourceAndIndex(int);
   int registerFromImplict(int implict); 
   void incrementRegisterPair (int highReg, int lowReg, int decrement);
   int getHighRegFromImplicit();

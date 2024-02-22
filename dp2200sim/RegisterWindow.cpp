@@ -703,7 +703,7 @@ void registerWindow::hightlightWindow() {
   //updateFormOctal();
 }
 void registerWindow::normalWindow() {
-  printLog("INFO", "registerWindow::normalWindow()");
+  printLog("INFO", "registerWindow::normalWindow()\n");
   getyx(win,cursorY,cursorX);
   curs_set(0);
   box(win, 0, 0);
