@@ -34,16 +34,16 @@
 170103 006     LA 341                   
 170105 121     EX_ADR                   
 170106 101     INPUT                    
-170107 044     ND 014                   
+170107 044     ND 014         # CHECK IF DISPLAY AND KEYBOARD KEY IS PRESSED                
 170111 074     CP 014                   
 170113 066     LL 372                   
 170115 056     LH 377                                   
 170117 057     DL HL,HL                 
-170120 152     CTZ 173730               
+170120 152     CTZ 173730     # CALL IF WE HAVE BOTH DISPLAY AND KEYBOARD KEY PRESSED             
 170123 016     LB 041                   
-170125 111 137 EX_COM4 B                
+170125 111 137 EX_COM4 B      # LOAD CHAR GEN MODE          
 170127            JUMP FROM 170155     
-170127 026     LC 005                   
+170127 026     LC 005         # LOOPS FIVE TIMES          
 170131 036     LD 001                   
 170133            JUMP FROM 170147     
 170133 101     INPUT                    
@@ -96,7 +96,8 @@
 170245 111 032 SREB                     
 170247 062 032 SREC                     
 170251 111 044 ND B 037                 
-170254 007     RET                      
+170254 007     RET  
+170255            SUBROUTINE WHEN PRESSING 'K'                    
 170255 106     CALL 172307              
 170260 016     LB 001                   
 170262 066     LL 301                   
@@ -458,6 +459,9 @@
 171144            CALL FROM 175214     
 171144            CALL FROM 175567     
 171144            CALL FROM 175600     
+171144
+171144            SUBROUTINE THAT POSITION THE CURSOR
+171144
 171144 006     LA 341                   
 171146 121     EX_ADR                   
 171147 101     INPUT                    
@@ -897,7 +901,8 @@
 171602 046     LE 012                    
 171604 106     CALL 172326                   
 171607 106     CALL 171634                
-171612 104     JMP 171507                
+171612 104     JMP 171507          
+171615            SUBROUTINE ERASE FROM CURSOR TO END OF LINE     
 171615            CALL FROM 171521     
 171615            CALL FROM 171553     
 171615 174 070 PUSH DE                  
@@ -922,46 +927,46 @@
 171650 131     EX_COM1                  
 171651            JUMP FROM 171654      
 171651 101     INPUT                     
-171652 044     ND 002                    
+171652 044     ND 002             # CHECK IF KEYBOARD IS READY               
 171654 150     JTZ 171651                
 171657 250     XRA                       
 171660 131     EX_COM1                  
-171661 125     EX_DATA                  
+171661 125     EX_DATA            # GET KEY PRESS          
 171662 101     INPUT                    
 171663 056     LH 357                   
 171665 164     PL L, 301                
 171667 176 074 CP L 001                 
 171672 150     JTZ 172677               
 171675 100     JFC 172664               
-171700 074     CP 015                   
+171700 074     CP 015             # CR                
 171702 150     JTZ 173023               
-171705 074     CP 030                   
+171705 074     CP 030             # CANCEL      
 171707 150     JTZ 171634               
-171712 074     CP 010                   
+171712 074     CP 010             # BACKSPACE      
 171714 150     JTZ 172221               
-171717 074     CP 077                   
+171717 074     CP 077             # ?      
 171721 150     JTZ 177763               
-171724 074     CP 056                   
+171724 074     CP 056             # .      
 171726 150     JTZ 173157               
-171731 074     CP 136                   
+171731 074     CP 136             # ^      
 171733 150     JTZ 173157               
-171736 074     CP 043                   
+171736 074     CP 043             # #      
 171740 150     JTZ 172447               
-171743 074     CP 101                   
-171745 140     JTC 172240               
-171750 074     CP 173                   
-171752 100     JFC 172240               
-171755 066     LL 276                   
-171757 056     LH 363                   
-171761 074     CP 133                   
-171763 140     JTC 171777               
-171766 066     LL 112                   
+171743 074     CP 101             # A      
+171745 140     JTC 172240         # Jump if less than 'A'      
+171750 074     CP 173             # ?????      
+171752 100     JFC 172240         # Jump if more than 'z' (+1??)      
+171755 066     LL 276                     
+171757 056     LH 363             # HL = 171676      
+171761 074     CP 133             # 'z'      
+171763 140     JTC 171777         # jump if uppercase      
+171766 066     LL 112                     
 171770 056     LH 363                   
-171772 074     CP 141                   
-171774 140     JTC 172240               
+171772 074     CP 141             # HL = 171512       
+171774 140     JTC 172240         # Not lower case   pass through if lower case   
 171777            JUMP FROM 171763     
-171777 200     ADA                                       
-172000 017     INCP HL,A                
+171777 200     ADA                # Double the character value                              
+172000 017     INCP HL,A          # A => 202 + 171676 =  172100  lowercase 141 * 2 + 171512 = 302 + 171512 = 172014??     
 172001 057     DL HL,HL                 
 172002 070     PUSH                     
 172003 012     SRC                      
@@ -983,7 +988,7 @@
 172032 360     LLA                      
 172033 377     HALT                     
 172054 131        DATA READ FROM 172001 
-172055 365        DATA READ FROM 172001 
+172055 365        DATA READ FROM 172001   # 172531
 172070 123        DATA READ FROM 172001 
 172071 367        DATA READ FROM 172001 
 172076 123        DATA READ FROM 172001 
@@ -1037,21 +1042,21 @@
 172162 114        DATA READ FROM 172001 
 172163 367        DATA READ FROM 172001 
 172164            RETURN FROM 172013    
-172164 035     DECP HL                  
+172164 035     DECP HL                  # WE GET HERE IF WE PRESSED 'f'
 172165            RETURN FROM 172013    
-172165 035     DECP HL                  
+172165 035     DECP HL                  # WE GET HERE IF WE PRESSED 'c'     
 172166            RETURN FROM 172013    
-172166 035     DECP HL                  
+172166 035     DECP HL                  # WE GET HERE IF WE PRESSED 'b'                
 172167            RETURN FROM 172013    
-172167 035     DECP HL                  
+172167 035     DECP HL                  # WE GET HERE IF WE PRESSED 'e'
 172170            RETURN FROM 172013    
-172170 035     DECP HL                  
+172170 035     DECP HL                  # WE GET HERE IF WE PRESSED 'd'
 172171            RETURN FROM 172013    
-172171 035     DECP HL                  
+172171 035     DECP HL                  # WE GET HERE IF WE PRESSED 'l'   
 172172            RETURN FROM 172013    
-172172 035     DECP HL                  
+172172 035     DECP HL                  # WE GET HERE IF WE PRESSED 'g' or 'h'              
 172173            RETURN FROM 172013    
-172173 035     DECP HL                  
+172173 035     DECP HL                  # WE GET HERE IF WE PRESSED 'a'              
 172174            RETURN FROM 172013    
 172174 015     INCP HL                  
 172175 105     PL A, 276                
@@ -1098,7 +1103,8 @@
 172316 111     CP B 024
 172320 053     RTZ
 172321            JUMP FROM 172312     
-172321 060     POP                      
+172321 060     POP                
+172322            SUBROUTINE THAT HANDLE 'g', 'n' or 'm'      
 172322            JUMP FROM 172243     
 172322            JUMP FROM 172250     
 172322            JUMP FROM 172542     
@@ -1134,7 +1140,8 @@
 172357 106     CALL 171144                  
 172362 006     LA 040                   
 172364 127     EX_WRITE                 
-172365 007     RET                      
+172365 007     RET 
+172366            SUBROUTINE TO HANDLE 'B'                       
 172366 110     JFZ 172374               
 172371 111 124 DPL BC, 262              
 172374 062 307 LAM BC                   
@@ -1179,7 +1186,8 @@
 172554 054     XR 003                   
 172556 370     LMA                      
 172557 115 166 DPS HL, 262              
-172562 007     RET                      
+172562 007     RET  
+172563            SUBROUTINE WHEN PRESSING 'j'                    
 172563            RETURN FROM 172013    
 172563 110     JFZ 172570               
 172566 026     LC 117                   
@@ -1206,7 +1214,8 @@
 172630 106     CALL 171144                  
 172633 006     LA 004                   
 172635 131     EX_COM1                  
-172636 007     RET                      
+172636 007     RET  
+172637            SUBROUTINE WE GET HERE WHEN PRESSING 'k'                    
 172637            RETURN FROM 172013    
 172637 106     CALL 172307              
 172642 016     LB 002                   
@@ -1251,7 +1260,8 @@
 172752 115 164 DPL HL, 262              
 172755 370     LMA                      
 172756 153     EX_CLICK                 
-172757 250     XRA                      
+172757 250     XRA 
+172760            SUBROUTINE WE GET HERE IF WE PRESSED 'I'                     
 172760 110     JFZ 172767               
 172763            JUMP FROM 173167     
 172763 026     LC 001                   
@@ -1261,7 +1271,8 @@
 172772 176 202 ADCL                     
 172774 115 211 ACBH                     
 172776 115 166 DPS HL, 262              
-173001 007     RET                      
+173001 007     RET   
+173002            SUBROUTINE WE GET HERE IF WE HAVE PRESSED A 'D'                   
 173002 110     JFZ 173011               
 173005 026     LC 001                   
 173007 016     LB 000                   
@@ -1277,9 +1288,11 @@
 173026 053     RTZ                      
 173027 113 144 DPL DE, 340              
 173032 062 204 ADEC                     
-173034 111 213 ACDB                     
-173036 111 126 DPS BC, 262              
-173041 007     RET                      
+173034 111 213 ACDB
+173036            SUBROUTINE THAT WE GET TO IF WE PRESSED 'N'                     
+173036 111 126 DPS BC, 262 
+173041 007     RET  
+173042            SUBROUTINE THAT WE GET TO IF WE PRESSED 'O'                         
 173042 150     JTZ 173063               
 173045 302     LAC                      
 173046 074     CP 012                   
@@ -1291,7 +1304,8 @@
 173060 017     INCP HL,A                
 173061 111 047 DL BC,HL                 
 173063 111 126 DPS BC, 340              
-173066 007     RET                      
+173066 007     RET
+173067            SUBROUTINE IF GET 'o'                      
 173067            RETURN FROM 172013    
 173067 105     PL A, 342                
 173071 150     JTZ 173055               
@@ -1301,11 +1315,13 @@
 173104 017     INCP HL,A                
 173105 111 027 DS BC,HL                 
 173107 111 126 DPS BC, 340              
-173112 007     RET                      
+173112 007     RET 
+173113            SUBROUTINE WE GET HERE IF WE PRESSED 'L'                      
 173113 115 164 DPL HL, 262              
 173116 047     DL DE,HL                 
 173117 113 146 DPS DE, 262              
-173122 007     RET                      
+173122 007     RET   
+173123            SUBROUTINE WE GET HERE IF WE PRESSED 'M'                   
 173123            CALL FROM 173157     
 173123            JUMP FROM 172216     
 173123 074     CP 136                   
@@ -1377,7 +1393,9 @@
 173304 004     AD 224                   
 173306 360     LLA                      
 173307 115 166 DPS HL, 262              
-173312 007     RET                      
+173312 007     RET 
+173313            SUBROUTINE WE GET HERE IF WE PRESSED AN 'E'
+173313 051     PUSH 000007                     
 173316            JUMP FROM 173344     
 173316            JUMP FROM 173352     
 173316 150     JTZ 173324               
@@ -1387,19 +1405,22 @@
 173327 074     CP 007                   
 173331 150     JTZ 173377               
 173334 006     LA 050                   
-173336 104     JMP 173377               
+173336 104     JMP 173377 
+173341            SUBROUTINE HANDLES 'i' KEY              
 173341            RETURN FROM 172013    
 173341 051     PUSH 003450              
 173344 104     JMP 173316               
 173347 051     PUSH 041111              
-173352 104     JMP 173316               
+173352 104     JMP 173316 
+173355            SUBROUTINE TO HANDLE WHEN 'C' IS PRESSED
 173355 006     LA 104                   
 173357 107     PL X, 264                
 173361 046     LE 071                   
 173363 036     LD 363                   
 173365 113 146 DPS DE, 265              
 173370 006     LA 106                   
-173372 104     JMP 173377               
+173372 104     JMP 173377 
+173375            SUBROUTINE WE GET HERE WHEN PRESSING 'J'              
 173375 006     LA 104                   
 173377            JUMP FROM 173336     
 173377            JUMP FROM 173372     
@@ -1419,7 +1440,8 @@
 173432 150     JTZ 173436               
 173436            JUMP FROM 173432     
 173436 106     CALL 173646                  
-173441 104     JMP 167660               
+173441 104     JMP 167660
+173444            SUBROUTINE HANDLES WHEN 'A', 'G' or 'F' has been pressed.               
 173444 310     LBA                      
 173445 066     LL 270                   
 173447 150     JTZ 173453               
@@ -2970,7 +2992,10 @@
 177750 005        DATA READ FROM 177302 
 177751 000        DATA READ FROM 177302 
 177755            RETURN FROM 172013    
-177755 000     HALT                         
+177755 000     HALT 
+177760
+177760            JUMP HERE IF PRESSING 'H'
+177760 005     INCI                           
 177766 000     HALT                     
 177767            JUMP FROM 170033     
 177767 000     HALT                     

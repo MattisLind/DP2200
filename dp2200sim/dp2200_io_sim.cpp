@@ -47,7 +47,6 @@ bool IOController::isDeviceSupported(unsigned char address) {
 }
 
 int IOController::exAdr (unsigned char address) {
-  if (!isDeviceSupported(address)) return 1;
   ioAddress = address;
   exStatus();
   return 0;
@@ -64,24 +63,24 @@ void IOController::exData () {
 }
 
 int IOController::exWrite(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return dev[ioAddress]->exWrite(data);
 }
 
 int IOController::exCom1(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return dev[ioAddress]->exCom1(data);
 }
 int IOController::exCom2(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return dev[ioAddress]->exCom2(data);
 }
 int IOController::exCom3(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return dev[ioAddress]->exCom3(data);
 }
 int IOController::exCom4(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return dev[ioAddress]->exCom4(data);
 }
 int IOController::exBeep() {
@@ -119,7 +118,7 @@ int IOController::exTStop() {
 }
 
 unsigned char IOController::input () {
-  if (!isDeviceSupported(ioAddress)) return 1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return dev[ioAddress]->input();
 }
 
