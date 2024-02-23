@@ -1,4 +1,4 @@
-
+000000            RETURN FROM 176746    
 170000 104     JMP 170225               
 170003 104     JMP 167406               
 170006 104     JMP 170231               
@@ -766,393 +766,192 @@
 171400 260        DATA READ FROM 172537 
 171400 260        DATA READ FROM 173116 
 171401 276        DATA READ FROM 170170 
-171401 276        DATA READ FROM 170207 
-171401 276        DATA READ FROM 172547 
+171401 276        DATA READ FROM 170207  
 171401 276        DATA READ FROM 173116 
 171402 301        DATA READ FROM 170170 
 171402 301        DATA READ FROM 170207 
-171402 301        DATA READ FROM 172547 
 171403 305        DATA READ FROM 170170 
-171403 305        DATA READ FROM 170207 
-171403 305        DATA READ FROM 172547 
+171403 305        DATA READ FROM 170207  
 171404 302        DATA READ FROM 170170 
-171404 302        DATA READ FROM 170207 
-171404 302        DATA READ FROM 172547 
+171404 302        DATA READ FROM 170207  
 171405 275        DATA READ FROM 170170 
-171405 275        DATA READ FROM 170207 
-171405 275        DATA READ FROM 172547 
+171405 275        DATA READ FROM 170207  
 171406 377        DATA READ FROM 170170 
-171406 377        DATA READ FROM 170207 
-171406 377        DATA READ FROM 172547 
+171406 377        DATA READ FROM 170207  
 171407 310        DATA READ FROM 170170 
-171407 310        DATA READ FROM 170207 
-171407 310        DATA READ FROM 172547 
+171407 310        DATA READ FROM 170207  
 171410 314        DATA READ FROM 170170 
-171410 314        DATA READ FROM 170207 
-171410 314        DATA READ FROM 172547 
+171410 314        DATA READ FROM 170207  
 171411 312        DATA READ FROM 170170 
 171411 312        DATA READ FROM 170207 
-171411 312        DATA READ FROM 172547 
 171412 261        DATA READ FROM 170170 
 171412 261        DATA READ FROM 170207 
-171412 261        DATA READ FROM 172547 
 171413 261        DATA READ FROM 170170 
-171413 261        DATA READ FROM 170207 
-171413 261        DATA READ FROM 172547 
+171413 261        DATA READ FROM 170207  
 171414 311        DATA READ FROM 170170 
-171414 311        DATA READ FROM 170207 
-171414 311        DATA READ FROM 172547 
+171414 311        DATA READ FROM 170207  
 171415 311        DATA READ FROM 170170 
 171415 311        DATA READ FROM 170207 
-171415 311        DATA READ FROM 172547 
 171416 311        DATA READ FROM 170170 
-171416 311        DATA READ FROM 170207 
-171416 311        DATA READ FROM 172547 
+171416 311        DATA READ FROM 170207  
 171417 306        DATA READ FROM 170170 
 171417 306        DATA READ FROM 170207 
-171417 306        DATA READ FROM 172547 
 171420 300        DATA READ FROM 170170 
-171420 300        DATA READ FROM 170207 
-171420 300        DATA READ FROM 172547 
+171420 300        DATA READ FROM 170207  
 171421 300        DATA READ FROM 170170 
 171421 300        DATA READ FROM 170207 
-171421 300        DATA READ FROM 172547 
 171422 377        DATA READ FROM 170170 
 171422 377        DATA READ FROM 170207 
-171422 377        DATA READ FROM 172547 
 171423 300        DATA READ FROM 170170 
-171423 300        DATA READ FROM 170207 
-171423 300        DATA READ FROM 172547 
+171423 300        DATA READ FROM 170207  
 171424 300        DATA READ FROM 170170 
-171424 300        DATA READ FROM 170207 
-171424 300        DATA READ FROM 172547 
+171424 300        DATA READ FROM 170207  
 171425 376        DATA READ FROM 170170 
-171425 376        DATA READ FROM 170207 
-171425 376        DATA READ FROM 172547 
+171425 376        DATA READ FROM 170207  
 171426 201        DATA READ FROM 170170 
 171426 201        DATA READ FROM 170207 
-171426 201        DATA READ FROM 172547 
 171427 201        DATA READ FROM 170170 
-171427 201        DATA READ FROM 170207 
-171427 201        DATA READ FROM 172547 
+171427 201        DATA READ FROM 170207  
 171430 201        DATA READ FROM 170170 
-171430 201        DATA READ FROM 170207 
-171430 201        DATA READ FROM 172547 
+171430 201        DATA READ FROM 170207  
 171431 376        DATA READ FROM 170170 
-171431 376        DATA READ FROM 170207 
-171431 376        DATA READ FROM 172547 
+171431 376        DATA READ FROM 170207  
 171432 360        DATA READ FROM 170170 
-171432 360        DATA READ FROM 170207 
-171432 360        DATA READ FROM 172547 
+171432 360        DATA READ FROM 170207  
 171433 214        DATA READ FROM 170170 
 171433 214        DATA READ FROM 170207 
-171433 214        DATA READ FROM 172547 
 171434 203        DATA READ FROM 170170 
 171434 203        DATA READ FROM 170207 
-171434 203        DATA READ FROM 172547 
 171435 214        DATA READ FROM 170170 
-171435 214        DATA READ FROM 170207 
-171435 214        DATA READ FROM 172547 
+171435 214        DATA READ FROM 170207  
 171436 360        DATA READ FROM 170170 
-171436 360        DATA READ FROM 170207 
-171436 360        DATA READ FROM 172547 
+171436 360        DATA READ FROM 170207  
 171437 377        DATA READ FROM 170170 
 171437 377        DATA READ FROM 170207 
-171437 377        DATA READ FROM 172547 
 171440 202        DATA READ FROM 170170 
 171440 202        DATA READ FROM 170207 
-171440 202        DATA READ FROM 172547 
 171441 214        DATA READ FROM 170170 
-171441 214        DATA READ FROM 170207 
-171441 214        DATA READ FROM 172547 
+171441 214        DATA READ FROM 170207  
 171442 202        DATA READ FROM 170170 
 171442 202        DATA READ FROM 170207 
-171442 202        DATA READ FROM 172547 
 171443 377        DATA READ FROM 170170 
-171443 377        DATA READ FROM 170207 
-171443 377        DATA READ FROM 172547 
+171443 377        DATA READ FROM 170207  
 171444 343        DATA READ FROM 170170 
-171444 343        DATA READ FROM 170207 
-171444 343        DATA READ FROM 172547 
+171444 343        DATA READ FROM 170207  
 171445 224        DATA READ FROM 170170 
-171445 224        DATA READ FROM 170207 
-171445 224        DATA READ FROM 172547 
+171445 224        DATA READ FROM 170207  
 171446 210        DATA READ FROM 170170 
 171446 210        DATA READ FROM 170207 
-171446 210        DATA READ FROM 172547 
 171447 224        DATA READ FROM 170170 
-171447 224        DATA READ FROM 170207 
-171447 224        DATA READ FROM 172547 
+171447 224        DATA READ FROM 170207  
 171450 343        DATA READ FROM 170170 
 171450 343        DATA READ FROM 170207 
-171450 343        DATA READ FROM 172547 
 171451 360        DATA READ FROM 170170 
-171451 360        DATA READ FROM 170207 
-171451 360        DATA READ FROM 172547 
+171451 360        DATA READ FROM 170207  
 171452 210        DATA READ FROM 170170 
-171452 210        DATA READ FROM 170207 
-171452 210        DATA READ FROM 172547 
+171452 210        DATA READ FROM 170207  
 171453 217        DATA READ FROM 170170 
-171453 217        DATA READ FROM 170207 
-171453 217        DATA READ FROM 172547 
+171453 217        DATA READ FROM 170207  
 171454 210        DATA READ FROM 170170 
 171454 210        DATA READ FROM 170207 
-171454 210        DATA READ FROM 172547 
 171455 360        DATA READ FROM 170170 
 171455 360        DATA READ FROM 170207 
-171455 360        DATA READ FROM 172547 
 171456 303        DATA READ FROM 170170 
-171456 303        DATA READ FROM 170207 
-171456 303        DATA READ FROM 172547 
+171456 303        DATA READ FROM 170207  
 171457 305        DATA READ FROM 170170 
-171457 305        DATA READ FROM 170207 
-171457 305        DATA READ FROM 172547 
+171457 305        DATA READ FROM 170207  
 171460 311        DATA READ FROM 170170 
-171460 311        DATA READ FROM 170207 
-171460 311        DATA READ FROM 172547 
+171460 311        DATA READ FROM 170207  
 171461 321        DATA READ FROM 170170 
-171461 321        DATA READ FROM 170207 
-171461 321        DATA READ FROM 172547 
+171461 321        DATA READ FROM 170207  
 171462 341        DATA READ FROM 170170 
-171462 341        DATA READ FROM 170207 
-171462 341        DATA READ FROM 172547 
+171462 341        DATA READ FROM 170207  
 171463 000        DATA READ FROM 170170 
-171463 000        DATA READ FROM 172547 
-171464 022        DATA READ FROM 172547 
 171464 022 060 POP XA                   
-171465 060        DATA READ FROM 172547 
-171466 200        DATA READ FROM 172547 
-171466 200     ADA                      
-171467 022        DATA READ FROM 172547 
+171466 200     ADA                       
 171467 022 060 POP XA                   
-171470 060        DATA READ FROM 172547 
-171471 040        DATA READ FROM 172547 
 171471 040     DI                       
-171472 106        DATA READ FROM 172547 
 171472 106     CALL 173561              
-171473 161        DATA READ FROM 172547 
-171474 367        DATA READ FROM 172547 
 171475            JUMP FROM 171040     
-171475            RETURN FROM 173645    
-171475 030        DATA READ FROM 172547 
 171475 030     ALPHA                    
-171476 076        DATA READ FROM 172547 
-171476 076     LX 357                   
-171477 357        DATA READ FROM 172547 
-171500 006        DATA READ FROM 172547 
-171500 006     LA 101                   
-171501 101        DATA READ FROM 172547 
-171502 107        DATA READ FROM 172547 
+171476 076     LX 357                    
+171500 006     LA 101                    
 171502 107     PL X, 276                
-171503 276        DATA READ FROM 172547 
-171504 250        DATA READ FROM 172547 
 171504 250     XRA                      
 171505            JUMP FROM 170276     
-171505 107        DATA READ FROM 172547 
-171505 107     PL X, 301                
-171506 301        DATA READ FROM 172547 
-171507            JUMP FROM 171612     
-171507 111        DATA READ FROM 172547 
-171507 111 124 DPL BC, 262              
-171510 124        DATA READ FROM 172547 
-171511 262        DATA READ FROM 172547 
-171512 113        DATA READ FROM 172547 
+171505 107     PL X, 301                 
+171507            JUMP FROM 171612      
+171507 111 124 DPL BC, 262               
 171512 113 144 DPL DE, 340              
-171513 144        DATA READ FROM 172547 
-171514 340        DATA READ FROM 172547 
-171515 304        DATA READ FROM 172547 
-171515 304     LAE                      
-171516 263        DATA READ FROM 172547 
-171516 263     ORD                      
-171517 006        DATA READ FROM 172547 
-171517 006     LA 007                   
-171520 007        DATA READ FROM 172547 
-171521 152        DATA READ FROM 172547 
-171521 152     CTZ 171615               
-171522 215        DATA READ FROM 172547 
-171523 363        DATA READ FROM 172547 
-171524            RETURN FROM 171633    
-171524 062        DATA READ FROM 172547 
+171515 304     LAE                       
+171516 263     ORD                       
+171517 006     LA 007                    
+171521 152     CTZ 171615                
 171524 062 224 SUEC                     
-171525 224        DATA READ FROM 172547 
-171526 111        DATA READ FROM 172547 
 171526 111 233 SBDB                     
-171527 233        DATA READ FROM 172547 
-171530 046        DATA READ FROM 172547 
-171530 046     LE 007                   
-171531 007        DATA READ FROM 172547 
-171532 260        DATA READ FROM 172547 
-171532 260     ORA                      
-171533 112        DATA READ FROM 172547 
+171530 046     LE 007                    
+171532 260     ORA                       
 171533 112     CFZ 172326               
-171534 326        DATA READ FROM 172547 
-171535 364        DATA READ FROM 172547 
-171536            RETURN FROM 172365    
-171536 046        DATA READ FROM 172547 
 171536 046     LE 010                   
-171537 010        DATA READ FROM 172547 
-171540 111        DATA READ FROM 172547 
 171540 111 124 DPL BC, 262              
-171541 124        DATA READ FROM 172547 
-171542 262        DATA READ FROM 172547 
-171543 062        DATA READ FROM 172547 
 171543 062 070 PUSH BC                  
-171544 070        DATA READ FROM 172547 
-171545 106        DATA READ FROM 172547 
 171545 106     CALL 172326              
-171546 326        DATA READ FROM 172547 
-171547 364        DATA READ FROM 172547 
-171550            RETURN FROM 172365    
-171550 006        DATA READ FROM 172547 
-171550 006     LA 011                   
-171551 011        DATA READ FROM 172547 
-171552 340        DATA READ FROM 172547 
-171552 340     LEA                      
-171553 106        DATA READ FROM 172547 
-171553 106     CALL 171615              
-171554 215        DATA READ FROM 172547 
-171555 363        DATA READ FROM 172547 
-171556            RETURN FROM 171633    
-171556 060        DATA READ FROM 172547 
-171556 060     POP                      
-171557 070        DATA READ FROM 172547 
-171557 070     PUSH                     
-171560 036        DATA READ FROM 172547 
-171560 036     LD 112                   
-171561 112        DATA READ FROM 172547 
-171562 106        DATA READ FROM 172547 
-171562 106     CALL 171144              
-171563 144        DATA READ FROM 172547 
-171564 362        DATA READ FROM 172547 
-171565            RETURN FROM 171160    
-171565 307        DATA READ FROM 172547 
-171565 307     LAM                      
-171566 127        DATA READ FROM 172547 
-171566 127     EX_WRITE                 
-171567 320        DATA READ FROM 172547 
-171567 320     LCA                      
-171570 016        DATA READ FROM 172547 
-171570 016     LB 000                   
-171571 000        DATA READ FROM 172547 
-171572 066        DATA READ FROM 172547 
+171550 006     LA 011                    
+171552 340     LEA                       
+171553 106     CALL 171615               
+171556 060     POP                       
+171557 070     PUSH                      
+171560 036     LD 112                    
+171562 106     CALL 171144               
+171565 307     LAM                       
+171566 127     EX_WRITE                  
+171567 320     LCA                       
+171570 016     LB 000                    
 171572 066     LL 003                   
-171573 003        DATA READ FROM 172547 
-171574 106        DATA READ FROM 172547 
 171574 106     CALL 172330              
-171575 330        DATA READ FROM 172547 
-171576 364        DATA READ FROM 172547 
-171577            RETURN FROM 172365    
-171577 060        DATA READ FROM 172547 
 171577 060     POP                      
-171600 111        DATA READ FROM 172547 
 171600 111 047 DL BC,HL                 
-171601 047        DATA READ FROM 172547 
-171602 046        DATA READ FROM 172547 
-171602 046     LE 012                   
-171603 012        DATA READ FROM 172547 
-171604 106        DATA READ FROM 172547 
-171604 106     CALL 172326              
-171605 326        DATA READ FROM 172547 
-171606 364        DATA READ FROM 172547 
-171607            RETURN FROM 172365    
-171607 106        DATA READ FROM 172547 
-171607 106     CALL 171634              
-171610 234        DATA READ FROM 172547 
-171611 363        DATA READ FROM 172547 
-171612            RETURN FROM 171133    
-171612            RETURN FROM 171137    
-171612            RETURN FROM 172215    
-171612            RETURN FROM 172446    
-171612            RETURN FROM 172530    
-171612            RETURN FROM 172636    
-171612            RETURN FROM 172675    
-171612            RETURN FROM 173001    
-171612            RETURN FROM 173026    
-171612            RETURN FROM 173066    
-171612            RETURN FROM 173156    
-171612            RETURN FROM 173312    
-171612            RETURN FROM 173506    
-171612 104        DATA READ FROM 172547 
-171612 104     JMP 171507               
-171613 107        DATA READ FROM 172547 
-171614 363        DATA READ FROM 172547 
+171602 046     LE 012                    
+171604 106     CALL 172326                   
+171607 106     CALL 171634                
+171612 104     JMP 171507                
 171615            CALL FROM 171521     
 171615            CALL FROM 171553     
-171615 174        DATA READ FROM 172547 
 171615 174 070 PUSH DE                  
-171616 070        DATA READ FROM 172547 
-171617 340        DATA READ FROM 172547 
-171617 340     LEA                      
-171620 036        DATA READ FROM 172547 
-171620 036     LD 111                   
-171621 111        DATA READ FROM 172547 
-171622 106        DATA READ FROM 172547 
+171617 340     LEA                       
+171620 036     LD 111                    
 171622 106     CALL 171144              
-171623 144        DATA READ FROM 172547 
-171624 362        DATA READ FROM 172547 
 171625            RETURN FROM 171160    
-171625 006        DATA READ FROM 172547 
 171625 006     LA 002                   
-171626 002        DATA READ FROM 172547 
-171627 131        DATA READ FROM 172547 
-171627 131     EX_COM1                  
-171630 250        DATA READ FROM 172547 
-171630 250     XRA                      
-171631 174        DATA READ FROM 172547 
-171631 174 060 POP DE                   
-171632 060        DATA READ FROM 172547 
-171633 007        DATA READ FROM 172547 
+171627 131     EX_COM1                   
+171630 250     XRA                       
+171631 174 060 POP DE                    
 171633 007     RET                      
-171634            CALL FROM 171607     
-171634 046        DATA READ FROM 172547 
+171634            CALL FROM 171607      
 171634 046     LE 013                   
-171635 013        DATA READ FROM 172547 
-171636 036        DATA READ FROM 172547 
-171636 036     LD 106                   
-171637 106        DATA READ FROM 172547 
-171640 026        DATA READ FROM 172547 
-171640 026     LC 000                   
-171641 000        DATA READ FROM 172547 
-171642 312        DATA READ FROM 172547 
+171636 036     LD 106                    
+171640 026     LC 000                    
 171642 312     LBC                      
 171643            JUMP FROM 172235     
 171643            JUMP FROM 172304     
-171643            JUMP FROM 172323     
-171643 106        DATA READ FROM 172547 
-171643 106     CALL 171144              
-171644 144        DATA READ FROM 172547 
-171645 362        DATA READ FROM 172547 
-171646            RETURN FROM 171160    
-171646 006        DATA READ FROM 172547 
+171643            JUMP FROM 172323      
+171643 106     CALL 171144               
+171646            RETURN FROM 171160     
 171646 006     LA 022                   
-171647 022        DATA READ FROM 172547 
-171650 131        DATA READ FROM 172547 
 171650 131     EX_COM1                  
-171651            JUMP FROM 171654     
-171651 101        DATA READ FROM 172547 
-171651 101     INPUT                    
-171652 044        DATA READ FROM 172547 
-171652 044     ND 002                   
-171653 002        DATA READ FROM 172547 
-171654 150        DATA READ FROM 172547 
-171654 150     JTZ 171651               
-171655 251        DATA READ FROM 172547 
-171656 363        DATA READ FROM 172547 
-171657 250        DATA READ FROM 172547 
-171657 250     XRA                      
-171660 131        DATA READ FROM 172547 
+171651            JUMP FROM 171654      
+171651 101     INPUT                     
+171652 044     ND 002                    
+171654 150     JTZ 171651                
+171657 250     XRA                       
 171660 131     EX_COM1                  
 171661 125     EX_DATA                  
 171662 101     INPUT                    
 171663 056     LH 357                   
 171665 164     PL L, 301                
 171667 176 074 CP L 001                 
-171670 000        DATA WRITE FROM 173452
-171670 074        DATA READ FROM 173453 
 171672 150     JTZ 172677               
 171675 100     JFC 172664               
-171676 264        DATA READ FROM 172553 
-171676 267        DATA WRITE FROM 172556
 171700 074     CP 015                   
 171702 150     JTZ 173023               
 171705 074     CP 030                   
@@ -1317,15 +1116,16 @@
 172307            CALL FROM 174125     
 172307            CALL FROM 174136     
 172307 062 074 CP C 345                 
-172312 110     JFZ 172321               
+172312 110     JFZ 172321  
+172316 111     CP B 024
+172320 053     RTZ
 172321            JUMP FROM 172312     
 172321 060     POP                      
 172322            JUMP FROM 172243     
 172322            JUMP FROM 172250     
 172322            JUMP FROM 172542     
 172322            JUMP FROM 173050     
-172322            JUMP FROM 173076     
-172322            RETURN FROM 172013    
+172322            JUMP FROM 173076         
 172322 151     EX_BEEP                  
 172323 104     JMP 171643               
 172326            CALL FROM 171533     
@@ -1350,13 +1150,11 @@
 172342 127     EX_WRITE                 
 172342 377        DATA WRITE FROM 173105
 172343 106     CALL 170235              
-172343 377        DATA WRITE FROM 173105
-172346            RETURN FROM 170254    
+172343 377        DATA WRITE FROM 173105    
 172346 113 024 SU D 001                 
 172351 176 024 SU L 001                 
 172354 110     JFZ 172332               
-172357 106     CALL 171144              
-172362            RETURN FROM 171160    
+172357 106     CALL 171144                  
 172362 006     LA 040                   
 172364 127     EX_WRITE                 
 172365 007     RET                      
@@ -1836,25 +1634,17 @@
 174061 066     LL 002                   
 174063 104     JMP 172332               
 174066 052        DATA READ FROM 171101 
-174067 040        DATA READ FROM 171101 
-174067 040     DI                       
-174070 115        DATA READ FROM 171101 
-174070 115 101 INPUT H                  
+174067 040        DATA READ FROM 171101                        
+174070 115        DATA READ FROM 171101                   
 174071 101        DATA READ FROM 171101 
-174072 103        DATA READ FROM 171101 
-174072 103     PIN                      
-174073 122        DATA READ FROM 171101 
-174073 122     CFS 020117               
+174072 103        DATA READ FROM 171101                      
+174073 122        DATA READ FROM 171101                
 174074 117        DATA READ FROM 171101 
-174075 040        DATA READ FROM 171101 
-174076            RETURN FROM 173041    
-174076 066        DATA READ FROM 171101 
-174076 066     LL 040                   
+174075 040        DATA READ FROM 171101     
+174076 066        DATA READ FROM 171101                    
 174077 040        DATA READ FROM 171101 
-174100 040        DATA READ FROM 171101 
-174100 040     DI                       
-174101 120        DATA READ FROM 171101 
-174101 120     JFS 047522               
+174100 040        DATA READ FROM 171101                        
+174101 120        DATA READ FROM 171101                
 174102 122        DATA READ FROM 171101 
 174103 117        DATA READ FROM 171101 
 174104 103        DATA READ FROM 171101 
@@ -1872,10 +1662,11 @@
 174120 040        DATA READ FROM 171101 
 174121 040        DATA READ FROM 171101 
 174122 040        DATA READ FROM 171101 
-174123 052        DATA READ FROM 171101 
-174123 052     BP                       
-174124 370        DATA READ FROM 171101 
-174124 370     LMA                      
+174123 052        DATA READ FROM 171101                        
+174124 370        DATA READ FROM 171101   
+174125
+174125            COULD THIS BE THE RESTART ENTRYPOINT?
+174125                   
 174125 106     CALL 172307              
 174130 051     PUSH 000000              
 174133 104     JMP 174144               
@@ -1890,7 +1681,8 @@
 174156 051     PUSH 000000              
 174161 051     PUSH 000000              
 174164 076     LX 000                   
-174166 104     JMP 174301               
+174166 104     JMP 174301    
+174171            JUMP FROM 174573           
 174171            JUMP FROM 174720     
 174171 026     LC 220                   
 174173 020     BETA                     
@@ -1922,8 +1714,7 @@
 174247 066     LL 351                   
 174251 056     LH 360                   
 174253 022 070 PUSH XA                  
-174255 106     CALL 173730              
-174260            RETURN FROM 174023    
+174255 106     CALL 173730                  
 174260 022 060 POP XA                   
 174262 066     LL 312                   
 174264 056     LH 360                   
@@ -2009,10 +1800,8 @@
 174461 015     INCP HL                  
 174462 046     LE 013                   
 174464 036     LD 111                   
-174466 106     CALL 171063              
-174471            RETURN FROM 171072    
-174471 106     CALL 173724              
-174474            RETURN FROM 174023    
+174466 106     CALL 171063                  
+174471 106     CALL 173724                  
 174474 101     INPUT                    
 174475 044     ND 004                   
 174477 110     JFZ 171471               
@@ -2031,8 +1820,26 @@
 174526 110     JFZ 174631               
 174531 066     LL 000                   
 174533 056     LH 000                   
-174535 106     CALL 174576              
-174576            CALL FROM 174535     
+174535 106     CALL 174576     
+174540 253     XRD                      
+174541 370     LMA                      
+174542 015     INCP HL                  
+174543 062 275 CPHC                     
+174545 110     JFZ 174535               
+174550 066     LL 000                   
+174552 056     LH 000                   
+174554 106     CALL 174576              
+174557 253     XRD                      
+174560 277     CPM                      
+174561 110     JFZ 174743               
+174564 030     ALPHA                    
+174565 015     INCP HL                  
+174566 062 275 CPHC                     
+174570 110     JFZ 174554               
+174573 104     JMP 174171               
+174576            CALL FROM 174554                 
+174576            CALL FROM 174535
+174576            JUMP FROM 174626      
 174576 303     LAD                      
 174577 036     LD 371                   
 174601 174 070 PUSH DE                  
@@ -2040,21 +1847,40 @@
 174604 306     LAL                      
 174605 205     ADH                      
 174606 201     ADB                      
-174607 007     RET                      
+174607 007     RET  
+174610
+174610            SUBROUTINE
+174610
+174610 002     SLC                      
+174611 002     SLC                      
+174612 002     SLC                      
+174613 002     SLC                      
+174614 007     RET  
+174615
+174615            SUBROUTINE
+174615                    
+174615 012     SRC                      
+174616 012     SRC                      
+174617 012     SRC                      
+174620 007     RET  
+174621
+174621            SUBROUTINE
+174621                    
+174621 046     LE 210                   
+174623 111 004 AD B 001                 
+174626 104     JMP 174576                     
 174631            JUMP FROM 174526     
 174631 066     LL 302                   
 174633 056     LH 372                   
 174635 046     LE 013                   
 174637 036     LD 116                   
-174641 106     CALL 171063              
-174644            RETURN FROM 171072    
+174641 106     CALL 171063                  
 174644 174 060 POP DE                   
 174646 174 070 PUSH DE                  
 174650 066     LL 000                   
 174652 056     LH 000                   
 174654            JUMP FROM 174663     
-174654 106     CALL 174723              
-174657            RETURN FROM 174733    
+174654 106     CALL 174723                  
 174657 374     LME                      
 174660 015     INCP HL                  
 174661 062 275 CPHC                     
@@ -2064,8 +1890,7 @@
 174672 066     LL 000                   
 174674 056     LH 000                   
 174676            JUMP FROM 174712     
-174676 106     CALL 174723              
-174701            RETURN FROM 174733    
+174676 106     CALL 174723                  
 174701 304     LAE                      
 174702 277     CPM                      
 174703 110     JFZ 174743               
@@ -2161,14 +1986,16 @@
 175115 062 070 PUSH BC                  
 175117 062 261 ORBC                     
 175121 150     JTZ 174564               
-175124 104     JMP 174706               
+175124 104     JMP 174706
+175127
+175127            SUBROUTINE
+175127               
 175127            CALL FROM 175106     
 175127            CALL FROM 175617     
 175127 330     LDA                      
 175130 070     PUSH                     
 175131 066     LL 001                   
-175133 106     CALL 171144              
-175136            RETURN FROM 171160    
+175133 106     CALL 171144                  
 175136 302     LAC                      
 175137 251     XRB                      
 175140 160     JTS 175154               
@@ -2197,8 +2024,7 @@
 175211            CALL FROM 175057     
 175211 056     LH 000                   
 175213 335     LDH                      
-175214 106     CALL 171144              
-175217            RETURN FROM 171160    
+175214 106     CALL 171144                  
 175217 044     ND 004                   
 175221 110     JFZ 175214               
 175224 006     LA 010                   
@@ -2214,6 +2040,89 @@
 175302 120        DATA READ FROM 171101 
 175303 122        DATA READ FROM 171101 
 175304 370        DATA READ FROM 171101 
+175305 051     PUSH 172322              
+175310 302     LAC                      
+175311 260     ORA                      
+175312 053     RTZ                      
+175313 074     CP 007                   
+175315 003     RFC                      
+175316 066     LL 332                   
+175320 056     LH 377                   
+175322 017     INCP HL,A                
+175323 307     LAM                      
+175324 107     PL X, 270                
+175326 121     EX_ADR                   
+175327 101     INPUT                    
+175330 044     ND 040                   
+175332 053     RTZ                      
+175333 020     BETA                     
+175334 076     LX 357                   
+175336 106     CALL 172625
+175341 353     LHD                      
+175342 106     CALL 175636              
+175345 030     ALPHA                    
+175346 066     LL 273                   
+175350 056     LH 321                   
+175352            JUMP FROM 175367     
+175352 006     LA 006                   
+175354 131     EX_COM1                  
+175355 006     LA 007                   
+175357 131     EX_COM1                  
+175360 006     LA 001                   
+175362 131     EX_COM1                  
+175363 006     LA 002                   
+175365 131     EX_COM1                  
+175366 035     DECP HL                  
+175367 100     JFC 175352               
+175372 046     LE 210                   
+175374 036     LD 377                   
+175376 016     LB 000 
+175400 106     CALL 175636              
+175403 113 054 XR D 377                 
+175406 174 223 SUDE                     
+175410 250     XRA                      
+175411 137     EX_COM4                  
+175412 360     LLA                      
+175413            JUMP FROM 175437     
+175413 350     LHA                      
+175414 064     OR 003                   
+175416 131     EX_COM1                  
+175417            JUMP FROM 175427     
+175417 106     CALL 174576              
+175422 253     XRD                      
+175423 127     EX_WRITE                 
+175424 176 004 AD L 001                 
+175427 100     JFC 175417               
+175432 305     LAH                      
+175433 004     AD 010                   
+175435 074     CP 040                   
+175437 110     JFZ 175413               
+175442 006     LA 000                   
+175444 131     EX_COM1                  
+175445 250     XRA                      
+175446 350     LHA                      
+175447 064     OR 003                   
+175451 131     EX_COM1                  
+175452 125     EX_DATA                  
+175453 106     CALL 174576              
+175456 253     XRD                      
+175457 062 103 PIN C                    
+175461 272     CPC                      
+175462 110     JFZ 175475               
+175465 022 070 PUSH XA                  
+175467 123     EX_STATUS                
+175470 101     INPUT                    
+175471 044     ND 100                   
+175473 022 060 POP XA                   
+175475            JUMP FROM 175462     
+175475 112     CFZ 175525               
+175500 176 004 AD L 001                 
+175503 100     JFC 175452               
+175506 305     LAH                      
+175507 004     AD 010                   
+175511 074     CP 040                   
+175513 110     JFZ 175446               
+175516 104     JMP 175400  
 175521 122        DATA READ FROM 171101 
 175522 111        DATA READ FROM 171101 
 175523 115        DATA READ FROM 171101 
@@ -2237,15 +2146,12 @@
 175557 330     LDA                      
 175560 046     LE 013                   
 175562 066     LL 003                   
-175564 106     CALL 172332              
-175567            RETURN FROM 172365    
-175567 106     CALL 171144              
-175572            RETURN FROM 171160    
+175564 106     CALL 172332                  
+175567 106     CALL 171144                  
 175572 006     LA 055                   
 175574 127     EX_WRITE                 
 175575 113 024 SU D 001                 
-175600 106     CALL 171144              
-175603            RETURN FROM 171160    
+175600 106     CALL 171144                  
 175603 302     LAC                      
 175604 012     SRC                      
 175605 012     SRC                      
@@ -2255,8 +2161,7 @@
 175612 062 060 POP BC                   
 175614 305     LAH                      
 175615 004     AD 006                   
-175617 106     CALL 175127              
-175622            RETURN FROM 175210    
+175617 106     CALL 175127                  
 175622 174 060 POP DE                   
 175624 076     LX 357                   
 175626 105     PL A, 270                
@@ -2264,31 +2169,32 @@
 175631 006     LA 000                   
 175633 131     EX_COM1                  
 175634 030     ALPHA                    
-175635 007     RET                      
+175635 007     RET  
+175636
+175636            SUBROUTINE COULD THIS BE THE RESTART ROUTINE????
+175636                    
 175636 020     BETA                     
 175637 070     PUSH                     
 175640 174 015 INCP DE                  
 175642 174 070 PUSH DE                  
 175644 006     LA 037                   
 175646 244     NDE                      
-175647 110     JFZ 175653               
+175647 110     JFZ 175653
+175652 044     ND 002              
 175653            JUMP FROM 175647     
 175653 324     LCE                      
 175654 313     LBD                      
 175655 046     LE 012                   
-175657 106     CALL 172326              
-175662            RETURN FROM 172365    
+175657 106     CALL 172326                  
 175662 066     LL 121                   
 175664 056     LH 373                   
 175666 046     LE 013                   
 175670 036     LD 111                   
-175672 106     CALL 171063              
-175675            RETURN FROM 171072    
+175672 106     CALL 171063                  
 175675 124     PL C, 270                
 175677 016     LB 000                   
 175701 066     LL 003                   
-175703 106     CALL 172330              
-175706            RETURN FROM 172365    
+175703 106     CALL 172330                  
 175706 101     INPUT                    
 175707 044     ND 004                   
 175711 110     JFZ 171475               
@@ -2314,41 +2220,26 @@
 175750 062 070 PUSH BC                  
 175752 174 070 PUSH DE                  
 175754 070     PUSH                     
-175755 106     CALL 173724              
-175760            RETURN FROM 174023    
+175755 106     CALL 173724                  
 175760 060     POP                      
 175761 174 060 POP DE                   
 175763 062 060 POP BC                   
 175765 022 060 POP XA                   
 175767 200     ADA                      
 175770 022 060 POP XA                   
-175772 106     CALL 173561              
-175775            RETURN FROM 173645    
+175772 106     CALL 173561                  
 175775 250     XRA                      
-175776 107     PL X, 272                
-176000            RETURN FROM 172365    
-176000            RETURN FROM 176047    
-176000            RETURN FROM 176077    
-176000            RETURN FROM 176215    
+175776 107     PL X, 272                  
 176000 051     PUSH 176000              
-176003 106     CALL 176216              
-176006 000        DATA READ FROM 176220 
-176007 361        DATA READ FROM 176220 
-176010            RETURN FROM 176240    
-176010 106     CALL 176164              
-176013            RETURN FROM 176204    
+176003 106     CALL 176216                   
+176010 106     CALL 176164                  
 176013 155     EX_DECK1                 
-176014 106     CALL 176170              
-176017            RETURN FROM 176204    
+176014 106     CALL 176170                  
 176017 100     JFC 176252               
 176022 175     EX_REWIND                
-176023 106     CALL 176170              
-176026            RETURN FROM 176204    
+176023 106     CALL 176170                  
 176026 100     JFC 176252               
-176031 106     CALL 176216              
-176034 241        DATA READ FROM 176220 
-176035 374        DATA READ FROM 176220 
-176036            RETURN FROM 176240    
+176031 106     CALL 176216                  
 176036 161     EX_RBK                   
 176037            JUMP FROM 176142     
 176037 006     LA 360                   
@@ -2360,9 +2251,7 @@
 176050 101     INPUT                    
 176051 044     ND 002                   
 176053 110     JFZ 176137               
-176056 106     CALL 176216              
-176061 000        DATA READ FROM 176220 
-176062 361        DATA READ FROM 176220 
+176056 106     CALL 176216               
 176063            RETURN FROM 176240    
 176063 066     LL 000                   
 176065 056     LH 000                   
@@ -2408,7 +2297,10 @@
 176176 054     XR 100                   
 176200 150     JTZ 176170               
 176203 012     SRC                      
-176204 007     RET                      
+176204 007     RET   
+176205
+176205            SUBROUTINE
+176205                
 176205            CALL FROM 176137     
 176205 040     DI                       
 176206 020     BETA                     
@@ -2417,7 +2309,10 @@
 176211 030     ALPHA                    
 176212 060     POP                      
 176213 176 265 ORHL                     
-176215 007     RET                      
+176215 007     RET
+176216
+176216            SUBROUTINE
+176216                      
 176216            CALL FROM 176003     
 176216            CALL FROM 176031     
 176216            CALL FROM 176056     
@@ -2440,25 +2335,29 @@
 176243 100     JFC 176247               
 176246 015     INCP HL                  
 176247 030     ALPHA                    
-176250 050     EI                       
-176251            RETURN FROM 176251    
-176251 007     RET                      
+176250 050     EI                           
+176251 007     RET  
+176252
+176252             SUBROUTINE?? IS THIS REALLY GOOD CODE? PERHAPS DATA?
+176252                    
 176252 006     LA 341                   
 176254 121     EX_ADR                   
 176255 101     INPUT                    
 176256 044     ND 014                   
 176260 074     CP 014                   
 176262 110     JFZ 176301               
-176265 106     CALL 177257              
-176270            RETURN FROM 176510    
+176265 106     CALL 177257  
+176270 006     LA 341
+176272 121     EX_ADR
+176273 101     INPUT
+176274 044     ND 014
+176276 110     JFZ 176265                
 176301            JUMP FROM 176262     
-176301 106     CALL 177306              
-176304            RETURN FROM 177316    
-176304 150     JTZ 176315               
-176307 106     CALL 177326              
-176312            RETURN FROM 177342    
+176301 106     CALL 177306                  
+176304 000     JTZ 176315      
+176307 106     CALL 177326    
 176312 152     CTZ 177257               
-176315 046     LE 113                   
+176315 046     LE 113               # IS THIS A DEVICE ADDRESS THAT IS LOADED INTO E?                   
 176316 113        DATA READ FROM 177332 
 176317 106     CALL 176404              
 176322            RETURN FROM 176452    
@@ -2467,26 +2366,23 @@
 176324 106        DATA READ FROM 177320 
 176324 106     CALL 176404              
 176327 046     LE 116                   
-176331 106     CALL 176404              
-176334            RETURN FROM 176452    
+176331 106     CALL 176404                  
 176334 046     LE 170                   
-176336 106     CALL 176645              
-176341            RETURN FROM 176654    
+176336 106     CALL 176645                  
 176341 046     LE 074                   
-176343 106     CALL 177005              
-176346            RETURN FROM 177027    
+176343 106     CALL 177005                  
 176346 046     LE 072                   
-176350 106     CALL 177005              
-176353            RETURN FROM 177027    
+176350 106     CALL 177005                  
 176353 046     LE 071                   
-176355 106     CALL 177005              
-176360            RETURN FROM 177027    
+176355 106     CALL 177005                  
 176360 006     LA 341                   
 176362 121     EX_ADR                   
 176363 101     INPUT                    
 176364 044     ND 010                   
 176366 006     LA 000                   
-176370 150     JTZ 176377               
+176370 150     JTZ 176377  
+176373 105     PL A, 272
+176375 004     AD 001
 176377            JUMP FROM 176370     
 176377 107     PL X, 272                
 176401 003     RFC                      
@@ -2495,42 +2391,30 @@
 176404            CALL FROM 176331     
 176404 036     LD 005                   
 176406            JUMP FROM 176613     
-176406 106     CALL 176616              
-176411            RETURN FROM 176464    
-176411            RETURN FROM 176626    
+176406 106     CALL 176616                  
 176411 006     LA 000                   
 176413 131     EX_COM1                  
-176414 106     CALL 176616              
-176417            RETURN FROM 176626    
+176414 106     CALL 176616                  
 176417 105     PL A, 272                
 176421 044     ND 177                   
 176423 054     XR 001                   
 176425 133     EX_COM2                  
 176426 006     LA 005                   
 176430 131     EX_COM1                  
-176431 106     CALL 176616              
-176434            RETURN FROM 176626    
-176434            RETURN FROM 176635    
+176431 106     CALL 176616                  
 176434 105     PL A, 272                
 176436 044     ND 177                   
 176440 133     EX_COM2                  
 176441 006     LA 005                   
 176443 131     EX_COM1                  
-176444 106     CALL 176616              
-176447            RETURN FROM 176401    
-176447            RETURN FROM 176626    
-176447            RETURN FROM 177342    
-176447 106     CALL 176627              
-176452            RETURN FROM 176635    
-176452            RETURN FROM 176644    
+176444 106     CALL 176616                  
+176447 106     CALL 176627                  
 176452 043     RTC                      
 176453 006     LA 000                   
 176455 133     EX_COM2                  
 176456 006     LA 011                   
 176460 131     EX_COM1                  
-176461 106     CALL 176627              
-176464            RETURN FROM 176635    
-176464            RETURN FROM 176644    
+176461 106     CALL 176627                 
 176464 043     RTC                      
 176465 006     LA 003                   
 176467 133     EX_COM2                  
@@ -2542,8 +2426,7 @@
 176501 133     EX_COM2                  
 176502 006     LA 006                   
 176504 131     EX_COM1                  
-176505 106     CALL 176627              
-176510            RETURN FROM 176510    
+176505 106     CALL 176627                  
 176510 043     RTC                      
 176511 044     ND 110                   
 176513 110     JFZ 176600               
@@ -2566,8 +2449,7 @@
 176553 131     EX_COM1                  
 176554 106     CALL 176627              
 176557 043     RTC                      
-176560 106     CALL 177200              
-176563            RETURN FROM 176570    
+176560 106     CALL 177200                 
 176563 150     JTZ 176571               
 176566 044     ND 200                   
 176570 053     RTZ                      
@@ -2580,10 +2462,12 @@
 176603 053     RTZ                      
 176604 006     LA 004                   
 176606 131     EX_COM1                  
-176607 106     CALL 176627              
-176612            RETURN FROM 176644    
+176607 106     CALL 176627                  
 176612 043     RTC                      
-176613 104     JMP 176406               
+176613 104     JMP 176406  
+176616
+176616            SUBROUTINE WAIT UNTIL BIT 2 is HIGH
+176616
 176616            CALL FROM 176406     
 176616            CALL FROM 176414     
 176616            CALL FROM 176431     
@@ -2593,7 +2477,10 @@
 176620 101     INPUT                    
 176621 044     ND 002                   
 176623 110     JFZ 176616               
-176626 007     RET                      
+176626 007     RET 
+176627
+176627            SUBROUTINE THAT WAITS FOR BIT 2 AND BIT 3 TO BECOME ACTIVE
+176627                     
 176627            CALL FROM 176447     
 176627            CALL FROM 176461     
 176627            CALL FROM 176473     
@@ -2611,9 +2498,13 @@
 176636 044     ND 003                   
 176640 110     JFZ 176627               
 176643 101     INPUT                    
-176644 007     RET                      
+176644 007     RET   
+176645
+176645            SUBROUTINE
+176645                   
 176645            CALL FROM 176336     
 176645 036     LD 003                   
+176647            JUMP FROM 176762     
 176647 304     LAE                      
 176650 121     EX_ADR                   
 176651 101     INPUT                    
@@ -2623,8 +2514,49 @@
 176657 044     ND 003                   
 176661 064     OR 000                   
 176663 131     EX_COM1                  
-176664 106     CALL 176765              
+176664 106     CALL 176765 
+176667 043     RTC                      
+176670 006     LA 000                   
+176672 133     EX_COM2                  
+176673 106     CALL 176765              
+176676 043     RTC                      
+176677 044     ND 040                   
+176701 110     JFZ 176747               
+176704 006     LA 003                   
+176706 135     EX_COM3                  
+176707 006     LA 011                   
+176711 131     EX_COM1                  
+176712 016     LB 012                   
+176714 111 024 SU B 001                 
+176717 043     RTC                      
+176720 006     LA 005                   
+176722 131     EX_COM1                  
+176723 153     EX_CLICK                 
+176724 106     CALL 176765                 
+176727 043     RTC                      
+176730 044     ND 020                   
+176732 110     JFZ 176714               
+176735 101     INPUT                    
+176736 044     ND 100                   
+176740 013     RFZ                      
+176741 106     CALL 177200                  
+176744 013     RFZ                      
+176745 070     PUSH                     
+176746 007     RET                      
+176747 113 024 SU D 001                 
+176752 053     RTZ                      
+176753 006     LA 010                   
+176755 131     EX_COM1                  
+176756 106     CALL 176765                  
+176761 043     RTC                      
+176762 104     JMP 176647  
+176765
+176765            Subroutine Seems to check if device is online, if not it will return. Then it waits for bit 2 and bit 3 to become inactive.
+176765
 176765            CALL FROM 176664     
+176765            CALL FROM 176673     
+176765            CALL FROM 176724     
+176765            CALL FROM 176756     
 176765            JUMP FROM 177000     
 176765 304     LAE                      
 176766 121     EX_ADR                   
@@ -2634,44 +2566,41 @@
 176773 043     RTC                      
 176774 044     ND 003                   
 176776 054     XR 003                   
-177000 110     JFZ 176765               
+177000 110     JFZ 176765                 
+177003 101     INPUT                    
+177004 007     RET     
+177005
+177005            SUBROUTINE
+177005                 
 177005            CALL FROM 176343     
 177005            CALL FROM 176350     
 177005            CALL FROM 176355     
 177005 036     LD 003                   
 177007            JUMP FROM 177144     
-177007 106     CALL 177147              
-177012            RETURN FROM 177157    
-177012            RETURN FROM 177354    
+177007 106     CALL 177147                     
 177012 105     PL A, 272                
 177014 044     ND 003                   
 177016 064     OR 000                   
 177020 131     EX_COM1                  
-177021 106     CALL 177147              
-177024            RETURN FROM 177157    
-177024 106     CALL 177160              
-177027            RETURN FROM 177166    
+177021 106     CALL 177147                  
+177024 106     CALL 177160                  
 177027 043     RTC                      
 177030 006     LA 000                   
 177032 133     EX_COM2                  
-177033 106     CALL 177160              
-177036            RETURN FROM 177065    
+177033 106     CALL 177160                  
 177036 043     RTC                      
 177037 006     LA 004                   
 177041 135     EX_COM3                  
 177042 006     LA 011                   
 177044 131     EX_COM1                  
-177045 106     CALL 177160              
-177050            RETURN FROM 177121    
+177045 106     CALL 177160                
 177050 043     RTC                      
 177051 016     LB 005                   
 177053 111 024 SU B 001                 
 177056 043     RTC                      
 177057 006     LA 005                   
 177061 131     EX_COM1                  
-177062 106     CALL 177160              
-177065            RETURN FROM 177121    
-177065            RETURN FROM 177143    
+177062 106     CALL 177160                 
 177065 043     RTC                      
 177066 153     EX_CLICK                 
 177067 044     ND 200                   
@@ -2681,12 +2610,9 @@
 177077 110     JFZ 177124               
 177102 006     LA 004                   
 177104 131     EX_COM1                  
-177105 106     CALL 177160              
-177110            RETURN FROM 177121    
+177105 106     CALL 177160                  
 177110 043     RTC                      
-177111 106     CALL 177200              
-177114            RETURN FROM 177121    
-177114            RETURN FROM 177256    
+177111 106     CALL 177200                
 177114 150     JTZ 177122               
 177117 044     ND 040                   
 177121 053     RTZ                      
@@ -2700,9 +2626,8 @@
 177135 006     LA 010                   
 177137 131     EX_COM1                  
 177140 106     CALL 177160              
-177143            RETURN FROM 177143    
 177143 043     RTC                      
-177144 104     JMP 177007               
+177144 104     JMP 177007    
 177147            CALL FROM 177007     
 177147            CALL FROM 177021     
 177147 304     LAE                      
@@ -2711,7 +2636,7 @@
 177151 101     INPUT                    
 177152 044     ND 002                   
 177154 110     JFZ 177147               
-177157 007     RET                      
+177157 007     RET  
 177160            CALL FROM 177024     
 177160            CALL FROM 177033     
 177160            CALL FROM 177045     
@@ -2729,8 +2654,9 @@
 177171 054     XR 002                   
 177173 110     JFZ 177160               
 177176 101     INPUT                    
-177177 007     RET                      
+177177 007     RET     
 177200            CALL FROM 176560     
+177200            CALL FROM 176741     
 177200            CALL FROM 177111     
 177200 250     XRA                      
 177201 137     EX_COM4                  
@@ -2768,14 +2694,13 @@
 177254            JUMP FROM 177231     
 177254 123     EX_STATUS                
 177255 101     INPUT                    
-177256 007     RET                      
+177256 007     RET  
+177257            Subroutine that jumps to the loaded block at 0?
 177257            CALL FROM 176265     
-177257 106     CALL 177306              
-177262            RETURN FROM 176476    
-177262            RETURN FROM 177266    
+177257 106     CALL 177306                    
 177262 110     JFZ 177267               
 177265 151     EX_BEEP                  
-177266 007     RET                      
+177266 007     RET   
 177267 040     DI                       
 177270 250     XRA                      
 177271 310     LBA                      
@@ -2785,17 +2710,18 @@
 177276 066     LL 355                   
 177300 056     LH 376                   
 177302 021     BT                       
-177303 104     JMP 000000               
+177303 104     JMP 000000 
+177306            Subroutine that tries to auto detect devices?        
 177306            CALL FROM 176301     
 177306            CALL FROM 177257     
 177306 066     LL 333                   
 177310 056     LH 377                   
-177312 307     LAM                      
+177312 307     LAM                     # Reading from  177733, value 000. Really odd value to be used as IO ADDR?          
 177313            JUMP FROM 177322     
 177313 121     EX_ADR                   
 177314 101     INPUT                    
 177315 260     ORA                      
-177316 013     RFZ                      
+177316 013     RFZ                     # If the input returns anything else than zero we return.     
 177317 015     INCP HL                  
 177320 307     LAM                      
 177321 260     ORA                      
@@ -2818,7 +2744,7 @@
 177346 307     LAM                      
 177347 074     CP 341                   
 177351 110     JFZ 177333               
-177354 007     RET                      
+177354 007     RET       
 177355 045        DATA READ FROM 177302 
 177355 045     NOJ                      
 177356 000        DATA READ FROM 177302 
