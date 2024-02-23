@@ -1104,7 +1104,7 @@
 172320 053     RTZ
 172321            JUMP FROM 172312     
 172321 060     POP                
-172322            SUBROUTINE THAT HANDLE 'g', 'n' or 'm'      
+172322            SUBROUTINE THAT HANDLE 'g', 'n' or 'm', 'q'      
 172322            JUMP FROM 172243     
 172322            JUMP FROM 172250     
 172322            JUMP FROM 172542     
@@ -1159,7 +1159,8 @@
 172442            JUMP FROM 172413     
 172442 111 126 DPS BC, 262              
 172445 151     EX_BEEP                  
-172446 007     RET                      
+172446 007     RET
+172477            SUBROUTINE HANDLE 'p' and 'P' KEYPRESS                      
 172477            RETURN FROM 172013    
 172477 066     LL 267                   
 172501 150     JTZ 172525               
@@ -1170,7 +1171,8 @@
 172514 104     JMP 172525               
 172525            JUMP FROM 172514     
 172525 115 166 DPS HL, 262              
-172530 007     RET                      
+172530 007     RET                    
+172531            SUBROUTINE THAT HANDLE 'Q' KEYPRESS  
 172531            RETURN FROM 172013    
 172531 106     CALL 172307              
 172534 115 164 DPL HL, 262              
@@ -1180,7 +1182,8 @@
 172545 320     LCA                      
 172546 015     INCP HL                  
 172547 077     STL                      
-172550 007     RET                      
+172550 007     RET  
+172551            SUBROUTINE THAT HANDLES 'R' KEYPRESS                    
 172551 066     LL 276                   
 172553 307     LAM                      
 172554 054     XR 003                   
@@ -1345,7 +1348,8 @@
 173157 106     CALL 173123                  
 173162 036     LD 106                   
 173164 112     CFZ 172763               
-173167 104     JMP 172763               
+173167 104     JMP 172763 
+173172            SUBROUTINE THAT HANDLED 'r' KEYPRESS              
 173172            RETURN FROM 172013    
 173172 110     JFZ 173177               
 173175 026     LC 001                   
