@@ -941,7 +941,7 @@
 171700 074     CP 015             # CR                
 171702 150     JTZ 173023               
 171705 074     CP 030             # CANCEL      
-171707 150     JTZ 171634               
+171707 150     JTZ 171634         # GO BACK AND GET NEW INPUT IF PRESSING CANCEL      
 171712 074     CP 010             # BACKSPACE      
 171714 150     JTZ 172221               
 171717 074     CP 077             # ?      
@@ -974,7 +974,7 @@
 172006 056     LH 357                   
 172010 113 074 CP D 106                 
 172013 007     RET                      
-172014 044     ND 367                   
+172014 044     ND 367          # THIS IS PROBABLY NOT CODE                 
 172016 366     NOP                      
 172017 364     LLE                      
 172020 355     NOP                      
@@ -1056,7 +1056,8 @@
 172172            RETURN FROM 172013    
 172172 035     DECP HL                  # WE GET HERE IF WE PRESSED 'g' or 'h'              
 172173            RETURN FROM 172013    
-172173 035     DECP HL                  # WE GET HERE IF WE PRESSED 'a'              
+172173 035     DECP HL                  # WE GET HERE IF WE PRESSED 'a' 
+172174                                  # WE GET HERE IF WE PRESSED 'x'             
 172174            RETURN FROM 172013    
 172174 015     INCP HL                  
 172175 105     PL A, 276                
@@ -1068,19 +1069,21 @@
 172207 115 166 DPS HL, 262              
 172212 113 074 CP D 106                 
 172215 053     RTZ                      
-172216 104     JMP 173123               
+172216 104     JMP 173123  
+172221             HANDLE BACKSPACE KEYPRESS             
 172221 113 074 CP D 106                 
 172224 150     JTZ 171634               
 172227 113 024 SU D 001                 
 172232 106     CALL 170235                  
-172235 104     JMP 171643               
+172235 104     JMP 171643    
+172240            HANDLING KEYPRESS '1' .. '9', '!'               
 172240            JUMP FROM 171745     
 172240 360     LLA                      
-172241 024     SU 060                   
-172243 160     JTS 172322               
-172246 074     CP 010                   
-172250 120     JFS 172322               
-172253 062 202 ADCC                     
+172241 024     SU 060                 # IS IT MORE THAN '0'            
+172243 160     JTS 172322             # JUMP IF LOWER THAN '0'  
+172246 074     CP 010                 # COMPARE IF IT HIGHER THAN '8'  
+172250 120     JFS 172322                   
+172253 062 202 ADCC                   # OCTAL '0' - '7' DIGITS GET HERE   
 172255 111 211 ACBB                     
 172257 062 202 ADCC                     
 172261 111 211 ACBB                     
@@ -1104,13 +1107,14 @@
 172320 053     RTZ
 172321            JUMP FROM 172312     
 172321 060     POP                
-172322            SUBROUTINE THAT HANDLE 'g', 'n' or 'm', 'q'      
+172322            SUBROUTINE THAT HANDLE 'g', 'n' or 'm', 'q', 'u', 'v', 'w', '8', '9', '!', '"', '$', '%', '&', ''', '(', ')'
+172322                                   '*', '+', ',', '-', '/', ':', ';', '<', '>', '=', '[', ']'     
 172322            JUMP FROM 172243     
 172322            JUMP FROM 172250     
 172322            JUMP FROM 172542     
 172322            JUMP FROM 173050     
 172322            JUMP FROM 173076         
-172322 151     EX_BEEP                  
+172322 151     EX_BEEP                  # BEEP WHEN GETTING AN INVALID KEYPRES 
 172323 104     JMP 171643               
 172326            CALL FROM 171533     
 172326            CALL FROM 171545     
@@ -1160,6 +1164,21 @@
 172442 111 126 DPS BC, 262              
 172445 151     EX_BEEP                  
 172446 007     RET
+172447            HANDLE '#' KEYPRESS
+172447            JUMP FROM 171740     
+172447 066     LL 302                   
+172451            JUMP FROM 172467     
+172451            JUMP FROM 172474     
+172451 176 074 CP L 340                 
+172454 150     JTZ 174007               
+172457 047     DL DE,HL                 
+172460 117 015 INCP HL,2                
+172462 307     LAM                      
+172463 015     INCP HL                  
+172464 113 074 CP D 377                 
+172467 150     JTZ 172451               
+172472 174 370 LMA DE                   
+172474 104     JMP 172451
 172477            SUBROUTINE HANDLE 'p' and 'P' KEYPRESS                      
 172477            RETURN FROM 172013    
 172477 066     LL 267                   
@@ -1285,7 +1304,8 @@
 173014 006     LA 000                   
 173016 231     SBB                      
 173017 310     LBA                      
-173020 104     JMP 172767               
+173020 104     JMP 172767    
+173023            HANDLE CR KEYPRESS           
 173023            JUMP FROM 171702     
 173023 113 074 CP D 106                 
 173026 053     RTZ                      
@@ -1344,7 +1364,8 @@
 173154 371     LMB                      
 173155 153     EX_CLICK                 
 173156 007     RET                      
-173157            JUMP FROM 171726     
+173157            JUMP FROM 171726  
+173157            CALLED IF PRESSING '.' or '^'   
 173157 106     CALL 173123                  
 173162 036     LD 106                   
 173164 112     CFZ 172763               
@@ -1376,7 +1397,8 @@
 173236 066     LL 071                   
 173240 056     LH 363                   
 173242 115 166 DPS HL, 256              
-173245 104     JMP 173207               
+173245 104     JMP 173207            
+173250            SUBROUTINE HANDLING PRESSING 's'    
 173250            RETURN FROM 172013    
 173250 062 070 PUSH BC                  
 173252 046     LE 257                   
@@ -1389,7 +1411,8 @@
 173266 062 060 POP BC                   
 173270 111 126 DPS BC, 224              
 173273            JUMP FROM 173214     
-173273 026     LC 000                   
+173273 026     LC 000 
+173275            SUBROUTINE HANDLING PRESSING 'S'                  
 173275 302     LAC                      
 173276 074     CP 016                   
 173300 100     JFC 172322               
@@ -1460,19 +1483,24 @@
 173467 006     LA 001                   
 173471 107     PL X, 273                
 173473 111 074 CP B 147                 
-173476 053     RTZ                      
+173476 053     RTZ 
+173477            HANDLING PRESSING 'U'                     
 173477            JUMP FROM 173556     
 173477 101     INPUT                    
 173500 066     LL 272                   
 173502 370     LMA                      
 173503 115 166 DPS HL, 262              
-173506 007     RET                      
+173506 007     RET    
+173507            HANDLING PRESSING 'y'                  
 173507 006     LA 123                   
-173511 104     JMP 173530               
+173511 104     JMP 173530          
+173514            HANDLING PRESSING 'z'     
 173514            RETURN FROM 172013    
 173514 006     LA 125                   
 173516 104     JMP 173530               
-173521 006     LA 173                   
+173521            HANDLING KEYPRESS 'V' 
+173521 006     LA 173      
+173523            HANDLING KEYPRESS 'W', 'X', 'Y', 'Z'             
 173523            RETURN FROM 172013    
 173523 024     SU 167                   
 173525 002     SLC                      
@@ -2994,12 +3022,16 @@
 177746 000        DATA READ FROM 177302 
 177747 000        DATA READ FROM 177302 
 177750 005        DATA READ FROM 177302 
-177751 000        DATA READ FROM 177302 
+177751 000        DATA READ FROM 177302
+177752            HANDLING PRESSING 'T'
+177755            HANDLING PRESSING 't' 
 177755            RETURN FROM 172013    
 177755 000     HALT 
 177760
 177760            JUMP HERE IF PRESSING 'H'
-177760 005     INCI                           
+177760 005     INCI  
+177763            JUMP HERE IF PRESSING '?' 
+177763 000     HALT                        
 177766 000     HALT                     
 177767            JUMP FROM 170033     
 177767 000     HALT                     
