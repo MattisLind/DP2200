@@ -130,7 +130,8 @@ class IOController {
   };
 
     class ScreenKeyboardDevice : public virtual IODevice  {
-    bool incrementXOnWrite;  
+    bool incrementXOnWrite;
+    bool loadingFont;  
     public:
     unsigned char input ();
     int exWrite(unsigned char data); 

@@ -340,7 +340,8 @@ int IOController::CassetteDevice::exSB() {
   return 0;
 }
 int IOController::CassetteDevice::exRewind() {
-  return 1;
+  tapeDrive[tapeDeckSelected]->rewind();
+  return 0;
 }
 int IOController::CassetteDevice::exTStop() {
   printStatus("exTStop");
@@ -412,14 +413,17 @@ unsigned char IOController::ScreenKeyboardDevice::input () {
   }
 }
 int IOController::ScreenKeyboardDevice::exWrite(unsigned char data) {
-  int ret = dpw->writeCharacter(data);
-  if (incrementXOnWrite) {
-    dpw->incrementXPos();
-  }
-  return ret;
+  if (!loadingFont) {
+    int ret = dpw->writeCharacter(data);
+    if (incrementXOnWrite) {
+      dpw->incrementXPos();
+    }
+    return ret;    
+  } else return 0;
 } 
 int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
   //
+  loadingFont = false;
   if (data & SCRNKBD_COM1_ROLL_DOWN) {
     dpw->scrollDown();
   } 
@@ -462,7 +466,8 @@ int IOController::ScreenKeyboardDevice::exCom3(unsigned char data){
   return dpw->setCursorY(data);
 }
 int IOController::ScreenKeyboardDevice::exCom4(unsigned char data){
-  return 0;  // load font - do nothing...
+  loadingFont=true;
+  return 0; 
 }
 int IOController::ScreenKeyboardDevice::exBeep(){
   beep();
@@ -507,6 +512,7 @@ void IOController::ScreenKeyboardDevice::updateKbd(int key) {
 IOController::ScreenKeyboardDevice::ScreenKeyboardDevice() {
   statusRegister = (SCRNKBD_STATUS_CRT_READY);
   incrementXOnWrite = false;
+  loadingFont = false;
 }
 
 

@@ -1,14 +1,14 @@
-170000 104     JMP 170225               
-170003 104     JMP 167406               
-170006 104     JMP 170231               
-170011 104     JMP 167422               
-170014 104     JMP 167430               
-170017 104     JMP 167436               
-170022 104     JMP 167444               
-170025 104     JMP 167452               
-170030 104     JMP 167460               
+170000 104     JMP 170225    # Memory parity Failure Vector            
+170003 104     JMP 167406    # Input Parity Failure Vector           
+170006 104     JMP 170231    # Output Parity Failure Vector           
+170011 104     JMP 167422    # Write Protect Violation Vector           
+170014 104     JMP 167430    # Access Protect Violation Vector            
+170017 104     JMP 167436    # Priviledged Instruction Violation Vector           
+170022 104     JMP 167444    # One Millisecond Clock Vector           
+170025 104     JMP 167452    # User System Call Vector           
+170030 104     JMP 167460    # BREAKPOINT TRAP               
 170033 104     JMP 177767               
-170036 040     DI                       
+170036 040     DI            # POWER UP ROUTINE           
 170037 106     CALL 173724                 
 170042 250     XRA                      
 170043 340     LEA                      
@@ -366,6 +366,8 @@
 170762 365        DATA READ FROM 173750 
 170763 110        DATA READ FROM 173750 
 170764 120        DATA READ FROM 173750 
+170765
+170766            THIS IS PROBABLY THE ENTRYPOINT FOR THE DEBUGGER
 170765            JUMP FROM 167460     
 170765 040     DI                       
 170766 106     CALL 173561                  
@@ -854,6 +856,8 @@
 171462 341        DATA READ FROM 170170 
 171462 341        DATA READ FROM 170207  
 171463 000        DATA READ FROM 170170 
+171464
+171464            COMES HERE IF DISPLAY KEY IS PRESSED IN RESTART ROUTINE    
 171464 022 060 POP XA                   
 171466 200     ADA                       
 171467 022 060 POP XA                   
@@ -1145,6 +1149,7 @@
 172362 006     LA 040                   
 172364 127     EX_WRITE                 
 172365 007     RET 
+172366
 172366            SUBROUTINE TO HANDLE 'B'                       
 172366 110     JFZ 172374               
 172371 111 124 DPL BC, 262              
@@ -1689,7 +1694,7 @@
 174123 052        DATA READ FROM 171101                        
 174124 370        DATA READ FROM 171101   
 174125
-174125            COULD THIS BE THE RESTART ENTRYPOINT?
+174125            WHAT IS THIS?
 174125                   
 174125 106     CALL 172307              
 174130 051     PUSH 000000              
@@ -1825,8 +1830,8 @@
 174466 106     CALL 171063                  
 174471 106     CALL 173724                  
 174474 101     INPUT                    
-174475 044     ND 004                   
-174477 110     JFZ 171471               
+174475 044     ND 004                        # CHECKING IF KEYBOARD BUTTON IS PRESSED       
+174477 110     JFZ 171471                    # IF PRESSED JUMP
 174502 062 060 POP BC                   
 174504 174 060 POP DE                   
 174506 113 054 XR D 377                 
@@ -2059,29 +2064,32 @@
 175302 120        DATA READ FROM 171101 
 175303 122        DATA READ FROM 171101 
 175304 370        DATA READ FROM 171101 
+175305
+175305            CAN THIS BE THE ENTRYPOINT FOR THE RESTART ROUTINE?
+175305 
 175305 051     PUSH 172322              
 175310 302     LAC                      
 175311 260     ORA                      
-175312 053     RTZ                      
+175312 053     RTZ            # WE JUMP TO ROUTINE THAT BEEPS IF C IS 0 WHEN ENTERING                    
 175313 074     CP 007                   
-175315 003     RFC                      
+175315 003     RFC            # WE JUMP TO ROUTINE THAT BEEPS IF C IS MORE THAN 6 WHEN ENTERING          
 175316 066     LL 332                   
-175320 056     LH 377                   
-175322 017     INCP HL,A                
-175323 307     LAM                      
-175324 107     PL X, 270                
+175320 056     LH 377         # HL = 177732          
+175322 017     INCP HL,A      # HL CAN BE IN THE RANGE 177733 to 177740           
+175323 307     LAM            # THE VALUES AT 17773 .. 177740 IS 000, 006, 000, 000, 000, 003                     
+175324 107     PL X, 270      # WHAT VALUE HAS X WHEN ENTERING THIS ROUTINE?           
 175326 121     EX_ADR                   
 175327 101     INPUT                    
 175330 044     ND 040                   
-175332 053     RTZ                      
+175332 053     RTZ                           
 175333 020     BETA                     
 175334 076     LX 357                   
-175336 106     CALL 172625
+175336 106     CALL 172625     # THIS ROUTINE POSITIONS THE CURSOR AND ALSO INIT THE IO ADDR
 175341 353     LHD                      
-175342 106     CALL 175636              
+175342 106     CALL 175636     # CALL THE CASSETTE BOOT ROUTINE?            
 175345 030     ALPHA                    
 175346 066     LL 273                   
-175350 056     LH 321                   
+175350 056     LH 321          # HL = 150673         
 175352            JUMP FROM 175367     
 175352 006     LA 006                   
 175354 131     EX_COM1                  
@@ -2096,7 +2104,7 @@
 175372 046     LE 210                   
 175374 036     LD 377                   
 175376 016     LB 000 
-175400 106     CALL 175636              
+175400 106     CALL 175636        # CALL THE CASSETTE BOOT ROUTINE?        
 175403 113 054 XR D 377                 
 175406 174 223 SUDE                     
 175410 250     XRA                      
@@ -2190,7 +2198,7 @@
 175634 030     ALPHA                    
 175635 007     RET  
 175636
-175636            SUBROUTINE COULD THIS BE THE RESTART ROUTINE????
+175636            THIS LOOKS LIKE A TAPE BOOT ROUTINE 
 175636                    
 175636 020     BETA                     
 175637 070     PUSH                     
@@ -2222,8 +2230,9 @@
 175717 174 060 POP DE                   
 175721 060     POP                      
 175722 030     ALPHA                    
-175723 007     RET                      
-175724 040     DI                       
+175723 007     RET             
+175724                           SUBROUTINE THAT DOES CASSETTE TAPE ACTIONS         
+175724 040     DI                                   
 175725 030     ALPHA                    
 175726 022 070 PUSH XA                  
 175730 042     CCS                      
@@ -2233,9 +2242,9 @@
 175736 250     XRA                      
 175737 131     EX_COM1                  
 175740 101     INPUT                    
-175741 044     ND 014                   
+175741 044     ND 014             # CHECK DISPLAY AND KEYBOARD KEYS                 
 175743 074     CP 010                   
-175745 150     JTZ 171464               
+175745 150     JTZ 171464         # JUMP IF DISPLAY PRESSED              
 175750 062 070 PUSH BC                  
 175752 174 070 PUSH DE                  
 175754 070     PUSH                     
@@ -2282,25 +2291,34 @@
 176075 054     XR 100                   
 176077 013     RFZ                      
 176100 101     INPUT                    
-176101 044     ND 020                   
-176103 150     JTZ 176122               
-176106 006     LA 341                   
+176101 044     ND 020               CHECK IF INTER RECORD GAP           
+176103 150     JTZ 176122           JUMP IF NO INTERRECORD GAP YET     
+176106 006     LA 341               IF INTERRECORD GAP WE CHECK KEYBOARD    
 176110 121     EX_ADR                   
 176111 101     INPUT                    
-176112 044     ND 010                   
-176114 110     JFZ 171475               
-176117 104     JMP 000000               
+176112 044     ND 010               CHECK IF DISPLAY BUTTON PRESSED               
+176114 110     JFZ 171475           JUMP IF DISPLAY BUTTON PRESSED    
+176117 104     JMP 000000           JUMP TO 00000 ELSE    
 176122            JUMP FROM 176103     
 176122 101     INPUT                    
-176123 044     ND 004                   
-176125 150     JTZ 176067               
-176130 125     EX_DATA                  
+176123 044     ND 004               CHECK IF A READ BYTE IS READY         
+176125 150     JTZ 176067           JUMP IF NOT READ    
+176130 125     EX_DATA              READ THE DATA FROM THE DATA REGISTER    
 176131 101     INPUT                    
-176132 370     LMA                      
-176133 015     INCP HL                  
-176134 104     JMP 176067               
+176132 370     LMA                  STORE INTO MEMORY    
+176133 015     INCP HL              AND INCREMENT POINTER    
+176134 104     JMP 176067           AND DO AGAIN    
 176137 106     CALL 176205                 
-176142 110     JFZ 176037               
+176142 110     JFZ 176037
+176145 106     CALL 176164              
+176150 003     RFC                      
+176151 173     EX_SB                    
+176152 106     CALL 176231              
+176155 106     CALL 176205              
+176160            RETURN FROM 176163    
+176160 110     JFZ 176155               
+176163 007     RET                      
+176164            CALL FROM 176145               
 176164            CALL FROM 176010     
 176164 006     LA 360                   
 176166 121     EX_ADR                   
@@ -2355,20 +2373,20 @@
 176250 050     EI                           
 176251 007     RET  
 176252
-176252             SUBROUTINE?? IS THIS REALLY GOOD CODE? PERHAPS DATA?
+176252             SUBROUTINE
 176252                    
 176252 006     LA 341                   
 176254 121     EX_ADR                   
 176255 101     INPUT                    
-176256 044     ND 014                   
+176256 044     ND 014               # CHECK BUTTONS             
 176260 074     CP 014                   
 176262 110     JFZ 176301               
-176265 106     CALL 177257  
+176265 106     CALL 177257          # BOTH DISPLAY AND KEYBOARD BUTTON PRESSED
 176270 006     LA 341
 176272 121     EX_ADR
 176273 101     INPUT
 176274 044     ND 014
-176276 110     JFZ 176265                
+176276 110     JFZ 176265           # JUMP HERE IF ANY BUTTON IS PRESSED            
 176301            JUMP FROM 176262     
 176301 106     CALL 177306                  
 176304 000     JTZ 176315      
@@ -2394,10 +2412,10 @@
 176360 006     LA 341                   
 176362 121     EX_ADR                   
 176363 101     INPUT                    
-176364 044     ND 010                   
+176364 044     ND 010             # CHECK IF DISPLAY BUTTON IS PRESSED             
 176366 006     LA 000                   
-176370 150     JTZ 176377  
-176373 105     PL A, 272
+176370 150     JTZ 176377         # JUMP IF DISPLAY IS NOT PRESSED
+176373 105     PL A, 272          # ELSE WE GO HERE IF DISPLAY IS PRESSED
 176375 004     AD 001
 176377            JUMP FROM 176370     
 176377 107     PL X, 272                

@@ -166,7 +166,7 @@ void registerWindow::OctalForm::updateForm() {
   // update registers.
   for (auto regset =0; regset<2; regset++) {
     int i;
-    for (i=0; i<7; i++) {
+    for (i=0; i<8; i++) {
       auto f = regs[regset][i];
       auto r = cpu.regSets[regset].regs[i];
       snprintf(b, 5, "%03o", r);
@@ -231,7 +231,7 @@ void registerWindow::OctalForm::updateForm() {
   }
   i=0;
   for (auto it=cpu.breakpoints.begin(); it<cpu.breakpoints.end(); it++, i++) {
-    snprintf(fieldB, 7, "%05o", *it);
+    snprintf(fieldB, 7, "%06o", *it);
     set_field_buffer(breakpoints[i], 0, fieldB); 
   }
   for (; i<8; i++) {
@@ -311,7 +311,7 @@ void registerWindow::HexForm::updateForm() {
   // update registers.
   for (auto regset =0; regset<2; regset++) {
     int i;
-    for (i=0; i<7; i++) {
+    for (i=0; i<8; i++) {
       auto f = regs[regset][i];
       auto r = cpu.regSets[regset].regs[i];
       snprintf(b, 3, "%02X", r);
