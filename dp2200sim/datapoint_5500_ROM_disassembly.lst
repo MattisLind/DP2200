@@ -2065,7 +2065,7 @@
 175303 122        DATA READ FROM 171101 
 175304 370        DATA READ FROM 171101 
 175305
-175305            CAN THIS BE THE ENTRYPOINT FOR THE RESTART ROUTINE?
+175305    
 175305 
 175305 051     PUSH 172322              
 175310 302     LAC                      
@@ -2231,7 +2231,7 @@
 175721 060     POP                      
 175722 030     ALPHA                    
 175723 007     RET             
-175724                           SUBROUTINE THAT DOES CASSETTE TAPE ACTIONS         
+175724                          THIS IS THE RESTART ENTRYPOINT       
 175724 040     DI                                   
 175725 030     ALPHA                    
 175726 022 070 PUSH XA                  
@@ -2263,23 +2263,23 @@
 176010 106     CALL 176164                  
 176013 155     EX_DECK1                 
 176014 106     CALL 176170                  
-176017 100     JFC 176252               
+176017 100     JFC 176252         # JUMP AND TRY DISK READ          
 176022 175     EX_REWIND                
 176023 106     CALL 176170                  
-176026 100     JFC 176252               
+176026 100     JFC 176252        # JUMP AND TRY DISK READ       
 176031 106     CALL 176216                  
-176036 161     EX_RBK                   
+176036 161     EX_RBK            # READ BLOCK       
 176037            JUMP FROM 176142     
 176037 006     LA 360                   
 176041 121     EX_ADR                   
 176042 101     INPUT                    
-176043 044     ND 121                   
+176043 044     ND 121             # CHECK FOR CASSETTE IN PLACE, INTER RECORD GAP AND DECK READY               
 176045 054     XR 100                   
-176047 013     RFZ                      
+176047 013     RFZ                # RETURN IF NOT CASSETTE IN PLACE OR DECK READY OR INTER RECORD GAP      
 176050 101     INPUT                    
-176051 044     ND 002                   
-176053 110     JFZ 176137               
-176056 106     CALL 176216                   
+176051 044     ND 002             # CHECK END OF TAPE      
+176053 110     JFZ 176137         # JUMP IF END OF TAPE      
+176056 106     CALL 176216        # NOT END OF TAPE           
 176063 066     LL 000                   
 176065 056     LH 000                   
 176067            JUMP FROM 176125     
@@ -2287,9 +2287,9 @@
 176067 006     LA 360                   
 176071 121     EX_ADR                   
 176072 101     INPUT                    
-176073 044     ND 103                   
+176073 044     ND 103               # CHECK CASSETTE IN PLACE, END OF TAPE AND DECK READY    
 176075 054     XR 100                   
-176077 013     RFZ                      
+176077 013     RFZ                  # RETURN IF NOT CASSETTE IN PLACE OR END OF TAPE OR DECK READY    
 176100 101     INPUT                    
 176101 044     ND 020               CHECK IF INTER RECORD GAP           
 176103 150     JTZ 176122           JUMP IF NO INTERRECORD GAP YET     
@@ -2312,14 +2312,16 @@
 176142 110     JFZ 176037
 176145 106     CALL 176164              
 176150 003     RFC                      
-176151 173     EX_SB                    
+176151 173     EX_SB                READ BACKWARDS    
 176152 106     CALL 176231              
-176155 106     CALL 176205              
-176160            RETURN FROM 176163    
+176155 106     CALL 176205                 
 176160 110     JFZ 176155               
 176163 007     RET                      
 176164            CALL FROM 176145               
-176164            CALL FROM 176010     
+176164            CALL FROM 176010   
+176164 
+176164            SUBROUTINE THAT STOPS TAPE IF DECK IS DECK. LOOP UNTIL CASSETTE IN PLACE. IT RETURNS CARRY IF DECK IS READY
+176164  
 176164 006     LA 360                   
 176166 121     EX_ADR                   
 176167 177     EX_TSTOP                 
@@ -2328,7 +2330,7 @@
 176170 006     LA 360                   
 176172 121     EX_ADR                   
 176173 101     INPUT                    
-176174 044     ND 101                   
+176174 044     ND 101         # TESTING FOR CASSETTE IN PLACE AND DRIVE READY                
 176176 054     XR 100                   
 176200 150     JTZ 176170               
 176203 012     SRC                      
@@ -2402,9 +2404,9 @@
 176327 046     LE 116                   
 176331 106     CALL 176404                  
 176334 046     LE 170                   
-176336 106     CALL 176645                  
+176336 106     CALL 176645        # 9350 DISK               
 176341 046     LE 074                   
-176343 106     CALL 177005                  
+176343 106     CALL 177005        # FLOPPY DISK          
 176346 046     LE 072                   
 176350 106     CALL 177005                  
 176353 046     LE 071                   
@@ -2419,68 +2421,69 @@
 176375 004     AD 001
 176377            JUMP FROM 176370     
 176377 107     PL X, 272                
-176401 003     RFC                      
+176401 003     RFC    
+176404            BOOT 9370 TYPE DISK                  
 176404            CALL FROM 176317     
 176404            CALL FROM 176324     
 176404            CALL FROM 176331     
 176404 036     LD 005                   
 176406            JUMP FROM 176613     
-176406 106     CALL 176616                  
+176406 106     CALL 176616        # WAIT UNTIL DATA TRANSFER IS FINISHED              
 176411 006     LA 000                   
-176413 131     EX_COM1                  
-176414 106     CALL 176616                  
+176413 131     EX_COM1            # MASTER CLEAR COMMAND      
+176414 106     CALL 176616        #           
 176417 105     PL A, 272                
 176421 044     ND 177                   
 176423 054     XR 001                   
-176425 133     EX_COM2                  
+176425 133     EX_COM2            # LOAD CYL / SECTOR      
 176426 006     LA 005                   
-176430 131     EX_COM1                  
-176431 106     CALL 176616                  
+176430 131     EX_COM1            # SELECT DRIVE       
+176431 106     CALL 176616        # WAIT UNTIL FINISHED         
 176434 105     PL A, 272                
 176436 044     ND 177                   
 176440 133     EX_COM2                  
 176441 006     LA 005                   
-176443 131     EX_COM1                  
+176443 131     EX_COM1            # SELECT DRIVE                
 176444 106     CALL 176616                  
 176447 106     CALL 176627                  
 176452 043     RTC                      
-176453 006     LA 000                   
+176453 006     LA 000              # HEAD 0     
 176455 133     EX_COM2                  
 176456 006     LA 011                   
-176460 131     EX_COM1                  
+176460 131     EX_COM1             # SELECT HEAD     
 176461 106     CALL 176627                 
 176464 043     RTC                      
-176465 006     LA 003                   
+176465 006     LA 003              # SECTOR 3     
 176467 133     EX_COM2                  
 176470 006     LA 012                   
-176472 131     EX_COM1                  
+176472 131     EX_COM1             # SELECT SECTOR     
 176473 106     CALL 176627              
 176476 043     RTC                      
-176477 006     LA 000                   
+176477 006     LA 000              # CYLINDER 0     
 176501 133     EX_COM2                  
 176502 006     LA 006                   
-176504 131     EX_COM1                  
+176504 131     EX_COM1             # SELECT CYLINDER     
 176505 106     CALL 176627                  
 176510 043     RTC                      
 176511 044     ND 110                   
 176513 110     JFZ 176600               
 176516 250     XRA                      
-176517 135     EX_COM3                  
+176517 135     EX_COM3             # SELCT BUFFER PAGE 0     
 176520 016     LB 012                   
 176522 111 024 SU B 001                 
 176525 043     RTC                      
 176526 006     LA 001                   
-176530 131     EX_COM1                  
+176530 131     EX_COM1             # DISK READ     
 176531 106     CALL 176627              
 176534 043     RTC                      
 176535 153     EX_CLICK                 
-176536 044     ND 020                   
-176540 110     JFZ 176573               
+176536 044     ND 020              # CRC ERROR     
+176540 110     JFZ 176573          # JUMP IF CRC ERROR     
 176543 101     INPUT                    
-176544 044     ND 100                   
-176546 110     JFZ 176600               
+176544 044     ND 100              # CHECK SECTOR NOT FOUND     
+176546 110     JFZ 176600          # JUMP IF SECTOR NOT FOUND     
 176551 006     LA 013                   
-176553 131     EX_COM1                  
+176553 131     EX_COM1             # CLEAR BUFFER PARITY ERROR     
 176554 106     CALL 176627              
 176557 043     RTC                      
 176560 106     CALL 177200                 
@@ -2490,17 +2493,17 @@
 176571            JUMP FROM 176563     
 176571 044     ND 200                   
 176573 110     JFZ 176522               
-176576 070     PUSH                     
-176577 007     RET                      
+176576 070     PUSH                # IS HL THE START ADDRESS?     
+176577 007     RET                 # WE SEEM TO JUMP THERE..     
 176600 113 024 SU D 001                 
 176603 053     RTZ                      
 176604 006     LA 004                   
-176606 131     EX_COM1                  
+176606 131     EX_COM1            # RESTORE DRIVE             
 176607 106     CALL 176627                  
 176612 043     RTC                      
-176613 104     JMP 176406  
+176613 104     JMP 176406         # DO ANOTHER TRY
 176616
-176616            SUBROUTINE WAIT UNTIL BIT 2 is HIGH
+176616            SUBROUTINE WAIT WHILE DATA TRANSFER IS IN PROGRESS
 176616
 176616            CALL FROM 176406     
 176616            CALL FROM 176414     
@@ -2526,15 +2529,15 @@
 176627 304     LAE                      
 176630 121     EX_ADR                   
 176631 101     INPUT                    
-176632 054     XR 001                   
-176634 012     SRC                      
-176635 043     RTC                      
+176632 054     XR 001                      
+176634 012     SRC          # CARRY SET IF DRIVE GONE OFF LINE            
+176635 043     RTC          # RETURN IF DRIVE IS OFF LINE            
 176636 044     ND 003                   
-176640 110     JFZ 176627               
+176640 110     JFZ 176627   # LOOP IF DRIVE BUSY OR DATA TRANSFER IN PROGRESS            
 176643 101     INPUT                    
 176644 007     RET   
 176645
-176645            SUBROUTINE
+176645            SUBROUTINE 9350 BOOT
 176645                   
 176645            CALL FROM 176336     
 176645 036     LD 003                   
@@ -2604,7 +2607,7 @@
 177003 101     INPUT                    
 177004 007     RET     
 177005
-177005            SUBROUTINE
+177005            SUBROUTINE FLOPPY BOOT
 177005                 
 177005            CALL FROM 176343     
 177005            CALL FROM 176350     
@@ -2613,19 +2616,19 @@
 177007            JUMP FROM 177144     
 177007 106     CALL 177147                     
 177012 105     PL A, 272                
-177014 044     ND 003                   
+177014 044     ND 003             SELECT DRIVE FROM DATA IN 167672               
 177016 064     OR 000                   
 177020 131     EX_COM1                  
 177021 106     CALL 177147                  
 177024 106     CALL 177160                  
 177027 043     RTC                      
 177030 006     LA 000                   
-177032 133     EX_COM2                  
+177032 133     EX_COM2            SELECT TRACK 0      
 177033 106     CALL 177160                  
 177036 043     RTC                      
-177037 006     LA 004                   
+177037 006     LA 004             SELECT SECTOR 4      
 177041 135     EX_COM3                  
-177042 006     LA 011                   
+177042 006     LA 011             SELECT BUFFER PAGE 0      
 177044 131     EX_COM1                  
 177045 106     CALL 177160                
 177050 043     RTC                      
@@ -2633,7 +2636,7 @@
 177053 111 024 SU B 001                 
 177056 043     RTC                      
 177057 006     LA 005                   
-177061 131     EX_COM1                  
+177061 131     EX_COM1            READ SELECTED SECTOR      
 177062 106     CALL 177160                 
 177065 043     RTC                      
 177066 153     EX_CLICK                 
@@ -2643,25 +2646,28 @@
 177075 044     ND 020                   
 177077 110     JFZ 177124               
 177102 006     LA 004                   
-177104 131     EX_COM1                  
+177104 131     EX_COM1            CLEAR BUFFER PARITY ERROR      
 177105 106     CALL 177160                  
 177110 043     RTC                      
-177111 106     CALL 177200                
+177111 106     CALL 177200        COPY BUFFER TO MEMORY        
 177114 150     JTZ 177122               
 177117 044     ND 040                   
 177121 053     RTZ                      
 177122            JUMP FROM 177114     
-177122 044     ND 040                   
+177122 044     ND 040             BUFFER PARITY ERROR      
 177124 110     JFZ 177053               
 177127 070     PUSH                     
 177130 007     RET                      
 177131 113 024 SU D 001                 
 177134 053     RTZ                      
 177135 006     LA 010                   
-177137 131     EX_COM1                  
+177137 131     EX_COM1             RESTORE DRIVE      
 177140 106     CALL 177160              
 177143 043     RTC                      
-177144 104     JMP 177007    
+177144 104     JMP 177007          START OVER AGAIN
+177147
+177147            SUBROUTINE THAT WAITS WHILE TRANSFER IN PROGRESS ON A FLOPPY DEVICE
+177147
 177147            CALL FROM 177007     
 177147            CALL FROM 177021     
 177147 304     LAE                      
@@ -2689,11 +2695,14 @@
 177173 110     JFZ 177160               
 177176 101     INPUT                    
 177177 007     RET     
+177200
+177200            READ ONE BLOCK FROM BUFFER INTO MEMORY
+177200
 177200            CALL FROM 176560     
 177200            CALL FROM 176741     
 177200            CALL FROM 177111     
 177200 250     XRA                      
-177201 137     EX_COM4                  
+177201 137     EX_COM4          # SET BUFFER PAGE BYTE ADDRESS TO 0           
 177202 125     EX_DATA                  
 177203 134     PL D, 272                
 177205 176 101 INPUT L                  

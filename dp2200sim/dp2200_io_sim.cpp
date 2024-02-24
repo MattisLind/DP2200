@@ -264,11 +264,17 @@ void IOController::CassetteDevice::readFromTape() {
         struct timespec then;
         timeoutInNanosecs(&then, 2800000);  // we have read the last byte of the record, waited 2.8 ms and then we let it wait another 1 ms until we stop the tape and report gap.
         cd->outStandingCallbacks.push_back( addToTimerQueue([cd=cd, endOfTape=endOfTape](class callbackRecord * c)->int {
+          struct timespec then;
+          timeoutInNanosecs(&then, 1000000);
           printLog("INFO", "2.8ms timeout to set tape gap and stop if necessary ENTRY\n");
           cd->removeFromOutstandCallbacks(c);
           if (cd->stopAtGap) {
-            cd->statusRegister |= (CASSETTE_STATUS_DECK_READY);
-            cd->removeAllCallbacks();
+            cd->outStandingCallbacks.push_back( addToTimerQueue([cd=cd](class callbackRecord * c)->int {
+              printLog("INFO", "1.0ms timeout to set DECK READY and stop if necessary ENTRY\n");
+              cd->statusRegister |= (CASSETTE_STATUS_DECK_READY);
+              cd->removeAllCallbacks();
+              return 0;
+            }, then));
           }  
           cd->statusRegister |= (CASSETTE_STATUS_INTER_RECORD_GAP);
           if (!cd->stopAtGap && !endOfTape) {
