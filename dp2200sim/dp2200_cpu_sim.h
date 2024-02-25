@@ -83,8 +83,10 @@ public:
   bool userMode;
   bool accessViolation;
   bool writeViolation;
+  bool privilegeViolation;
   int interruptPending;
   int interruptEnabled;
+  int interruptEnabledToBeEnabled;
 
   unsigned short P;
   unsigned short previousP;

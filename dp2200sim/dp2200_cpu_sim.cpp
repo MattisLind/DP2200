@@ -84,7 +84,7 @@ unsigned char inline dp2200_cpu::Memory::read(unsigned short virtualAddress, boo
   }
   data = physicalMemoryRead(physicalAddress);
   if (!fetch && performChecks) {
-    printLog("TRACE", "%06o %03o        DATA READ FROM %06o     \n", virtualAddress, data, from); 
+    // printLog("TRACE", "%06o %03o        DATA READ FROM %06o     \n", virtualAddress, data, from); 
   }
   return data;
 }
@@ -92,7 +92,7 @@ unsigned char inline dp2200_cpu::Memory::read(unsigned short virtualAddress, boo
 
 void inline dp2200_cpu::Memory::write(unsigned short virtualAddress, unsigned char data, int from) {
   int physicalAddress, logicalPage, physicalPage;
-  printLog("TRACE", "%06o %03o        DATA WRITE FROM %06o     \n", virtualAddress, data, from); 
+  //printLog("TRACE", "%06o %03o        DATA WRITE FROM %06o     \n", virtualAddress, data, from); 
   if (*is5500) {
     if ((virtualAddress & 0xC000) == 0x8000) {
       physicalAddress = 0xffff &  ((virtualAddress + (baseRegister<<8))  | (virtualAddress & 0xff)); 
@@ -386,6 +386,9 @@ void dp2200_cpu::reset() {
     setSel = 0;
     interruptPending = 0;
     interruptEnabled = 0;
+    interruptEnabledToBeEnabled = 0;
+    privilegeViolation = false;
+    userMode = false;
 }
 // 5500
 // 170000 (167400) Memory parity Failure Vector
@@ -408,7 +411,7 @@ int dp2200_cpu::execute() {
   unsigned char instructionData;
   /* Handle interrupt*/
 
-  if ((interruptEnabled && interruptPending) || accessViolation || writeViolation) {
+  if ((interruptEnabled && interruptPending) || accessViolation || writeViolation || privilegeViolation) {
     
     /* now bump stack to use new pc and save it */
     stack.stk[stackptr] = P;
@@ -419,6 +422,9 @@ int dp2200_cpu::execute() {
     } else if (writeViolation) {
       writeViolation = false;
       P=0170011;
+    } else if (privilegeViolation) {
+      privilegeViolation = false;
+      P=0170017;
     } else if (interruptPending && is5500) {
       interruptPending = 0;
       P=0170022;
@@ -429,6 +435,10 @@ int dp2200_cpu::execute() {
       printLog("INFO", "Unknown interrupt.");
       return 1;
     }
+  }
+  if (interruptEnabledToBeEnabled) {
+    interruptEnabledToBeEnabled = 0;
+    interruptEnabled = 1;
   }
   previousP = P;
   inst = memory->read(P, true, true, previousP);
@@ -782,30 +792,47 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         break;
       case 4:
         /* DI*/
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }        
         interruptEnabled = 0;
         break;
       case 5:
         /* EI */
         switch (implicit) {
           case 0:
-            interruptEnabled = 1;
+            if (is5500 && userMode) {
+              privilegeViolation = true;
+              return 0;
+            }
+            interruptEnabledToBeEnabled = 1;
             break;
           case 062:
             /* EUR */
-            interruptEnabled = 1;
+            if (is5500 && userMode) {
+              privilegeViolation = true;
+              return 0;
+            }  
+            userMode=true;          
+            interruptEnabledToBeEnabled = 1;
             stackptr = (stackptr - 1) & 0xf;
             P = stack.stk[stackptr] & pMask; 
-            printLog("TRACE", "%06o            RETURN FROM %06o     \n", P, previousP);         
+            if (traceEnabled) printLog("TRACE", "%06o            RETURN FROM %06o     \n", P, previousP);         
             break;
           case 0111:
-            interruptEnabled = 1;  /* EJMP */
+            if (is5500 && userMode) {
+              privilegeViolation = true;
+              return 0;
+            }          
+            interruptEnabledToBeEnabled = 1;  /* EJMP */
             addrL = (unsigned int)memory->read(P, true, true, previousP);
             P++;
             P &= pMask;
             fetches++;
             addrH = (unsigned int)memory->read(P, true, true, previousP);
             P = (addrL + (addrH << 8)) & pMask;
-            printLog("TRACE", "%06o            JUMP FROM %06o     \n", P, previousP);
+            if (traceEnabled) printLog("TRACE", "%06o            JUMP FROM %06o     \n", P, previousP);
             fetches++;          
             break;
           default:
@@ -890,6 +917,10 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         } 
         break;       
       case 7: // BRL
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }       
          r=registerFromImplict(implicit);
          memory->baseRegister = regSets[setSel].regs[r];
          break;
@@ -903,7 +934,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       if (cc) {
         stackptr = (stackptr - 1) & 0xf;
         P = stack.stk[stackptr] & pMask;
-        printLog("TRACE", "%06o            RETURN FROM %06o     \n", P, previousP);
+        if (traceEnabled) printLog("TRACE", "%06o            RETURN FROM %06o     \n", P, previousP);
       }
       break;
     case 4: /* math with immediate operands */
@@ -1163,7 +1194,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         /* RETURN */
         stackptr = (stackptr - 1) & 0xf;
         P = stack.stk[stackptr] & pMask;
-        printLog("TRACE", "%06o            RETURN FROM %06o     \n", P, previousP);
+        if (traceEnabled) printLog("TRACE", "%06o            RETURN FROM %06o     \n", P, previousP);
         return 0;
       case 1:
         if (is2200) return 1;
@@ -1194,7 +1225,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         
         break;
       case 2:
-          printLog("INFO", "Double Store  implicit=%03o inst =%03o\n", implicit, inst);
+          //printLog("INFO", "Double Store  implicit=%03o inst =%03o\n", implicit, inst);
           switch (implicit) {
             case 0:
               // DS DE,HL
@@ -1281,12 +1312,16 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return doubleLoad(1);
       case 7:
         // Sector table load
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         count = regSets[setSel].r.regC;
         address = ((regSets[setSel].r.regH << 8) & 0xff00) | (regSets[setSel].r.regL & 0xff);
-        printLog("INFO", "STL: count=%d address=%06o\n", count, address);
+        //printLog("INFO", "STL: count=%d address=%06o\n", count, address);
         for (i=0; i<count; i++) {
           data = memory->read(address, true, false, previousP);
-          printLog("INFO", "STL: data=%03o i=%d\n", data, i);
+          //printLog("INFO", "STL: data=%03o i=%d\n", data, i);
           memory->sectorTable[i].physicalPage = (data >> 4) & 0xf;
           if (data & 0x4) {
             memory->sectorTable[i].accessEnable=true;
@@ -1344,7 +1379,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       if (cc) {
         timeForInstruction =instTimeInNsTaken[inst];
         P = (addrL + (addrH << 8)) & pMask;
-        printLog("TRACE", "%06o            JUMP FROM %06o     \n", P, previousP);
+        if (traceEnabled) printLog("TRACE", "%06o            JUMP FROM %06o     \n", P, previousP);
       }
       break;
     case 1:
@@ -1353,6 +1388,10 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       switch (op) {
       case 0:
         /* INPUT */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }
         regSets[setSel].regs[r]=ioCtrl->input();
         break;
       case 1:
@@ -1360,10 +1399,18 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2: 
         /* EX ADR */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }
         return ioCtrl->exAdr(regSets[setSel].regs[r]);;
         break;
       case 3:
         /* EX COM1 */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }        
         return ioCtrl->exCom1(regSets[setSel].regs[r]);
         break;
       case 4:
@@ -1371,14 +1418,26 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 5:
         /* EX BEEP */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }        
         return ioCtrl->exBeep();
         break;
       case 6:
         /* EX RBK */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }        
         return ioCtrl->exRBK();
         break;
       case 7:
         /* EX SF */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }        
         return ioCtrl->exSF();
         break;
       }
@@ -1400,7 +1459,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         stack.stk[stackptr] = P;
         stackptr = (stackptr + 1) & 0xf;
         P = (addrL + (addrH << 8)) & pMask;
-        printLog("TRACE", "%06o            CALL FROM %06o     \n", P, previousP);
+        if (traceEnabled) printLog("TRACE", "%06o            CALL FROM %06o     \n", P, previousP);
       }
       break;
     case 3:
@@ -1408,6 +1467,10 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       switch (op) {
       case 0:
         /* PARITY INPUT - We don't care about input really.*/
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }        
         regSets[setSel].regs[r]=ioCtrl->input();
         return 0;
       case 1:
@@ -1415,11 +1478,18 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX STATUS */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }        
         ioCtrl->exStatus(); 
         break;
       case 3:
         /* EX COM2 */
-        printLog("INFO", "implicit=%03o r=%d\n", implicit, r);
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exCom2(regSets[setSel].regs[r]);
         break;
       case 4:
@@ -1427,14 +1497,26 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 5:
         /* EX CLICK */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exClick();
         break;
       case 6:
         /* EX WBK */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exWBK();
         break;
       case 7:
         /* EX SB */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exSB();
         break;
       }
@@ -1450,7 +1532,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         fetches++;
         addrH = (unsigned int)memory->read(P, true, true, previousP);
         P = (addrL + (addrH << 8)) & pMask;
-        printLog("TRACE", "%06o            JUMP FROM %06o     \n", P, previousP);
+        if (traceEnabled) printLog("TRACE", "%06o            JUMP FROM %06o     \n", P, previousP);
         fetches++;
         break;
       case 1:
@@ -1508,10 +1590,18 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX DATA */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         ioCtrl->exData();
         break;
       case 3:
         /* EX COM3 */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exCom3(regSets[setSel].regs[r]);
         break;
       case 4:
@@ -1520,6 +1610,10 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         break;
       case 5:
         /* EX DECK1 */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exDeck1();
         break;
       case 6:
@@ -1528,6 +1622,10 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         break;
       case 7:
         /* EX REWND */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exRewind();
         break;
       }
@@ -1549,7 +1647,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         stack.stk[stackptr] = P;
         stackptr = (stackptr + 1) & 0xf;
         P = (addrL + (addrH << 8)) & pMask;
-        printLog("TRACE", "%06o            CALL FROM %06o     \n", P, previousP);
+        if (traceEnabled) printLog("TRACE", "%06o            CALL FROM %06o     \n", P, previousP);
         break;
       case 1:
         if (is2200) return 1;
@@ -1635,10 +1733,18 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         /* EX WRITE */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exWrite(regSets[setSel].regs[r]);
         break;
       case 3:
         /* EX COM4 */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exCom4(regSets[setSel].regs[r]);
         break;
       case 4:
@@ -1646,14 +1752,26 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 5:
         /* EX DECK2 */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exDeck2();
         break;
       case 6:
         /* EX BSP */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exBSP();
         break;
       case 7:
         /* EX TSTOP */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }         
         return ioCtrl->exTStop();
         break;
       }
