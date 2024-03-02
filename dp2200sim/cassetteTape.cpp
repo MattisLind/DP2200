@@ -10,6 +10,10 @@ CassetteTape::CassetteTape() {
   state=TAPE_GAP;
 }
 
+bool CassetteTape::isOpen() {
+  return (file != NULL);
+}
+
 bool CassetteTape::openFile(std::string fileName) {
   if (file != NULL) {
     fclose(file);

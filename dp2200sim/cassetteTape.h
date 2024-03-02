@@ -20,7 +20,7 @@ class CassetteTape {
   public:
   void setWriteProtected(bool);
   CassetteTape();
-
+  bool isOpen();
   bool openFile (std::string fileName);
   void closeFile ();
 

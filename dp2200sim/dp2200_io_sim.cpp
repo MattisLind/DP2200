@@ -161,6 +161,11 @@ unsigned char IOController::CassetteDevice::input () {
   //printLog("INFO", "input: status=%d statusRegister=%02X dataRegister=%02X\n", status, statusRegister, dataRegister);
   if (status) {
     printStatus("Getting status");
+    if (tapeDrive[tapeDeckSelected]->isOpen()) {
+      statusRegister |= CASSETTE_STATUS_CASSETTE_IN_PLACE;  
+    } else {
+      statusRegister &= ~CASSETTE_STATUS_CASSETTE_IN_PLACE;
+    }
     return statusRegister;
   } else {
     snprintf(buffer, 255, "Getting data = %03o", dataRegister);
@@ -359,14 +364,15 @@ int IOController::CassetteDevice::exTStop() {
 
 IOController::CassetteDevice::CassetteDevice () {
   tapeRunning = false;
-  tapeDeckSelected = 1;   
+  tapeDeckSelected = 0; 
+  statusRegister |= (CASSETTE_STATUS_DECK_READY);  
   tapeDrive[0] = new CassetteTape();
   tapeDrive[1] = new CassetteTape();
 }
 
 
 bool IOController::CassetteDevice::openFile (int drive, std::string fileName, bool wp) {
-  statusRegister |= (CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_CASSETTE_IN_PLACE);
+
   tapeDrive[drive]->setWriteProtected(wp);
   return tapeDrive[drive]->openFile(fileName);
 }
