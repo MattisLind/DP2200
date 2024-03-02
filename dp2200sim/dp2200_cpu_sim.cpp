@@ -448,7 +448,7 @@ int dp2200_cpu::execute() {
       interruptPending = 0;
       P=0;
     } else {
-      printLog("INFO", "Unknown interrupt.");
+      printLog("INFO", "Unknown interrupt. interruptPending=%d interruptEnabled=%d accessViolation=%d writeViolation=%d privilegeViolation=%d", interruptPending,interruptEnabled, accessViolation,writeViolation,privilegeViolation);
       return 1;
     }
   }
@@ -1990,6 +1990,8 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
   }  
 
 dp2200_cpu::dp2200_cpu() {
+  is5500=false;
+  is2200=true;
   ioCtrl = new IOController ();
   memory = new Memory(&is5500, &accessViolation, &writeViolation, &userMode);
 }

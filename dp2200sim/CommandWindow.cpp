@@ -564,33 +564,35 @@ void commandWindow::handleKey(int ch) {
         break;
       case KEY_UP:
         getyx(innerWin, y, x);
-            
-        if (commandHistoryIndex== -1) {
-          commandHistoryIndex = commandHistory.size()-1;
-        } else {
-          commandHistoryIndex = commandHistoryIndex==0?0: commandHistoryIndex-1;
+        if  (commandHistory.size()>0) {   
+          if (commandHistoryIndex== -1) {
+            commandHistoryIndex = commandHistory.size()-1;
+          } else {
+            commandHistoryIndex = commandHistoryIndex==0?0: commandHistoryIndex-1;
+          }
+          commandLine = commandHistory[commandHistoryIndex];
+          mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
+          wclrtoeol(innerWin);
         }
-        commandLine = commandHistory[commandHistoryIndex];
-        mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
-        wclrtoeol(innerWin);
         break;
       case KEY_DOWN:
         getyx(innerWin, y, x);
-             
-        if (commandHistoryIndex!= -1) {
-          commandHistoryIndex++;
-          if (((unsigned long)commandHistoryIndex) >= commandHistory.size()) {
-            commandHistoryIndex = -1;
+        if  (commandHistory.size()>0) {      
+          if (commandHistoryIndex!= -1) {
+            commandHistoryIndex++;
+            if (((unsigned long)commandHistoryIndex) >= commandHistory.size()) {
+              commandHistoryIndex = -1;
+            }
           }
-        }
-        if (commandHistoryIndex == -1) {
-          commandLine = "";
-        } else {
-          commandLine = commandHistory[commandHistoryIndex];
-        }
+          if (commandHistoryIndex == -1) {
+            commandLine = "";
+          } else {
+            commandLine = commandHistory[commandHistoryIndex];
+          }
 
-        mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
-        wclrtoeol(innerWin);
+          mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
+          wclrtoeol(innerWin);
+        }
         break;
       case 0x01: // cntrl-A - beginning of line.
         wmove(innerWin, cursorY, 0);

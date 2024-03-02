@@ -323,6 +323,7 @@ int IOController::CassetteDevice::exWBK() {
   return 1;
 }
 int IOController::CassetteDevice::exBSP() {
+  if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
   forward = false;
   stopAtGap = true; 
   printStatus("exBSP Backwards read one block");
@@ -333,6 +334,7 @@ int IOController::CassetteDevice::exBSP() {
   return 0;
 }
 int IOController::CassetteDevice::exSF() {
+  if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
   forward = true;
   stopAtGap = false; 
   printStatus("exSF Read Forward");
@@ -342,6 +344,7 @@ int IOController::CassetteDevice::exSF() {
   return 0;
 }
 int IOController::CassetteDevice::exSB() {
+  if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
   forward = false;
   stopAtGap = false; 
   printStatus("exSB Read Backwards");
@@ -351,13 +354,18 @@ int IOController::CassetteDevice::exSB() {
   return 0;
 }
 int IOController::CassetteDevice::exRewind() {
+  if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
   tapeDrive[tapeDeckSelected]->rewind();
   return 0;
 }
 int IOController::CassetteDevice::exTStop() {
   printStatus("exTStop");
   removeAllCallbacks();
-  statusRegister |= (CASSETTE_STATUS_DECK_READY);
+  if (tapeDrive[tapeDeckSelected]->isOpen()) {
+    statusRegister |= (CASSETTE_STATUS_DECK_READY);
+  } else {
+    statusRegister &= ~(CASSETTE_STATUS_DECK_READY);
+  }
   return 0;
 }
 
@@ -365,7 +373,6 @@ int IOController::CassetteDevice::exTStop() {
 IOController::CassetteDevice::CassetteDevice () {
   tapeRunning = false;
   tapeDeckSelected = 0; 
-  statusRegister |= (CASSETTE_STATUS_DECK_READY);  
   tapeDrive[0] = new CassetteTape();
   tapeDrive[1] = new CassetteTape();
 }
@@ -747,14 +754,22 @@ unsigned char IOController::FloppyDevice::input () {
     printLog("INFO", "Returning floppy status = %02X\n", statusRegister);
     return statusRegister;
   } else {
-    printLog("INFO", "Reading data from bufferPage %d address %d = %02X\n", selectedBufferPage, bufferAddress, 0xff&buffer[selectedBufferPage][bufferAddress]);
-    return buffer[selectedBufferPage][bufferAddress];
+    char tmp;
+    printLog("INFO", "Reading floppy data (%03o) from buffer address (%03o) in selectedBufferPage=%d\n", 0xff&buffer[selectedBufferPage][bufferAddress], 0xff & bufferAddress, selectedBufferPage);
+    tmp = buffer[selectedBufferPage][bufferAddress];
+    bufferAddress++;
+    if (bufferAddress==256) bufferAddress=0;
+    return tmp;
+
   }
 }
 int IOController::FloppyDevice::exWrite(unsigned char data) {
-  //printLog("INFO", "Writing data %02X to address %d in bufferPage %d\n", data&0xff, bufferAddress, selectedBufferPage);
+  printLog("INFO", "Floppy writing data %03o to address %03o in bufferPage %d\n", data&0xff, bufferAddress, selectedBufferPage);
   buffer[selectedBufferPage][bufferAddress]=data;
+  bufferAddress++;
+  if (bufferAddress==256) bufferAddress=0;  
   return 0;
+
 } 
 int IOController::FloppyDevice::exCom1(unsigned char data){
   struct timespec then;
@@ -1246,7 +1261,7 @@ unsigned char IOController::Disk9370Device::input () {
   }
 }
 int IOController::Disk9370Device::exWrite(unsigned char data) {
-  //printLog("INFO", "9370 Writing data %02X to address %d in bufferPage %d\n", data&0xff, bufferAddress, selectedBufferPage);
+  printLog("INFO", "9370 Writing data %03o to address %03o in bufferPage %d\n", data&0xff, bufferAddress, selectedBufferPage);
   buffer[selectedBufferPage][bufferAddress]=data;
   bufferAddress++;
   if (bufferAddress==256) bufferAddress=0;  
