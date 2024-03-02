@@ -227,6 +227,10 @@ public:
   void reset();
   void setCPUtype2200 ();
   void setCPUtype5500 ();
+  bool cpuIs2200 ();
+  bool cpuIs5500 ();
+  bool isAutorestartEnabled();
+  void setAutorestart(bool);
   int execute();
   void clear();
   char *  disassembleLine(char * outputBuf, int size, bool octal, int address, std::function<unsigned char(int)> readMem, int imp);
@@ -239,6 +243,7 @@ public:
   int removeBreakpoint(unsigned short address);
   dp2200_cpu();
   private:
+  bool autorestartEnabled = true;
   int stackStore();
   int stackLoad();
   int doubleLoad(int);

@@ -338,7 +338,15 @@ int main(int argc, char *argv[]) {
     while (running && nowIsLessThan(&after)) {
       // Run instructions
       if (cpu.execute()) {
-        running = false;
+        if (cpu.cpuIs5500()) {
+          if (cpu.isAutorestartEnabled()) {
+            cpu.P=0175724;
+          } else {
+            running = false;
+          }
+        } else {
+          running = false;
+        }
       } 
       //printLog("INFO", "%s\n", getCpuTimeStr(buffer, 100));
       if (std::find(cpu.breakpoints.begin(), cpu.breakpoints.end(), cpu.P)!=cpu.breakpoints.end()) {

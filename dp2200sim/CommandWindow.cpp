@@ -98,6 +98,9 @@ void commandWindow::doSet(std::vector<Param> params) {
         wprintw(innerWin, "Invalid memory size: %d \n", it->paramValue.i); 
       }
     }
+    if (it->paramId == AUTORESTART) {
+      cpu->setAutorestart(it->paramValue.b);
+    }
   }  
 }
 void commandWindow::doNoTrace(std::vector<Param> params) {
@@ -107,7 +110,9 @@ void commandWindow::doNoTrace(std::vector<Param> params) {
 void commandWindow::doRestart(std::vector<Param> params) {
   running = false;
   cpu->reset();
-  cpu->ioCtrl->cassetteDevice->loadBoot([memory=cpu->memory](int address, unsigned char data)->void { return memory->physicalMemoryWrite(address,data);});
+  if (cpu->cpuIs2200()) {
+    cpu->ioCtrl->cassetteDevice->loadBoot([memory=cpu->memory](int address, unsigned char data)->void { return memory->physicalMemoryWrite(address,data);});
+  }
   cpu->totalInstructionTime.tv_nsec=0;
   cpu->totalInstructionTime.tv_sec=0;
   running = true;  
@@ -475,7 +480,7 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
   commands.push_back({"NOTRACE", "Disable trace logging", {}, &commandWindow::doNoTrace}); 
   commands.push_back({"HEXADECIMAL", "Show in hexadecimal notation.\nAlso possible to toggle in the register view by pressing 'o'.", {}, &commandWindow::doHex});  
   commands.push_back({"OCTAL", "Show in Octal notation.\nAlso possible to toggle in the register view by pressing 'o'.", {}, &commandWindow::doOct});  
-  commands.push_back({"SET", "Set various system parameters like cpu type and memory amount.\nCPU=2200 or CPU=5500 specify architecture. MEMORY=nn where nn=2 .. 64 (k) Memory.\n", {{"CPU", CPU, NUMBER, {.i=2200}}, {"MEMORY", MEMORY, NUMBER, {.i=16}}}, &commandWindow::doSet});
+  commands.push_back({"SET", "Set various system parameters like cpu type and memory amount.\nCPU=2200 or CPU=5500 specify architecture. MEMORY=nn where nn=2 .. 64 (k) Memory.\n AUTORESTART is a boolean used on the 5500. TRUE or FALSE", {{"CPU", CPU, NUMBER, {.i=2200}}, {"MEMORY", MEMORY, NUMBER, {.i=16}}, {"AUTORESTART", AUTORESTART, BOOL, {.i=2200}}}, &commandWindow::doSet});
   commands.push_back({"YIELD", "The amount of CPU time consumed byt the simulator. \n  VALUE parameter specify the amount. Value between 0 and 100.", {{"VALUE", VALUE, NUMBER, {.i = 100}}}, &commandWindow::doYield});         
   win = newwin(LINES - 14, 82, 14, 0);
   innerWin = newwin(LINES - 16, 80, 15, 1);

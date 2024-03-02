@@ -363,6 +363,22 @@ void dp2200_cpu::setCPUtype5500() {
   is2200=false;
 }
 
+bool dp2200_cpu::cpuIs2200 () {
+  return is2200;
+}
+
+bool dp2200_cpu::cpuIs5500 () {
+  return is5500;
+}
+
+bool dp2200_cpu::isAutorestartEnabled() {
+  return autorestartEnabled;
+}
+
+void dp2200_cpu::setAutorestart(bool value) {
+  autorestartEnabled = value;
+}
+
 
 
 void dp2200_cpu::clear() {
