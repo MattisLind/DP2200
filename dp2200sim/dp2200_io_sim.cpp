@@ -773,7 +773,7 @@ int IOController::FloppyDevice::exWrite(unsigned char data) {
 } 
 int IOController::FloppyDevice::exCom1(unsigned char data){
   struct timespec then;
-  switch (data) {
+  switch (data & 0xf) {
     case 0:
     case 1:
     case 2:
