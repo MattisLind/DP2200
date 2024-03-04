@@ -501,7 +501,7 @@ registerWindow::OctalForm::OctalForm () {
   }
 
   for (auto i=0; i<8; i++) {
-    breakpoints[i] = createAField(&registerViewFields,5,4+i,65, "" );
+    breakpoints[i] = createAField(&registerViewFields,6,4+i,65, "" );
   }
 
 

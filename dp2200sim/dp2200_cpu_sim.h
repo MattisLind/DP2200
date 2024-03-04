@@ -250,6 +250,8 @@ public:
   int doubleStore(int);
   int registerStore();
   int registerLoad();
+  void incrementIndexShort(int direction, int, int);
+  void incrementIndexLong(int direction, int, int);
   struct doubleLoadStoreRegisterTable getSourceAndIndex(int);
   int registerFromImplict(int implict); 
   void incrementRegisterPair (int highReg, int lowReg, int decrement);

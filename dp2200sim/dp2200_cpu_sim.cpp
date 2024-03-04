@@ -287,6 +287,18 @@ char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, int 
       } else {
         snprintf(outputBuf, size, "%s %04X", instructionSet[set*256+instruction].mnemonic, (readMem(address+2) << 8) | readMem(address+1));
       }
+    case 4:
+      if (octal) {
+        snprintf(outputBuf, size, "%s %03o,%03o ", instructionSet[set*256+instruction].mnemonic, readMem(address+1), readMem(address+2));
+      } else {
+        snprintf(outputBuf, size, "%s %02X,%02X ", instructionSet[set*256+instruction].mnemonic, readMem(address+1), readMem(address+2));
+      }    
+    case 6:
+      if (octal) {
+        snprintf(outputBuf, size, "%s %06o,%03o", instructionSet[set*256+instruction].mnemonic, (readMem(address+2) << 8) | readMem(address+1),readMem(address+3));
+      } else {
+        snprintf(outputBuf, size, "%s %04X,%02X", instructionSet[set*256+instruction].mnemonic, (readMem(address+2) << 8) | readMem(address+1),readMem(address+3));
+      }    
     break;
   }
   return outputBuf;
@@ -770,6 +782,48 @@ void dp2200_cpu::incrementRegisterPair (int highReg, int lowReg, int decrement) 
   regSets[setSel].regs[lowReg] = 0xff & value;
 }
 
+
+void dp2200_cpu::incrementIndexShort (int direction, int highReg, int lowReg) {
+  int disp = 0xff & memory->read(P, true, true, previousP);
+  //printLog("INFO", "DECI instruction disp=%03o indexLsb=%03o address=%05o value=%05o\n ");
+  P++; P &= pMask; fetches++;
+  int indexLsb = 0xff & memory->read(P, true, true, previousP);
+  P++; P &= pMask; fetches++;
+  unsigned short address = (regSets[setSel].r.regX << 8) | indexLsb;
+  int value = memory->read(address, true, false, previousP);
+  value |= (memory->read((address+1) & pMask, true, false, previousP) << 8);
+  //printLog("INFO", "Before DECI instruction disp=%03o indexLsb=%03o address=%05o value=%05o carry=%1d\n ", disp, indexLsb, address, value, flagCarry[setSel]);
+  value += direction * disp;
+  memory->write(address, 0xff & value, previousP);
+  memory->write((address+1) & pMask, 0xff & (value >> 8), previousP);  
+  flagCarry[setSel] = (value >> 16) & 0x1;
+  //printLog("INFO", "After DECI instruction value=%05o carry=%1d \n", value,flagCarry[setSel] );
+  if ((highReg != -1) && (lowReg != -1)) {
+    regSets[setSel].regs[lowReg] = value & 0xff;
+    regSets[setSel].regs[highReg] = (value >> 8)  & 0xff;  
+  }
+}
+
+void dp2200_cpu::incrementIndexLong (int direction, int highReg, int lowReg) {
+  int disp = 0xff & memory->read(P, true, true, previousP);
+  P++; P &= pMask; fetches++;
+  disp |= (0xff & memory->read(P, true, true, previousP)) << 8;
+  P++; P &= pMask; fetches++;
+  int indexLsb = 0xff & memory->read(P, true, true, previousP);
+  P++; P &= pMask; fetches++;          
+  unsigned short address = (regSets[setSel].r.regX << 8) | indexLsb;
+  int value = memory->read(address, true, false, previousP);
+  value |= (memory->read((address+1) & pMask, true, false, previousP) << 8);
+  value += direction * disp;
+  memory->write(address, 0xff & value, previousP);
+  memory->write((address+1) & pMask, 0xff & (value >> 8), previousP);
+  flagCarry[setSel] = (value >> 16) & 0x1;
+  if ((highReg != -1) && (lowReg != -1)) {
+    regSets[setSel].regs[lowReg] = value & 0xff;
+    regSets[setSel].regs[highReg] = (value >> 8)  & 0xff;  
+  }  
+}
+
 int dp2200_cpu::immediateplus(unsigned char inst) {
     int r;
     unsigned int addrL, addrH;
@@ -880,6 +934,35 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         return 1;
       case 2:
         blockTransfer(false);
+        break;
+      case 4:
+        // DFAC
+        if (implicit == 0111) {
+          int count = regSets[setSel].r.regC;
+          int srcAddress, dstAddress;
+          unsigned char srcData, dstData;
+          do {
+            srcAddress = ((regSets[setSel].r.regH << 8) | regSets[setSel].r.regL ) & pMask;
+            dstAddress = ((regSets[setSel].r.regD << 8) | regSets[setSel].r.regE ) & pMask;
+            srcData = 0xf & memory->read(srcAddress, true, false, previousP);
+            dstData = 0xf & memory->read(dstAddress, true, false, previousP);
+            printLog("INFO", "count=%d srcAddress=%06o dstAddress=%06o srcData=%03o dstData=%03o carry=%d\n", count,  srcAddress, dstAddress, srcData, dstData, flagCarry[setSel]);
+            dstData += (srcData + flagCarry[setSel]);
+            printLog("INFO", "Result = %03o\n", dstData);
+            if (dstData > 9) {
+              flagCarry[setSel]=1;
+              dstData -= 10;
+            } else {
+              flagCarry[setSel] = 0;
+            }
+            dstData |= regSets[setSel].r.regB;
+            memory->write(dstAddress, dstData, previousP);
+            printLog("INFO", "Write %03o to address=%06o\n", dstAddress, dstData);
+            incrementRegisterPair(REG_D, REG_E, -1);
+            incrementRegisterPair(REG_H, REG_L, -1);
+            count--;
+          } while (count > 0);
+        } else return 1;
         break;
       case 5: // PUSH IMMEDIATE
         if (is2200) return 1;
@@ -1026,31 +1109,37 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       switch (op) {
       case 0:
         if (is2200) return 1; 
-        if (implicit==0) {
-          int disp = 0xff & memory->read(P, true, true, previousP);
-          P++; P &= pMask; fetches++;
-          int indexLsb = 0xff & memory->read(P, true, true, previousP);
-          P++; P &= pMask; fetches++;          
-          unsigned short address = (regSets[setSel].r.regX << 8) | indexLsb;
-          int value = memory->read(address, true, false, previousP);
-          value += disp;
-          memory->write(address, 0xff & value, previousP);
-          flagCarry[setSel] = (value >> 16) & 0x1;
-        } else if (implicit == 0111) {
-          int disp = 0xff & memory->read(P, true, true, previousP);
-          P++; P &= pMask; fetches++;
-          disp |= (0xff & memory->read(P, true, true, previousP)) << 8;
-          P++; P &= pMask; fetches++;
-          int indexLsb = 0xff & memory->read(P, true, true, previousP);
-          P++; P &= pMask; fetches++;          
-          unsigned short address = (regSets[setSel].r.regX << 8) | indexLsb;
-          int value = memory->read(address, true, false, previousP);
-          value += disp;
-          memory->write(address, 0xff & value, previousP);
-          flagCarry[setSel] = (value >> 16) & 0x1;
-        } else {
-          return 1;
-        }
+        switch (implicit) {
+          case 0:
+            incrementIndexShort(1, -1, -1); // Increment do not store in register
+            break;
+          case 0022:         
+            return 1;
+          case 0062:        
+            incrementIndexShort(1, REG_B, REG_C);  
+            break;       
+          case 0111:
+            incrementIndexLong(1, -1, -1);  
+            break;
+          case 0113: 
+            incrementIndexLong(1, REG_B, REG_C);  
+            break;        
+          case 0115:
+            incrementIndexLong(1, REG_D, REG_E);  
+            break;  
+          case 0117:
+            incrementIndexLong(1, REG_H, REG_L);  
+            break;                
+          case 0174:
+            incrementIndexShort(1, REG_D, REG_E);  
+            break;      
+          case 0176:
+            incrementIndexShort(1, REG_H, REG_L);  
+            break;     
+          default:
+            return 1;                   
+        } 
+        break; 
       case 1: // INCP HL
         if (is2200) return 1; // halt if 2200.
         switch (implicit) {
@@ -1086,35 +1175,37 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       case 2:
         if (is2200) return 1; 
         //printLog("INFO", "DECI instruction implict=%03\n", implicit);
-        if (implicit==0) {
-          int disp = 0xff & memory->read(P, true, true, previousP);
-          //printLog("INFO", "DECI instruction disp=%03o indexLsb=%03o address=%05o value=%05o\n ");
-          P++; P &= pMask; fetches++;
-          int indexLsb = 0xff & memory->read(P, true, true, previousP);
-          P++; P &= pMask; fetches++;
-          unsigned short address = (regSets[setSel].r.regX << 8) | indexLsb;
-          int value = memory->read(address, true, false, previousP);
-          //printLog("INFO", "Before DECI instruction disp=%03o indexLsb=%03o address=%05o value=%05o carry=%1d\n ", disp, indexLsb, address, value, flagCarry[setSel]);
-          value -= disp;
-          memory->write(address, 0xff & value, previousP);
-          flagCarry[setSel] = (value >> 16) & 0x1;
-          //printLog("INFO", "After DECI instruction value=%05o carry=%1d \n", value,flagCarry[setSel] );
-        } else if (implicit == 0111) {
-          int disp = 0xff & memory->read(P, true, true, previousP);
-          P++; P &= pMask; fetches++;
-          disp |= (0xff & memory->read(P, true, true, previousP)) << 8;
-          P++; P &= pMask; fetches++;
-          int indexLsb = 0xff & memory->read(P, true, true, previousP);
-          P++; P &= pMask; fetches++;          
-          unsigned short address = (regSets[setSel].r.regX << 8) | indexLsb;
-          int value = memory->read(address, true, false, previousP);
-          value -= disp;
-          memory->write(address, 0xff & value, previousP);
-          flagCarry[setSel] = (value >> 16) & 0x1;
-        } else {
-          return 1;
-        }
-        break;
+        switch (implicit) {
+          case 0:
+            incrementIndexShort(-1, -1, -1); // Decrement do not store in register
+            break;
+          case 0022:         
+            return 1;
+          case 0062:        
+            incrementIndexShort(-1, REG_B, REG_C);  
+            break;       
+          case 0111:
+            incrementIndexLong(-1, -1, -1);  
+            break;
+          case 0113: 
+            incrementIndexLong(-1, REG_B, REG_C);  
+            break;        
+          case 0115:
+            incrementIndexLong(-1, REG_D, REG_E);  
+            break;  
+          case 0117:
+            incrementIndexLong(-1, REG_H, REG_L);  
+            break;                
+          case 0174:
+            incrementIndexShort(-1, REG_D, REG_E);  
+            break;      
+          case 0176:
+            incrementIndexShort(-1, REG_H, REG_L);  
+            break;     
+          default:
+            return 1;                   
+        } 
+        break; 
       case 3:
        if (is2200) return 1; // halt if 2200.
         switch (implicit) {

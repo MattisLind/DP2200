@@ -1490,16 +1490,19 @@ int IOController::Disk9370Device::Disk9370Drive::openFile (std::string fileName,
   writeProtected = wp;
   if (stat (fileName.c_str(), &buffer) == 0) {
     printLog("INFO", "Open old file %s.\n", fileName.c_str());
+    //file = fopen (fileName.c_str(), "r+");
     file = fopen (fileName.c_str(), "w");
   } else {
     char b [256];
-    printLog("INFO", "Open mew file %s.\n", fileName.c_str());
+    printLog("INFO", "Open new file %s.\n", fileName.c_str());
     memset(b, 0, 256);
     file = fopen (fileName.c_str(), "w");
-    for (int i=0; i < 0312*027*023; i++) {
+    for (int i=0; i < 203*20*24; i++) {
       fwrite(b, 256, 1, file); 
     }
     rewind(file);
+    //fclose(file);
+    //file = fopen (fileName.c_str(), "r+");
   }
   return 0;
 }
