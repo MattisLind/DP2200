@@ -11,9 +11,9 @@ Build the simulator using make.
 
 Tested primairly on MACOS but builds on Linux as well.
 
-The actual cpu simulator code is based on a 8008 simultor by Mike Willegal. I have heavily modified it for Datapoint 2200 and wrapped it into C++.
+The actual cpu simulator code is based on a 8008 simultor by Mike Willegal. I have heavily modified it for the Datapoint 2200 and Datapoint 5500 instruction set and wrapped it into C++.
 
-The simulator now also have support for the 9380 floppy drive system. The floppy drive supports four disks. To be able to run DOS.C use the DP1100DisketteBoot.tap from the DOS.C directory. 
+The simulator now also have support for the 9380 floppy drive system, 9350 cardtridge disk and 9370 top-loaded disk. The floppy drive supports four disks. To be able to run DOS.C use the DP1100DisketteBoot.tap from the DOS.C directory. 
 Attach is on cassette 0
 ```
 ATTACH F=DP1100DisketteBoot.tap
@@ -47,6 +47,22 @@ Please note that the DISPLAY button has to be pressed to have the output printed
 
 Please note that all files are mounted read-only since writing has not yet been implemented.
 
+## 5500 mode
+
+By using the command ```SET CPU=5500``` the simulator supports the 5500 CPU which is quite a big leap compared to the 2200. The 5500 has simple memory management with a user / supervisor mode and memory protection. The MMU also support relocation using a base register. Many old instruction in the 2200 which operated on the A register now can operate on any register using a prefix-byte. There is a new X register used for paged addressing.
+
+The 5500 also have a 4k ROM memory that contains powerup code, a debugger and a restart/boot routine. The boot routine is able to boot from cassette, 9380 floppy drive, 9350 cartridge disk and 9370 multiplatter drives.
+
+The DOS.C operating system can be booted from the restart/boot routne by simply attach the image-file and then do a restart command.
+
+```
+SET CPU=5500
+AT F=../DOS.C/001.IMD T=FLOPPY
+RESTART
+```
+
+All images in the DOS.C directory is bootable in 5500 mode except for 011.IMD (which can only be booted in 2200 mode with the ```DP1100DisketteBoot.tap``` file loaded as described above) and 005.IMD which unfortunately is result of corrupt read (one sector of track 64 is missing).  
+
 ## How to use the simulator
 
 Short description for how to use the simlator. The simulator has three windows. TAB (or Shift-TAB) is used to cycle between windows. The active windo has a highlighted boarder and a cursor visible (the Datapoint 2200 window may have the cursor turned off since it is controlled by the software).
@@ -56,6 +72,7 @@ Short description for how to use the simlator. The simulator has three windows. 
 | Command   |  Parameters  |  Description |
 |-----------|--------------|--------------|
 | HELP      |              |  Show help information.  |
+| SET       | CPU<br>AUTORESTART<br>MEMORY | Set CPU type, either 2200 (default) or 5500. Set autorestart, TRUE or FALSE on a 5500. Set memory size. Value between 2 and 64 is valid |
 | ATTACH    | FILE<br>DRIVE<br>TYPE<br>WRITEPROTECT<br>WRITEBACK  | Attach a file to the simulator. TYPE indicate the device to attach to. Either CASSETTE (default), FLOPPY or PRINTER. FILE is the file name to open. DRIVE is the drive number. Default is drive 0. WRITEPROTECT is if the attached media is to be writeprotected in the simulator. TRUE or FALSE. Default is TRUE. WRITEBACK indicate if the media shall be written back to the file. TRUE or FALSE. Default is FALSE. |
 | STEP      |              |  Step one instruction. |
 | DETACH     | DRIVE<br>TYPE |  Detach file from cassette drive. Parameter DRIVE specify the drive used. Default drive is 0.│TYPE specify either CASSETTE, FLOPPY or PRINTER. CASSETTE is default.|
