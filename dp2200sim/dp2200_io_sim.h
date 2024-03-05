@@ -307,6 +307,7 @@ class IOController {
       std::string fileName;
       FILE * file;
       bool writeProtected;
+      //unsigned char diskBuffer [203*20*24*256];
       public:
       int openFile (std::string fileName, bool writeProtected);
       void closeFile();

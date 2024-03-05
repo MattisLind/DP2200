@@ -287,12 +287,14 @@ char *  dp2200_cpu::disassembleLine(char * outputBuf, int size, bool octal, int 
       } else {
         snprintf(outputBuf, size, "%s %04X", instructionSet[set*256+instruction].mnemonic, (readMem(address+2) << 8) | readMem(address+1));
       }
+    break;
     case 4:
       if (octal) {
         snprintf(outputBuf, size, "%s %03o,%03o ", instructionSet[set*256+instruction].mnemonic, readMem(address+1), readMem(address+2));
       } else {
         snprintf(outputBuf, size, "%s %02X,%02X ", instructionSet[set*256+instruction].mnemonic, readMem(address+1), readMem(address+2));
-      }    
+      }  
+    break;  
     case 6:
       if (octal) {
         snprintf(outputBuf, size, "%s %06o,%03o", instructionSet[set*256+instruction].mnemonic, (readMem(address+2) << 8) | readMem(address+1),readMem(address+3));
@@ -982,16 +984,20 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       op = (inst & 0x38) >> 3;
       switch (op) {
       case 0: /* rotate left - SLC */
-        result = (int)regSets[setSel].r.regA << 1;
-        regSets[setSel].r.regA =
+        r=registerFromImplict(implicit);
+        //printLog("INFO", "SLC implict = %03o r=%d \n", implicit, r);
+        result = (int)regSets[setSel].regs[r] << 1;
+        regSets[setSel].regs[r] =
             (unsigned char)(((result >> 8) | result) & 0xff);
-        flagCarry[setSel] = regSets[setSel].r.regA & 1;
+        flagCarry[setSel] = regSets[setSel].regs[r] & 1;
         break;
       case 1: /* rotate right - SRC */
-        flagCarry[setSel] = regSets[setSel].r.regA & 1;
-        result = (int)(regSets[setSel].r.regA >> 1);
-        regSets[setSel].r.regA =
-            (unsigned char)(((regSets[setSel].r.regA << 7) | result) & 0xff);
+        r=registerFromImplict(implicit);
+        //printLog("INFO", "SRC implict = %03o r=%d \n", implicit, r);
+        flagCarry[setSel] = regSets[setSel].regs[r] & 1;
+        result = (int)(regSets[setSel].regs[r] >> 1);
+        regSets[setSel].regs[r] =
+            (unsigned char)(((regSets[setSel].regs[r] << 7) | result) & 0xff);
         break;
       case 3:
           r=registerFromImplict(implicit);

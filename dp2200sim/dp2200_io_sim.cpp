@@ -315,7 +315,7 @@ int IOController::CassetteDevice::exRBK() {
   stopAtGap = true; 
   printStatus("exRBK Forward read one block");
   removeAllCallbacks();
-  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY | CASSETTE_STATUS_INTER_RECORD_GAP | CASSETTE_STATUS_END_OF_TAPE ); // Clear ready bit
   readFromTape();
   return 0;
 }
@@ -328,7 +328,7 @@ int IOController::CassetteDevice::exBSP() {
   stopAtGap = true; 
   printStatus("exBSP Backwards read one block");
   removeAllCallbacks();
-  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY | CASSETTE_STATUS_INTER_RECORD_GAP | CASSETTE_STATUS_END_OF_TAPE ); // Clear ready bit
   readFromTape();
 
   return 0;
@@ -339,7 +339,7 @@ int IOController::CassetteDevice::exSF() {
   stopAtGap = false; 
   printStatus("exSF Read Forward");
   removeAllCallbacks();
-  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY | CASSETTE_STATUS_INTER_RECORD_GAP | CASSETTE_STATUS_END_OF_TAPE ); // Clear ready bit
   readFromTape();
   return 0;
 }
@@ -349,13 +349,24 @@ int IOController::CassetteDevice::exSB() {
   stopAtGap = false; 
   printStatus("exSB Read Backwards");
   removeAllCallbacks();
-  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY); // Clear ready bit
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY | CASSETTE_STATUS_INTER_RECORD_GAP | CASSETTE_STATUS_END_OF_TAPE ); // Clear ready bit
   readFromTape();
   return 0;
 }
 int IOController::CassetteDevice::exRewind() {
+  struct timespec then;
   if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_INTER_RECORD_GAP | CASSETTE_STATUS_END_OF_TAPE | CASSETTE_STATUS_READ_READY | CASSETTE_STATUS_WRITE_READY);
   tapeDrive[tapeDeckSelected]->rewind();
+  timeoutInNanosecs(&then, 1000000);  
+  outStandingCallbacks.push_back( addToTimerQueue([cd=this](class callbackRecord * c)->int {
+    printLog("INFO", "1 ms timeout rewind ENTRY\n");
+    cd->removeFromOutstandCallbacks(c);
+    cd->statusRegister |= (CASSETTE_STATUS_END_OF_TAPE | CASSETTE_STATUS_DECK_READY);
+    cd->removeAllCallbacks();
+    printLog("INFO", "1 ms timeout rewind EXIT\n");
+    return 0;
+  }, then));  
   return 0;
 }
 int IOController::CassetteDevice::exTStop() {
@@ -1363,7 +1374,7 @@ int IOController::Disk9370Device::exCom1(unsigned char data){
         int ret;
         long address=a;
         printLog("INFO", "3ms timeout 9370 disk track format is ready on drive %d address %08X\n", t->selectedDrive,address);
-        memset(t->buffer[t->selectedBufferPage],0150,256);   
+        memset(t->buffer[t->selectedBufferPage],0377,256);   
         for (auto i=0; i<24; i++) {  
           printLog("INFO", "Formatting address=%08X\n",address);
           ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
@@ -1490,13 +1501,13 @@ int IOController::Disk9370Device::Disk9370Drive::openFile (std::string fileName,
   writeProtected = wp;
   if (stat (fileName.c_str(), &buffer) == 0) {
     printLog("INFO", "Open old file %s.\n", fileName.c_str());
-    //file = fopen (fileName.c_str(), "r+");
-    file = fopen (fileName.c_str(), "w");
+    file = fopen (fileName.c_str(), "r+");
+    //file = fopen (fileName.c_str(), "w");
   } else {
     char b [256];
     printLog("INFO", "Open new file %s.\n", fileName.c_str());
     memset(b, 0, 256);
-    file = fopen (fileName.c_str(), "w");
+    file = fopen (fileName.c_str(), "r+");
     for (int i=0; i < 203*20*24; i++) {
       fwrite(b, 256, 1, file); 
     }
@@ -1508,6 +1519,9 @@ int IOController::Disk9370Device::Disk9370Drive::openFile (std::string fileName,
 }
 
 void  IOController::Disk9370Device::Disk9370Drive::closeFile() {
+  /*for (int i=0; i < 203*20*24; i++) {
+    fwrite(diskBuffer+i*256, 1, 256, file); 
+  }*/
   fclose(file);
   file = NULL;
 }
@@ -1515,13 +1529,15 @@ void  IOController::Disk9370Device::Disk9370Drive::closeFile() {
 int IOController::Disk9370Device::Disk9370Drive::readSector(char * buffer, long address) {
   fseek(file, address, SEEK_SET);
   fread(buffer, 1, 256, file);
+  //memcpy(buffer, diskBuffer+address, 256);
   return 0;
 }
 
 int IOController::Disk9370Device::Disk9370Drive::writeSector(char * buffer, long address) {
   if (writeProtected) return 1;
   fseek(file, address, SEEK_SET);
-  fwrite(buffer, 1, 256, file);  
+  fwrite(buffer, 1, 256, file); 
+  //memcpy(diskBuffer+address, buffer, 256);
   return 0;
 }
 
