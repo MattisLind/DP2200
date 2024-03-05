@@ -975,6 +975,31 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         stack.stk[stackptr] = sdata1;
         stackptr = (stackptr + 1) & 0xf;
         break;
+      case 6:
+        if (implicit == 0111) {
+          if (is5500 && userMode) {
+            privilegeViolation = true;
+            return 0;
+          }
+          int dstAddress = ((regSets[setSel].r.regH << 8) | regSets[setSel].r.regL ) & pMask;
+          int count = ((regSets[setSel].r.regC & 0xf) == 0)?16:(regSets[setSel].r.regC & 0xf);
+          int iterations = ((regSets[setSel].r.regC & 0xf0) == 0)?256:(regSets[setSel].r.regC & 0xf0);
+          do {
+            memory->write(dstAddress, ioCtrl->input(), previousP);
+            dstAddress++;
+            count--;
+          } while (count > 0);
+          iterations -= 16;
+          if (iterations == 0) {
+            flagZero[setSel] = 1;
+          } else {
+            flagZero[setSel] = 0;
+          }
+          regSets[setSel].r.regC = 0xff & (count | iterations);
+          regSets[setSel].r.regH = 0xff & (dstAddress >> 8);
+          regSets[setSel].r.regL = 0xff & dstAddress;
+        } else return 1;
+        break;
       default:
         /* Unimplemented */
         return 1;
