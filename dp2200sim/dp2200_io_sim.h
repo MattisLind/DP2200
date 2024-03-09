@@ -103,6 +103,7 @@ class IOController {
     void removeFromOutstandCallbacks (class callbackRecord *);
     void removeAllCallbacks();
     void printStatus(const char *);
+    const char * endOfTapeStrings[3]={"Normal", "End of tape", "Cassette not in place"};
     public:
     CassetteTape * tapeDrive[2];
     unsigned char input ();

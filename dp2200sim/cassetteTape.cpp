@@ -38,6 +38,7 @@ void CassetteTape::setWriteProtected(bool wp) {
 bool  CassetteTape::readBlock (unsigned char * buffer, int * size) {
   int maxSize = *size;
   int count;
+  if (file==NULL) return false;
   count = fread(size, 4, 1, file);
   if (count != 1) return false;
   if (*size>maxSize) {
@@ -57,6 +58,7 @@ bool  CassetteTape::readBlock (int address, std::function<void(int address, unsi
   int maxSize = *size;
   unsigned char tmp;
   int count;
+  if (file==NULL) return false;
   count = fread(size, 4, 1, file);
   if (count != 1) return false;
   if (*size>maxSize) {
@@ -84,6 +86,7 @@ bool  CassetteTape::readBlock (int address, std::function<void(int address, unsi
 
 void CassetteTape::rewind() {
   state=TAPE_GAP;
+  if (file==NULL) return;
   ::rewind(file);
 }
 
@@ -141,8 +144,9 @@ bool CassetteTape::isTapeOverGap() {
   return state ==  TAPE_GAP; 
 }
 
-bool CassetteTape::readByte(bool forward, unsigned char * data) {
-  bool ret=false;
+int CassetteTape::readByte(bool forward, unsigned char * data) {
+  bool ret=0;
+  if (file==NULL) return 2;
   if (forward) {
     if (state == TAPE_GAP) {
       fread(&currentBlockSize, 4, 1, file);  
@@ -160,7 +164,7 @@ bool CassetteTape::readByte(bool forward, unsigned char * data) {
         state = TAPE_GAP;
         fread(&dummy, 4, 1, file); // read end of record size marker 
         if (feof(file)) {
-          ret = true;
+          ret = 1;
         }
         printLog("INFO", "readByte(forward) read the end of record blockSizemarker=%d state is now=%s direction=forward\n", dummy, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
       }
@@ -190,7 +194,7 @@ bool CassetteTape::readByte(bool forward, unsigned char * data) {
         fread(&dummy, 4, 1, file); // read end of record size marker 
         fseek(file, -4, SEEK_CUR);
         if (ftell(file)== 0L) {
-          return true;
+          return 1;
         }
         printLog("INFO", "readByte (backwards) read the end of record blockSizemarker=%d state is now=%s direction=backwards\n", dummy, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
       }

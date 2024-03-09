@@ -239,9 +239,16 @@ void IOController::CassetteDevice::readFromTape() {
       timeoutInNanosecs(&then, 2800000); 
       cd->outStandingCallbacks.push_back( addToTimerQueue([cd=cd](class callbackRecord * c)->int {
         unsigned char data; 
+        int endOfTape;
         printLog("INFO", "2.8ms timeout to read the actual data after a gap. Setting data ready ENTRY\n");
         cd->removeFromOutstandCallbacks(c);
-        cd->tapeDrive[cd->tapeDeckSelected]->readByte(cd->forward,  &data);
+        endOfTape = cd->tapeDrive[cd->tapeDeckSelected]->readByte(cd->forward,  &data);
+        printLog("INFO", "Read one byte when in tape gap %03o from tape which is now %s\n", data, cd->endOfTapeStrings[endOfTape]);
+        if (endOfTape==2) {
+          cd->statusRegister &= ~(CASSETTE_STATUS_CASSETTE_IN_PLACE); 
+          cd->removeAllCallbacks(); 
+          return 0;
+        }        
         cd->statusRegister |= (CASSETTE_STATUS_READ_READY);
         cd->dataRegister = data;      
         cd->readFromTape();
@@ -256,11 +263,17 @@ void IOController::CassetteDevice::readFromTape() {
     timeoutInNanosecs(&then, 2800000); // 2.8 ms timeout
     outStandingCallbacks.push_back( addToTimerQueue([cd=this](class callbackRecord * c)->int {
       unsigned char data; 
-      bool endOfTape;
+      int endOfTape;
       printLog("INFO", "2.8ms timeout ENTRY\n");
       cd->removeFromOutstandCallbacks(c); 
       endOfTape = cd->tapeDrive[cd->tapeDeckSelected]->readByte(cd->forward,  &data);
-      printLog("INFO", "Read one byte %03o from tape eof=%s\n", data, endOfTape?"true":"false");
+      printLog("INFO", "Read one byte when outside tape gap %03o from tape which is now %s\n", data, cd->endOfTapeStrings[endOfTape]);
+      if (endOfTape==2) {
+        cd->statusRegister &= ~(CASSETTE_STATUS_CASSETTE_IN_PLACE); 
+        cd->removeAllCallbacks(); 
+        return 0;
+      }
+      
       cd->statusRegister |= (CASSETTE_STATUS_READ_READY);
       cd->dataRegister = data;
       if (cd->tapeDrive[cd->tapeDeckSelected]->isTapeOverGap()) {
@@ -282,7 +295,7 @@ void IOController::CassetteDevice::readFromTape() {
             }, then));
           }  
           cd->statusRegister |= (CASSETTE_STATUS_INTER_RECORD_GAP);
-          if (!cd->stopAtGap && !endOfTape) {
+          if (!cd->stopAtGap && (endOfTape!=1)) {
             printLog("INFO", "Initiating read of another byte from tape after the gap.\n");
             cd->readFromTape(); 
           }
@@ -290,14 +303,23 @@ void IOController::CassetteDevice::readFromTape() {
           return 0;
         }, then));
 
-        if (endOfTape) {
-          timeoutInNanosecs(&then, 70000000);  // we have read the last byte of the tape, waited 70 ms and then we report end of tape
+        if (endOfTape==1) {
+          timeoutInNanosecs(&then, 2800000);  // we have read the last byte of the tape, waited 70 ms and then we report end of tape
           cd->outStandingCallbacks.push_back( addToTimerQueue([cd=cd](class callbackRecord * c)->int {
-            printLog("INFO", "70 ms timeout to set tape end of tape ENTRY\n");
+            struct timespec then;
+            printLog("INFO", "2.8 ms timeout to set inter-record gap at end of tape ENTRY\n");
             cd->removeFromOutstandCallbacks(c);
-            cd->statusRegister |= (CASSETTE_STATUS_END_OF_TAPE);
-            cd->removeAllCallbacks();
-            printLog("INFO", "70 ms timeout to set tape gap and stop if necessary EXIT\n");
+            cd->statusRegister |= (CASSETTE_STATUS_INTER_RECORD_GAP);
+            timeoutInNanosecs(&then, 70000000);  // we have read the last byte of the tape, waited 70 ms and then we report end of tape
+            cd->outStandingCallbacks.push_back( addToTimerQueue([cd=cd](class callbackRecord * c)->int {
+              printLog("INFO", "70 ms timeout to set tape end of tape ENTRY\n");
+              cd->removeFromOutstandCallbacks(c);
+              cd->statusRegister |= (CASSETTE_STATUS_END_OF_TAPE | CASSETTE_STATUS_DECK_READY);
+              cd->removeAllCallbacks();
+              printLog("INFO", "70 ms timeout to set tape end of tape EXIT\n");
+              return 0;
+            }, then));            
+            printLog("INFO", "2.8 ms timeout to set inter-record gap at end of tape EXIT\n");
             return 0;
           }, then));
         }
@@ -311,6 +333,8 @@ void IOController::CassetteDevice::readFromTape() {
 }
 
 int IOController::CassetteDevice::exRBK() {
+  if (!(statusRegister & CASSETTE_STATUS_DECK_READY)) return 0;
+  if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
   forward = true;
   stopAtGap = true; 
   printStatus("exRBK Forward read one block");
@@ -320,9 +344,13 @@ int IOController::CassetteDevice::exRBK() {
   return 0;
 }
 int IOController::CassetteDevice::exWBK() {
+  if (!(statusRegister & CASSETTE_STATUS_DECK_READY)) return 0;
+  if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
+  printStatus("exBSP Backwards read one block");
   return 1;
 }
 int IOController::CassetteDevice::exBSP() {
+  if (!(statusRegister & CASSETTE_STATUS_DECK_READY)) return 0;
   if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
   forward = false;
   stopAtGap = true; 
@@ -334,6 +362,7 @@ int IOController::CassetteDevice::exBSP() {
   return 0;
 }
 int IOController::CassetteDevice::exSF() {
+  if (!(statusRegister & CASSETTE_STATUS_DECK_READY)) return 0;
   if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
   forward = true;
   stopAtGap = false; 
@@ -344,6 +373,7 @@ int IOController::CassetteDevice::exSF() {
   return 0;
 }
 int IOController::CassetteDevice::exSB() {
+  if (!(statusRegister & CASSETTE_STATUS_DECK_READY)) return 0;
   if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
   forward = false;
   stopAtGap = false; 
@@ -355,7 +385,9 @@ int IOController::CassetteDevice::exSB() {
 }
 int IOController::CassetteDevice::exRewind() {
   struct timespec then;
+  if (!(statusRegister & CASSETTE_STATUS_DECK_READY)) return 0;
   if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
+  printStatus("exrewind Rewind");
   statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_INTER_RECORD_GAP | CASSETTE_STATUS_END_OF_TAPE | CASSETTE_STATUS_READ_READY | CASSETTE_STATUS_WRITE_READY);
   tapeDrive[tapeDeckSelected]->rewind();
   timeoutInNanosecs(&then, 1000000);  

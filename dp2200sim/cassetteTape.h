@@ -44,7 +44,7 @@ class CassetteTape {
 
   int isChecksumOK(unsigned char * buffer, int size);
 
-  bool readByte(bool direction, unsigned char * data);
+  int readByte(bool direction, unsigned char * data);
 
   bool isTapeOverGap();
 };
