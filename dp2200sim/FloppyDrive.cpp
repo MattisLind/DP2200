@@ -101,6 +101,7 @@ int FloppyDrive::validateTrack(int track) {
   bool hasBadBlocks=false;
   int sectorMap[26];
   int mode = fgetc(file);
+  for (int i=0; i<26; i++) diskImage[track][sectorMap[i]-1].sectorType = 0;
   if (feof(file)) {
     return FILE_PREMATURE_EOF;
   }
@@ -130,7 +131,7 @@ int FloppyDrive::validateTrack(int track) {
   }
   if (numSectors != 26) {
     printLog("INFO", "Got numSectors=%d on track %d file pos=%ld",numSectors, track, ftell(file));
-    return FILE_WRONG_NUM_SECTORS;
+    //return FILE_WRONG_NUM_SECTORS;
   }    
   int sectorSize = fgetc(file);
   if (feof(file)) {
@@ -139,7 +140,7 @@ int FloppyDrive::validateTrack(int track) {
   if (sectorSize!=0) {
     return FILE_WRONG_SECTORSIZE;
   }
-  for (int i=0; i<26; i++) {
+  for (int i=0; i<numSectors; i++) {
     int sectorId = fgetc(file);
     if (feof(file)) {
       return FILE_PREMATURE_EOF;
@@ -148,7 +149,7 @@ int FloppyDrive::validateTrack(int track) {
   }
   if (head & 0x80) {
     // read the sector cylinder map
-    for (int i=0; i<26; i++) {
+    for (int i=0; i<numSectors; i++) {
       fgetc(file);
       if (feof(file)) {
         return FILE_PREMATURE_EOF;
@@ -157,14 +158,14 @@ int FloppyDrive::validateTrack(int track) {
   }
   if (head & 0x40) {
     // read the sector cylinder map
-    for (int i=0; i<26; i++) {
+    for (int i=0; i<numSectors; i++) {
       fgetc(file);
       if (feof(file)) {
         return FILE_PREMATURE_EOF;
       }
     } 
   }
-  for (int i=0; i<26; i++) {
+  for (int i=0; i<numSectors; i++) {
     int sectorHeader = fgetc(file);  
     diskImage[track][sectorMap[i]-1].sectorType = sectorHeader;
     printLog("INFO","track=%d sector=%d sectorType=%d\n", track, sectorMap[i]-1, diskImage[track][sectorMap[i]-1].sectorType);
