@@ -2041,7 +2041,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
     int i, p;
 
     p = 0;
-    flagParity[setSel] = 1;
+    flagParity[setSel] = 0;
     for (i = 0; i < 8; i++) {
       flagParity[setSel] = flagParity[setSel] ^ ((result >> i) & 1);
       if (result & (1 << i)) {
@@ -2049,7 +2049,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       }
     }
     if (p & 1) {
-      flagParity[setSel] = 0;
+      flagParity[setSel] = 1;
     }
   }
 
