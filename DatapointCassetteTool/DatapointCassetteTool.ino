@@ -112,14 +112,38 @@ void shiftIn (char bit) {
   }
 }
 
+char buffer[] = {};
+
 void writeCassette() {
+  char mask;
+  int bitsinoutbuffer = 0;
+  int shifts;
+  int shiftOut; 
   spi_tx_reg(SPI2, 0xff); // dummy write 
   spi_rx_reg(SPI2); // dummy read
   spi_irq_enable(SPI2, SPI_RXNE_INTERRUPT);
   // fill ringbuffer with  "1" pattern (even number of bytes worth. Approximately 270 bytes
-  for (int i=0; i++; i <270) { 
+  for (int i=0; i<270; i++) { 
     while (txBuffer.isBufferFull()) Serial.write('.');
     txBuffer.writeBuffer(0xcc);
+  }  
+  for (i=0; i < sizeof buffer; i++) {
+    char c = buffer[i];
+    // Add sync pattern
+    shiftIn(0);
+    shiftIn(1);
+    shiftIn(0);
+    mask = 0x80;
+    for (i=7; i >=0; i--) {
+      shiftIn(c & mask);
+      mask = mask >> 1;  
+    }
+    shifts = 10 - bitsinoutbuffer; // 32 - 22 since we now have 22 bits to be shifted out and concatenated with the remaining bits.
+    shiftOut = shiftOut | bitacc << shifts;
+    bitsinoutbuffer +=22;  // Add 22 new bits.
+    for (;bitsinoutbuffer >= 8; bitsinoutbuffer -= 8) {
+      txBuffer.writeBuffer((shiftout >> 24) & 0xff);
+    }
   }
 }
 
