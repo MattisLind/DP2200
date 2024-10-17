@@ -40,6 +40,11 @@ When buffer is out of chars
 
 Then fill ringbuffer with  0 pattern (even number of bytes worth. Approximately 270 bytes
 
+Unit test case 
+
+Do not use interrupts. Instead we just loop over and output over SPI. Do the check on the SIP interface.
+
+
  */
 
 SPIClass SPI_2(2);
@@ -124,9 +129,11 @@ void writeCassette() {
   spi_irq_enable(SPI2, SPI_RXNE_INTERRUPT);
   // fill ringbuffer with  "1" pattern (even number of bytes worth. Approximately 270 bytes
   for (int i=0; i<270; i++) { 
-    while (txBuffer.isBufferFull()) Serial.write('.');
-    txBuffer.writeBuffer(0xcc);
+    while (!spi_is_tx_empty(SPI2));
+    spi_tx_reg(SPI2, 0xcc);
   }  
+  // The CC pattern has 0 as last bit.
+  lastbit = 0;
   for (i=0; i < sizeof buffer; i++) {
     char c = buffer[i];
     // Add sync pattern
@@ -139,12 +146,27 @@ void writeCassette() {
       mask = mask >> 1;  
     }
     shifts = 10 - bitsinoutbuffer; // 32 - 22 since we now have 22 bits to be shifted out and concatenated with the remaining bits.
-    shiftOut = shiftOut | bitacc << shifts;
+    shiftOut = shiftOut | bitAcc << shifts;
     bitsinoutbuffer +=22;  // Add 22 new bits.
     for (;bitsinoutbuffer >= 8; bitsinoutbuffer -= 8) {
-      txBuffer.writeBuffer((shiftout >> 24) & 0xff);
+      while (!spi_is_tx_empty(SPI2));
+      spi_tx_reg(SPI2, (shiftout >> 24) & 0xff);  
     }
   }
+  for(i=8-bitsinoutbuffer;i>=0; i--) {
+    shiftIn(1);  
+  }
+  shiftOut = shiftOut | bitAcc << (32 - bitsinoutbuffer) ;
+  while (!spi_is_tx_empty(SPI2));
+  spi_tx_reg(SPI2, (shiftout >> 24) & 0xff);
+  for (int i=0; i<270; i++) { 
+    while (!spi_is_tx_empty(SPI2));
+    if (lastbit == 1) {
+      spi_tx_reg(SPI2, 0x33); // if we had a 1 as last bit we need to start with 0
+    } else {
+      spi_tx_reg(SPI2, 0xcc); // if we had a 0 as last bit we need to start with 1
+    }
+  } 
 }
 
 // the loop function runs over and over again forever
