@@ -101,29 +101,30 @@ char lastBit = 0;
 long bitAcc = 0;
 
 void shiftIn (char bit) {
-  if (bit) {
+  if (bit) {   
     lastBit ^= 1; 
     bitAcc = bitAcc << 1;
     bitAcc = bitAcc | lastBit;
     bitAcc = bitAcc << 1;
-    bitAcc = bitAcc | lastBit;       
+    bitAcc = bitAcc | lastBit;           
   } else {
     lastBit ^= 1; 
     bitAcc = bitAcc << 1;
     bitAcc = bitAcc | lastBit;
     lastBit ^= 1; 
     bitAcc = bitAcc << 1;
-    bitAcc = bitAcc | lastBit;     
+    bitAcc = bitAcc | lastBit;        
   }
 }
 
-char buffer[] = {};
+char buffer[] = {0xff, 0x00};
 
 void writeCassette() {
   char mask;
   int bitsinoutbuffer = 0;
   int shifts;
-  int shiftOut; 
+  int shiftOut = 0; 
+  int i;
   spi_tx_reg(SPI2, 0xff); // dummy write 
   spi_rx_reg(SPI2); // dummy read
   spi_irq_enable(SPI2, SPI_RXNE_INTERRUPT);
@@ -133,7 +134,7 @@ void writeCassette() {
     spi_tx_reg(SPI2, 0xcc);
   }  
   // The CC pattern has 0 as last bit.
-  lastbit = 0;
+  lastBit = 0;
   for (i=0; i < sizeof buffer; i++) {
     char c = buffer[i];
     // Add sync pattern
@@ -141,7 +142,7 @@ void writeCassette() {
     shiftIn(1);
     shiftIn(0);
     mask = 0x80;
-    for (i=7; i >=0; i--) {
+    for (int j=7; j >=0; j--) {
       shiftIn(c & mask);
       mask = mask >> 1;  
     }
@@ -150,18 +151,18 @@ void writeCassette() {
     bitsinoutbuffer +=22;  // Add 22 new bits.
     for (;bitsinoutbuffer >= 8; bitsinoutbuffer -= 8) {
       while (!spi_is_tx_empty(SPI2));
-      spi_tx_reg(SPI2, (shiftout >> 24) & 0xff);  
+      spi_tx_reg(SPI2, (shiftOut >> 24) & 0xff);  
+      shiftOut = shiftOut << 8; 
     }
   }
-  for(i=8-bitsinoutbuffer;i>=0; i--) {
+  for(i=8-bitsinoutbuffer;i>0; i-=2) {
     shiftIn(1);  
   }
-  shiftOut = shiftOut | bitAcc << (32 - bitsinoutbuffer) ;
   while (!spi_is_tx_empty(SPI2));
-  spi_tx_reg(SPI2, (shiftout >> 24) & 0xff);
+  spi_tx_reg(SPI2, bitAcc & 0xff);
   for (int i=0; i<270; i++) { 
     while (!spi_is_tx_empty(SPI2));
-    if (lastbit == 1) {
+    if (lastBit == 1) {
       spi_tx_reg(SPI2, 0x33); // if we had a 1 as last bit we need to start with 0
     } else {
       spi_tx_reg(SPI2, 0xcc); // if we had a 0 as last bit we need to start with 1
