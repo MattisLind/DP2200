@@ -1,11 +1,19 @@
 #include <SPI.h>
-#include "RingBuffer.h"
-
-class RingBuffer txBuffer;
 
 /*
  * 
- *t
+ * 
+ * // The Datapoint 2200 records data bits using a FSK method, namely one
+// half cycle at frequency X means a one bit and one full cycle at
+// frequency 2X means a zero bit.  This is stated this way because
+// the samples processed here are off a tape recorder running at 1 7/8 ips
+// while the datapoint runs its tape at 7.5 ips, a factor of four times
+// faster.  To be specific, at this reduced speed, a one bit is a half cycle
+// of 481.25 Hz and a zero bit is a full cycle of 962.5 Hz.  The original
+// 7.5 ips frequencies are 1925 Hz and 3850 Hz.  The preamble while the
+// tape is coming up to speed is a train of 1 bits.
+
+Thus the pwmrate has to be 962.5 *2 = 1925 Hz
 
 
 
@@ -47,40 +55,34 @@ Do not use interrupts. Instead we just loop over and output over SPI. Do the che
 
  */
 
+
+HardwareTimer pwmtimer(1);
+const int pwmOutPin = PA8; // pin10
+// Connect PA8 to PB13 as the clock input for SPI2
 SPIClass SPI_2(2);
 
 // the setup function runs once when you press reset or power the board
 void setup() {
+  int prescaler = 73;
+  int divisor = 512;
   // initialize digital pin LED_BUILTIN as an output.
   SPI_2.beginSlave(); //Initialize the SPI_2 port.
   SPI_2.setBitOrder(MSBFIRST); // Set the SPI_2 bit order
   SPI_2.setDataMode(SPI_MODE0); //Set the  SPI_2 data mode 0
+  pinMode(pwmOutPin, PWM);
+  pwmtimer.pause();
+  pwmtimer.setPrescaleFactor(prescaler);
+  pwmtimer.setOverflow(divisor); 
+  pwmtimer.refresh();
+  pwmtimer.resume();
+  pwmWrite(pwmOutPin, divisor>>1);
+  pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(9600);
   Serial.print("DATAPOINT CASSETTE TOOL> ");
 
 }
 
 int flag=0;
-
-extern "C" void __irq_spi2 (void) {
-  unsigned char ch;     
-  if (spi_is_tx_empty(SPI2)){  
-    if (txBuffer.isBufferEmpty()) {
-      spi_tx_reg(SPI2, 0xff);  
-      if (flag) {
-        spi_irq_disable(SPI2, SPI_RXNE_INTERRUPT);  
-        flag = 0;
-      }
-    } else {
-      flag = 1;
-      ch = txBuffer.readBuffer();         
-      spi_tx_reg(SPI2, ch);  
-    }    
-  }
-  if (spi_is_rx_nonempty(SPI2)) {
-    ch = spi_rx_reg(SPI2);
-  }
-}
 
 /*
  * 
@@ -119,15 +121,17 @@ void shiftIn (char bit) {
 
 char buffer[] = {0xff, 0x00};
 
+
+
+
 void writeCassette() {
   char mask;
   int bitsinoutbuffer = 0;
   int shifts;
   int shiftOut = 0; 
   int i;
-  spi_tx_reg(SPI2, 0xff); // dummy write 
-  spi_rx_reg(SPI2); // dummy read
-  spi_irq_enable(SPI2, SPI_RXNE_INTERRUPT);
+  //spi_tx_reg(SPI2, 0xff); // dummy write 
+  //spi_rx_reg(SPI2); // dummy read
   // fill ringbuffer with  "1" pattern (even number of bytes worth. Approximately 270 bytes
   for (int i=0; i<270; i++) { 
     while (!spi_is_tx_empty(SPI2));
@@ -151,7 +155,7 @@ void writeCassette() {
     bitsinoutbuffer +=22;  // Add 22 new bits.
     for (;bitsinoutbuffer >= 8; bitsinoutbuffer -= 8) {
       while (!spi_is_tx_empty(SPI2));
-      spi_tx_reg(SPI2, (shiftOut >> 24) & 0xff);  
+      spi_tx_reg(SPI2, (shiftOut >> 24) & 0xff); 
       shiftOut = shiftOut << 8; 
     }
   }
@@ -168,24 +172,33 @@ void writeCassette() {
       spi_tx_reg(SPI2, 0xcc); // if we had a 0 as last bit we need to start with 1
     }
   } 
+  spi_tx_reg(SPI2, 0x00);
 }
 
 // the loop function runs over and over again forever
 void loop() {
-  int ch;
+  int ch;  
+  //Serial.println("HEJ");
   if (Serial.available()) {
     ch = Serial.read();
-    switch (c) {
+    Serial.write(ch);
+    Serial.write("\r\n");
+    switch (ch) {
       case 'S':  // Start 
       case 's':
+        Serial.println("Starting tape");
         break;
       case 'T':  // Stop
       case 't':
+        Serial.println("Stoping tape");
         break;
       case 'W':  // Write
       case 'w':
+        Serial.println("Writing buffer");
         writeCassette();
         break;
     }
+
+    Serial.print("DATAPOINT CASSETTE TOOL> ");
   }
 }
