@@ -1719,7 +1719,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       switch (op) {
       case 0:
         if (is2200) return 1;
-        // Paged Load PL L, (loc)
+        // Paged Load PL A, (loc)
         address = getPagedAddress();
         regSets[setSel].r.regA = memory->read(address, true, false, previousP);
         break;
