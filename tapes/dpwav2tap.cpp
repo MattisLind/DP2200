@@ -109,7 +109,7 @@ FILE *fIn; // input audio file handle
 
 // period of a zero bit, in Hz, at 1 7/8 ips
 //const float zero_freq = 1084.0f;
-const float zero_freq = 1010.0f;
+const float zero_freq = 993.243244317f;
 const float sampleRate = 44100.0f;
 // pll lock range = nominal +/- 25%
 const float lock_range = 0.25f;
@@ -1267,7 +1267,7 @@ PeakScores calculateScoresSingle (Peaks * ps, bool lastPeakIsHigh,double lastPea
       double longScore =  pow(((((double) (*ps)[i].bufferIndex) - longPeriod)/longPeriod), 2);
       double shortScore = pow(((((double) (*ps)[i].bufferIndex) - shortPeriod)/shortPeriod),2); 
       double amplitudeDistance = fabs((*ps)[i].scaled - lastPeakAmplitude);
-      double amplitudeScore = pow(amplitudeDistance-1,2);
+      double amplitudeScore = 1/amplitudeDistance;
       if (longScore<shortScore) {
         totalScore = 2*longScore+amplitudeScore;
       } else {
@@ -1277,7 +1277,7 @@ PeakScores calculateScoresSingle (Peaks * ps, bool lastPeakIsHigh,double lastPea
       s.firstIndex = (*ps)[i].index;
       s.score = totalScore;
       scores.push_back(s);
-      tprintf(3, " - longScore=%f shortScore=%f amplitudeScore=%f\n",longScore, shortScore, amplitudeScore );
+      tprintf(3, " - longScore=%f shortScore=%f amplitudeDistance=%f amplitudeScore=%f totalScore=%f\n",longScore, shortScore, amplitudeDistance, amplitudeScore, totalScore );
     } else {
       tprintf (3, " - not a transistion\n");
     }
@@ -1297,7 +1297,7 @@ uint32 findKnee(SampleBuffer * s, uint32 peakBufferIndex) {
   uint32 i;
   for (i=peakBufferIndex; i > 0; i--) {
     tprintf(3, "findKnee: searching. i=%ld highPeak=%s scaled=%f distance=%f scaled/distance=%f\n", i, (*s)[i].highPeak?"TRUE":"FALSE",(*s)[i].scaled, distance, (*s)[i].scaled/distance );
-    if ((fabs(((*s)[i].scaled)-previousPeak)/distance)<0.925f) break; 
+    if ((fabs(((*s)[i].scaled)-previousPeak)/distance)<0.98f) break; 
   }
   tprintf(3, "findKnee: peak=%f previousPeak=%d distance=%f foundKnee=%f at %d (%d) \n", peak, previousPeak, distance, (*s)[i].scaled, (*s)[i].index, i); 
   return (*s)[i].index;  
