@@ -266,7 +266,7 @@ public:
   void setflags(int result, int carryzero);
   void setflagsinc(int result);
   void setparity(int result);
-
+  void doSystemCall();
 };
 
 #endif

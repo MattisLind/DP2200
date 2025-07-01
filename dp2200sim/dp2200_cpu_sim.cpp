@@ -37,11 +37,12 @@ unsigned char dp2200_cpu::Memory::physicalMemoryRead(int physicalAddress) {
       return firmware[physicalAddress & 0xFFF];
     }
   }
+  printLog("TRACE", "%06o %03o        PHYSICAL DATA READ     \n", physicalAddress, memory[physicalAddress]);
   return memory[physicalAddress];
 } 
 
 void dp2200_cpu::Memory::physicalMemoryWrite(int physicalAddress, unsigned char data) {
-
+  printLog("TRACE", "%06o %03o        PHYSICAL DATA WRITE     \n", physicalAddress, data); 
   if (*is5500) {
     if ((physicalAddress >= 0) && ( physicalAddress< 0xC000)) {
       memory[physicalAddress]= data; 
@@ -59,31 +60,29 @@ void dp2200_cpu::Memory::physicalMemoryWrite(int physicalAddress, unsigned char 
 }
 
 unsigned char inline dp2200_cpu::Memory::read(unsigned short virtualAddress, bool performChecks, bool fetch, int from) {
-  int physicalAddress, logicalPage, physicalPage;
+  int physicalAddress, logicalPage, physicalPage, logicalAddress;
   unsigned char data;
   if (*is5500) {
     if ((virtualAddress & 0xC000) == 0x8000) {
-      physicalAddress = 0xffff &  ((virtualAddress + (baseRegister<<8))  | (virtualAddress & 0xff)); 
+      physicalAddress = 0xffff &  (((virtualAddress&0xff00) + (baseRegister<<8))  | (virtualAddress & 0xff)); 
     } else {
       physicalAddress = virtualAddress; 
     }
+    logicalAddress = physicalAddress;
     logicalPage = (physicalAddress & 0xF000) >> 12;
-    if (logicalPage == 017) { // Fixed mapped
-      physicalPage = 017;
+    physicalPage = sectorTable[logicalPage].physicalPage;
+    physicalAddress = ((0xf & physicalPage) << 12) | (physicalAddress & 0xfff);
+    if (!sectorTable[logicalPage].accessEnable && *userMode && performChecks) {
+      *accessViolation = true;
     } else {
-      physicalPage = sectorTable[logicalPage].physicalPage;
-      physicalAddress = ((0xf & physicalPage) << 12) | (physicalAddress & 0xfff);
-      if (!sectorTable[logicalPage].accessEnable && *userMode && performChecks) {
-        *accessViolation = true;
-      } else {
-        *accessViolation = false;
-      }
+      *accessViolation = false;
     }
   } else {
     physicalAddress = virtualAddress;
   }
   data = physicalMemoryRead(physicalAddress);
   if (!fetch && performChecks) {
+    printLog("TRACE", "%06o %03o LogicalBasedAddress=%06o BASE=%03o      DATA READ FROM %06o     \n", virtualAddress, data, logicalAddress, baseRegister, from); 
     // printLog("TRACE", "%06o %03o        DATA READ FROM %06o     \n", virtualAddress, data, from); 
   }
   return data;
@@ -95,17 +94,14 @@ void inline dp2200_cpu::Memory::write(unsigned short virtualAddress, unsigned ch
   //printLog("TRACE", "%06o %03o        DATA WRITE FROM %06o     \n", virtualAddress, data, from); 
   if (*is5500) {
     if ((virtualAddress & 0xC000) == 0x8000) {
-      physicalAddress = 0xffff &  ((virtualAddress + (baseRegister<<8))  | (virtualAddress & 0xff)); 
+      physicalAddress = 0xffff &  (((virtualAddress&0xff00) + (baseRegister<<8))  | (virtualAddress & 0xff)); 
     } else {
       physicalAddress = virtualAddress; 
     }
+    printLog("TRACE", "%06o %03o LogicalBasedAddress=%06o BASE=%03o      DATA WRITE FROM %06o     \n", virtualAddress, data, physicalAddress, baseRegister, from); 
     logicalPage = (physicalAddress & 0xF000) >> 12;
-    if (logicalPage == 017) { // Fixed mapped
-      physicalPage = 017;
-    } else {
-      physicalPage = sectorTable[logicalPage].physicalPage;
-      physicalAddress = ((0xf & physicalPage) << 12) | (physicalAddress & 0xfff);
-    }
+    physicalPage = sectorTable[logicalPage].physicalPage;
+    physicalAddress = ((0xf & physicalPage) << 12) | (physicalAddress & 0xfff);
     if (!sectorTable[logicalPage].accessEnable && *userMode) {
       *accessViolation = true;
     } else {
@@ -143,7 +139,7 @@ dp2200_cpu::Memory::Memory(bool * is, bool * av, bool * wv, bool * um) {
     sectorTable[i].writeEnable=true;
   }
   sectorTable[017].writeEnable=false;
-  sectorTable[017].accessEnable=true;  
+  sectorTable[017].accessEnable=false;  
   sectorTable[017].physicalPage=017;
   accessViolation = av;
   writeViolation = wv;
@@ -420,6 +416,28 @@ void dp2200_cpu::reset() {
     privilegeViolation = false;
     userMode = false;
 }
+
+void dp2200_cpu::doSystemCall() {
+  // There are nine different interrupt events possible in the
+  // 5500. All except the power-up interrupt use the System Call
+  // mechanism (see instruction description) to the memory location explained below. The System Call mechanism pushes
+  // the current value of the P-counter onto the Stack, turns off
+  // the one millisecond interrupt and USER mode, and forces
+  // execution to continue at the indicated vector location. Note
+  // that one of the interrupts is actually the SYSTEM CALL (SC)
+  // instruction and that the other interrupts use the same mechanism but jump to different locations. 
+  //
+  // This instruction causes the USER mode flag to be cleared,
+  // the last entry in the sector table to be set to the last 4K section
+  // of physical memory space with access protection, and a
+  // CALL to be performed to location 0167452 (in the ROM). This
+  // is the mechanism via which the user would communicate
+  // with an operating system that used the USER mode. 
+  stack.stk[stackptr] = P;
+  stackptr = (stackptr + 1) & 0xf;
+  interruptEnabled = 0;
+  userMode = false;
+}
 // 5500
 // 170000 (167400) Memory parity Failure Vector
 // 170003 (167406) Input Parity Failure Vector
@@ -443,22 +461,26 @@ int dp2200_cpu::execute() {
 
   if ((interruptEnabled && interruptPending) || accessViolation || writeViolation || privilegeViolation) {
     
-    /* now bump stack to use new pc and save it */
-    stack.stk[stackptr] = P;
-    stackptr = (stackptr + 1) & 0xf;
     if (accessViolation) {
       accessViolation=false;
+      doSystemCall();
       P=0170014;
     } else if (writeViolation) {
       writeViolation = false;
+      doSystemCall();;
       P=0170011;
     } else if (privilegeViolation) {
       privilegeViolation = false;
+      doSystemCall();
       P=0170017;
     } else if (interruptPending && is5500) {
       interruptPending = 0;
+      doSystemCall();
       P=0170022;
     } else if (interruptPending && is2200) {
+      /* now bump stack to use new pc and save it */
+      stack.stk[stackptr] = P;
+      stackptr = (stackptr + 1) & 0xf;
       interruptPending = 0;
       P=0;
     } else {
@@ -850,16 +872,28 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       switch (op) {
       case 0:
         /* HALT */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }
         return 1;
       case 1:
         if (is2200) return 1;
         if (is5500) return 0; // This is the System Information instrutcion on the 6600 but is a NOP on a 5500.
       case 2:
         /* BETA */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }        
         setSel = 1;
         break;
       case 3:
         /* ALPHA */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }        
         setSel = 0;
         break;
       case 4:
@@ -933,6 +967,10 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       switch (op) {
       case 0:
         /* HALT */
+        if (is5500 && userMode) {
+          privilegeViolation = true;
+          return 0;
+        }
         return 1;
       case 2:
         blockTransfer(false);
@@ -1045,7 +1083,12 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         if (!flagZero[setSel] && !flagParity[setSel]) {
           regSets[setSel].regs[r] |= 1 << 0;
         } 
-        break;       
+        break; 
+      case 5:
+        // BP (Breakpoint) instruction  
+        doSystemCall();  // do all System call generic stuff.
+        P=0170030;
+        break;
       case 7: // BRL
         if (is5500 && userMode) {
           privilegeViolation = true;
@@ -1448,6 +1491,11 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       case 5:
         if (is2200) return 1;
         return doubleLoad(1);
+      case 6: 
+        // SC (System call) instruction
+        doSystemCall();
+        P=0170025;
+        break;
       case 7:
         // Sector table load
         if (is5500 && userMode) {
@@ -1460,16 +1508,18 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         for (i=0; i<count; i++) {
           data = memory->read(address, true, false, previousP);
           //printLog("INFO", "STL: data=%03o i=%d\n", data, i);
-          memory->sectorTable[i].physicalPage = (data >> 4) & 0xf;
-          if (data & 0x4) {
-            memory->sectorTable[i].accessEnable=true;
-          } else {
-            memory->sectorTable[i].accessEnable=false;
-          }
-          if (data & 0x8) {
-            memory->sectorTable[i].writeEnable=true;
-          } else {
-            memory->sectorTable[i].writeEnable=false;
+          if (i!=017) {
+            memory->sectorTable[i].physicalPage = (data >> 4) & 0xf;
+            if (data & 0x4) {
+              memory->sectorTable[i].accessEnable=true;
+            } else {
+              memory->sectorTable[i].accessEnable=false;
+            }
+            if (data & 0x8) {
+              memory->sectorTable[i].writeEnable=true;
+            } else {
+              memory->sectorTable[i].writeEnable=false;
+            }
           }
           address++;
         } 
@@ -1581,6 +1631,15 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       }
       break;
     case 2: /* call conditionally */
+      if ((implicit == 0111) && is5500 && (inst == 0102)) {
+                /* USER RETURN */
+        userMode = true;        
+        stackptr = (stackptr - 1) & 0xf;
+        P = stack.stk[stackptr] & pMask;
+        if (traceEnabled) printLog("TRACE", "%06o            RETURN FROM %06o     \n", P, previousP);
+        break;
+
+      }
       cc = chkconditional(inst);
       addrL = (unsigned int)memory->read(P, true, true, previousP);
       P++;
@@ -2061,6 +2120,11 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
     dest = (inst >> 3) & 0x7;
 
     if (src == 0x7 && dest == 0x7) {
+      // HALT
+      if (is5500 && userMode) {
+        privilegeViolation = true;
+        return 0;
+      }      
       return 1;
     }
     if (src == 0x7) {

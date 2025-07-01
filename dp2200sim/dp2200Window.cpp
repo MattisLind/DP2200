@@ -2,6 +2,7 @@
 #include <form.h>
 #include <ncurses.h>
 
+
 dp2200Window::dp2200Window(class dp2200_cpu * c) {
   cpu = c;
   cursorX = 0;
@@ -11,7 +12,41 @@ dp2200Window::dp2200Window(class dp2200_cpu * c) {
   normalWindow();
   wrefresh(win);
   activeWindow = false;
+  SDL_Event evt;
+  screenDirty = false;
   scrollok(innerWin, TRUE);
+  if (SDL_Init(SDL_INIT_VIDEO) != 0)
+  {
+    SDL_Log("SDL_Init fel: %s", SDL_GetError());
+    exit(1);
+  }
+  printLog("INFO", "SDL_init\n");
+  // Skapa fönster
+  sdlwin = SDL_CreateWindow("Datapoint 5500 Emulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
+  if (!sdlwin)
+  {
+    SDL_Log("SDL_CreateWindow fel: %s", SDL_GetError());
+    SDL_Quit();
+    exit(1);
+  }
+  printLog("INFO", "SDL_CreateWindow\n");
+  // Skapa renderer
+  ren = SDL_CreateRenderer(sdlwin, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+  if (!ren)
+  {
+    SDL_Log("SDL_CreateRenderer fel: %s", SDL_GetError());
+    SDL_DestroyWindow(sdlwin);
+    SDL_Quit();
+    exit(1);
+  }
+  while (SDL_PollEvent(&evt));
+  printLog("INFO", "SDL_CreateRenderer\n");
+}
+
+dp2200Window::~dp2200Window() {
+  SDL_DestroyRenderer(ren);
+  SDL_DestroyWindow(sdlwin);
+  SDL_Quit();
 }
 
 void dp2200Window::resize() {
@@ -186,24 +221,29 @@ int dp2200Window::eraseFromCursorToEndOfFrame() {
   printLog("INFO", "Erasing from X=%d, Y=%d to end of frame\n", cursorX, cursorY);
   for (int i=cursorX; i<80;i++) {
     waddch(innerWin, ' ');
+    screen[i][cursorY]=' ';
   }
   for (int i=cursorY+1; i <12; i++) {
     wmove(innerWin, i, 1);
     for (int j=0; j<80; j++) {
       waddch(innerWin, ' ');
+      screen[j][i]=' ';
     }
   }
   wmove(innerWin, cursorY, cursorX);
   wrefresh(innerWin);
+  screenDirty = true;
   return 0;
 }
 int dp2200Window::eraseFromCursorToEndOfLine() {
   printLog("INFO", "Erasing from X=%d, Y=%d to end of line\n", cursorX, cursorY);
   for (int i=cursorX; i<80;i++) {
     waddch(innerWin, ' ');
+    screen[i][cursorY]=' ';
   }
   wmove(innerWin, cursorY, cursorX);
   wrefresh(innerWin);
+  screenDirty = true;
   return 0;
 }
 int dp2200Window::rollScreenOneLine() {
@@ -212,6 +252,7 @@ int dp2200Window::rollScreenOneLine() {
   waddch(innerWin, '\n');
   wmove(innerWin, cursorY, cursorX);
   wrefresh(innerWin);
+  screenDirty = true;
   return 0;
 }
 int dp2200Window::showCursor(bool value) {
@@ -220,35 +261,121 @@ int dp2200Window::showCursor(bool value) {
   return 0;
 }
 int dp2200Window::setCursorX(int value) {
+  if (value >= 80 || value < 0) {
+    printLog("INFO", "setCursorX: Value is outside limits : %d\n", value);
+    return 0;
+  }
   cursorX = value;
   printLog("INFO", "Setting Cursor X X=%d Y=%d\n", cursorX, cursorY);
+  screenDirty = true;
   return 0;
 }
 
 int dp2200Window::setCursorY(int value) {
+  if (value >= 12 || value < 0) {
+    printLog("INFO", "setCursorY: Value is outside limits : %d\n", value);
+    return 0;
+  }
   cursorY = value;
   printLog("INFO", "Setting Cursor Y X=%d Y=%d\n", cursorX, cursorY);
+  screenDirty = true;
   return 0;
 }
 
 int dp2200Window::writeCharacter(int value) {
   printLog("INFO", "Writing char=%c to screen\n", value);
   wmove(innerWin, cursorY, cursorX);
+  screen[cursorX][cursorY]=value;
   waddch(innerWin, value);
   wrefresh(innerWin);
+  screenDirty = true;
   return 0;
 }
 
 int dp2200Window::scrollDown() {
+  int i,j;
   wscrl(innerWin, -1);
+  for (i=0; i < 80; i++) screen[i][0] = ' ';
+  for (j=1; j < 12; j++) {
+    for (i=0; i < 80; i++) {
+      screen[i][j] = screen[i][j-1];
+    }
+  }  
+  screenDirty = true;
   return 0;
 }
 
 int dp2200Window::scrollUp() {
+  int i,j;
   wscrl(innerWin, 1);
+  for (i=0; i < 80; i++) screen[i][11] = ' ';
+  for (j=0; j < 11; j++) {
+    for (i=0; i < 80; i++) {
+      screen[i][j] = screen[i][j+1];
+    }
+  }  
+  screenDirty = true;
   return 0;
 }
 
 void dp2200Window::incrementXPos() {
   cursorX++; 
+}
+
+
+void dp2200Window::setCharGenChar(int data) {
+  lastCharGenChar=data & 0177;
+  charGenIndex=0;
+}
+
+void dp2200Window::updateCharGen(int data) {
+  font5x7[lastCharGenChar][charGenIndex] = 0177 & data;
+  printLog("INFO", "CHARGEN:  %04o %01o: %04o \n", lastCharGenChar, charGenIndex, 0177 & data);
+  charGenIndex++;
+  if (charGenIndex==5) {
+    charGenIndex = 0;
+    lastCharGenChar = 0177 & (lastCharGenChar+1);
+  }
+}
+
+void dp2200Window::drawChar(int c, int cx, int cy) {
+  // pixel-offset för övre vänstra hörnet (global padding + 1px per-cell padding)
+  int x0 = PADDING + cx * CELL_W + 1;
+  int y0 = PADDING + cy * CELL_H + 1;
+
+  for (int row = 0; row < 5; ++row)
+  {
+    uint8_t bits = font5x7[c][row];
+    for (int col = 0; col < 7; ++col) {
+      if (bits & (1 << (6 - col))) {
+        // Draw a pixel
+        SDL_RenderDrawPoint(ren, x0 + row, y0 + col);
+      }
+    }
+  }
+}
+
+void dp2200Window::updateScreen() {
+  //printLog("INFO", "updateScreen ENTRY\n");
+  SDL_Event evt;
+  if (!screenDirty) return;
+  // pump the event queue so the window actually appears
+
+  SDL_SetRenderDrawColor(ren, 0, 0, 0, SDL_ALPHA_OPAQUE);
+  SDL_RenderClear(ren);
+
+  // Set render color (green)
+  SDL_SetRenderDrawColor(ren, 0, 255, 0, SDL_ALPHA_OPAQUE);
+  // Draw the screen
+  for (int row = 0; row < CHARS_H; ++row) {
+    for (int col = 0; col < CHARS_W; ++col) {
+      drawChar(screen[col][row], col, row);
+    }
+  }
+
+  // Paint
+  SDL_RenderPresent(ren);
+  while (SDL_PollEvent(&evt));
+  screenDirty = false;
+  //printLog("INFO", "updateScreen EXIT\n");
 }

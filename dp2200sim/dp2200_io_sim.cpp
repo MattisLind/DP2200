@@ -479,14 +479,17 @@ int IOController::ScreenKeyboardDevice::exWrite(unsigned char data) {
     int ret = dpw->writeCharacter(data);
     if (incrementXOnWrite) {
       dpw->incrementXPos();
-    }
+    } 
     return ret;    
-  } else return 0;
+  } else {
+      dpw->updateCharGen(data);
+      return 0;
+  }
 } 
 int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
   //
   loadingFont = false;
-  if (data & SCRNKBD_COM1_ROLL_DOWN) {
+  if (data & SCRNKBD_COM1_ROLL_DOWN) { // roll down
     dpw->scrollDown();
   } 
   if (data & SCRNKBD_COM1_ERASE_EOF) {
@@ -495,7 +498,7 @@ int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
   if (data & SCRNKBD_COM1_ERASE_EOL) {
     dpw->eraseFromCursorToEndOfLine(); 
   }
-  if (data & SCRNKBD_COM1_ROLL) {
+  if (data & SCRNKBD_COM1_ROLL) { // roll up 
     //dpw->rollScreenOneLine();
     dpw->scrollUp();
   }
@@ -529,6 +532,7 @@ int IOController::ScreenKeyboardDevice::exCom3(unsigned char data){
 }
 int IOController::ScreenKeyboardDevice::exCom4(unsigned char data){
   loadingFont=true;
+  dpw->setCharGenChar(data);
   return 0; 
 }
 int IOController::ScreenKeyboardDevice::exBeep(){

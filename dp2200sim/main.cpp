@@ -300,6 +300,17 @@ std::function<int(class callbackRecord *)> interrupt = [](class callbackRecord *
   return 0;
 };
 
+
+std::function<int(class callbackRecord *)> updateScreen = [](class callbackRecord * c)->int {
+  struct timespec then;
+  //printLog("INFO", "60Hz redraw timer timer ENTRY\n");
+  dpw->updateScreen();
+  timeoutInNanosecs(&then, 16666666); // 16 ms
+  addToTimerQueue(updateScreen, then);
+  //printLog("INFO", "60Hz redraw timer  EXIT\n");
+  return 0;
+};
+
 int main(int argc, char *argv[]) {
   struct timespec now,before, after, diff, then;
   
@@ -330,6 +341,8 @@ int main(int argc, char *argv[]) {
   windows[activeWindow]->hightlightWindow();
   timeoutInNanosecs(&then, 1000000);
   addToTimerQueue(interrupt, then);
+  timeoutInNanosecs(&then, 16666666);
+  addToTimerQueue(updateScreen, then);  
   //cpuRunner();
   while (1) { // event loop
     //cpu.interruptPending = 1;
@@ -374,5 +387,6 @@ int main(int argc, char *argv[]) {
     // call nanosleep to sleep this amount
     if (!negative) nanosleep(&diff, NULL);
   }
+  //delete dpw;
   return 0;
 }
