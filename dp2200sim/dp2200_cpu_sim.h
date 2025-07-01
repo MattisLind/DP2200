@@ -82,6 +82,7 @@ public:
   unsigned char flagZero[2];
   bool userMode;
   bool accessViolation;
+  bool inputParityFailure;
   bool writeViolation;
   bool privilegeViolation;
   int interruptPending;

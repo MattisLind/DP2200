@@ -414,6 +414,7 @@ void dp2200_cpu::reset() {
     interruptEnabled = 0;
     interruptEnabledToBeEnabled = 0;
     privilegeViolation = false;
+    inputParityFailure = false;
     userMode = false;
 }
 
@@ -459,15 +460,18 @@ int dp2200_cpu::execute() {
   unsigned char instructionData;
   /* Handle interrupt*/
 
-  if ((interruptEnabled && interruptPending) || accessViolation || writeViolation || privilegeViolation) {
-    
-    if (accessViolation) {
+  if ((interruptEnabled && interruptPending) || accessViolation || writeViolation || privilegeViolation || inputParityFailure) {
+    if (inputParityFailure) {
+      inputParityFailure = false;
+      doSystemCall();
+      P=0170013;
+    } else if (accessViolation) {
       accessViolation=false;
       doSystemCall();
       P=0170014;
     } else if (writeViolation) {
       writeViolation = false;
-      doSystemCall();;
+      doSystemCall();
       P=0170011;
     } else if (privilegeViolation) {
       privilegeViolation = false;
@@ -1015,7 +1019,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         break;
       case 6:
         if (implicit == 0111) {
-          if (is5500 && userMode) {
+          if (is5500 && userMode) { // MIN instruction 
             privilegeViolation = true;
             return 0;
           }
@@ -1038,6 +1042,14 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
           regSets[setSel].r.regL = 0xff & dstAddress;
         } else return 1;
         break;
+      case 7:
+        if (implicit == 0111) {
+          if (is5500 && userMode) { // MOUT instruction
+            privilegeViolation = true;
+            return 0;
+          }      
+        }
+        return 1;
       default:
         /* Unimplemented */
         return 1;
@@ -1667,7 +1679,11 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         if (is5500 && userMode) {
           privilegeViolation = true;
           return 0;
-        }        
+        } 
+        if (is5500 && !userMode) {
+          inputParityFailure = true; // fake parity failure
+          return 0;
+        }       
         regSets[setSel].regs[r]=ioCtrl->input();
         return 0;
       case 1:
