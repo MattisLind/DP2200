@@ -387,10 +387,10 @@ class IOController {
   class Disk9370Device * disk9370Device;
   class Disk9390Device * disk9390Device;
   IOController ();
-  unsigned char input ();
+  int input ();
   int exAdr (unsigned char address);
-  void exStatus ();
-  void exData ();
+  int exStatus ();
+  int exData ();
   int exWrite(unsigned char data); 
   int exCom1(unsigned char data);
   int exCom2(unsigned char data);

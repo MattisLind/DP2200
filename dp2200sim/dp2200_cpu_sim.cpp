@@ -462,9 +462,10 @@ int dp2200_cpu::execute() {
 
   if ((interruptEnabled && interruptPending) || accessViolation || writeViolation || privilegeViolation || inputParityFailure) {
     if (inputParityFailure) {
+      P = previousP;  // Need to stack the instruction that caused the priv violation 
       inputParityFailure = false;
       doSystemCall();
-      P=0170013;
+      P=0170003;
     } else if (accessViolation) {
       accessViolation=false;
       doSystemCall();
@@ -474,6 +475,7 @@ int dp2200_cpu::execute() {
       doSystemCall();
       P=0170011;
     } else if (privilegeViolation) {
+      P = previousP;  // Need to stack the instruction that caused the priv violation - 
       privilegeViolation = false;
       doSystemCall();
       P=0170017;
@@ -592,6 +594,7 @@ int dp2200_cpu::registerFromImplict(int implict) {
   switch (implicit) {
     case 0:
       return 0;
+    case 0117:  
     case 0022:         
       return 7;
     case 0062:        
@@ -601,9 +604,7 @@ int dp2200_cpu::registerFromImplict(int implict) {
     case 0113: 
       return 3;         
     case 0115:
-      return 5;  
-    case 0117:
-      return 0;               
+      return 5;               
     case 0174:
       return 4;     
     case 0176:
@@ -813,19 +814,19 @@ void dp2200_cpu::incrementRegisterPair (int highReg, int lowReg, int decrement) 
 
 void dp2200_cpu::incrementIndexShort (int direction, int highReg, int lowReg) {
   int disp = 0xff & memory->read(P, true, true, previousP);
-  //printLog("INFO", "DECI instruction disp=%03o indexLsb=%03o address=%05o value=%05o\n ");
+  printLog("INFO", "DECI instruction disp=%03o indexLsb=%03o address=%05o value=%05o\n ");
   P++; P &= pMask; fetches++;
   int indexLsb = 0xff & memory->read(P, true, true, previousP);
   P++; P &= pMask; fetches++;
   unsigned short address = (regSets[setSel].r.regX << 8) | indexLsb;
   int value = memory->read(address, true, false, previousP);
   value |= (memory->read((address+1) & pMask, true, false, previousP) << 8);
-  //printLog("INFO", "Before DECI instruction disp=%03o indexLsb=%03o address=%05o value=%05o carry=%1d\n ", disp, indexLsb, address, value, flagCarry[setSel]);
+  printLog("INFO", "Before DECI instruction disp=%03o indexLsb=%03o address=%05o value=%05o carry=%1d\n ", disp, indexLsb, address, value, flagCarry[setSel]);
   value += direction * disp;
   memory->write(address, 0xff & value, previousP);
   memory->write((address+1) & pMask, 0xff & (value >> 8), previousP);  
   flagCarry[setSel] = (value >> 16) & 0x1;
-  //printLog("INFO", "After DECI instruction value=%05o carry=%1d \n", value,flagCarry[setSel] );
+  printLog("INFO", "After DECI instruction value=%05o carry=%1d \n", value,flagCarry[setSel] );
   if ((highReg != -1) && (lowReg != -1)) {
     regSets[setSel].regs[lowReg] = value & 0xff;
     regSets[setSel].regs[highReg] = (value >> 8)  & 0xff;  
@@ -1562,6 +1563,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
     unsigned int addrL, addrH;
     int r=registerFromImplict(implicit);
     unsigned short address;
+    int tmpIOValue;
     op = inst & 0x7;
     switch (op) {
     case 0: /* jump conditionally */
@@ -1592,7 +1594,12 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
           privilegeViolation = true;
           return 0;
         }
-        regSets[setSel].regs[r]=ioCtrl->input();
+        tmpIOValue = ioCtrl->input();
+        if (is5500 && (tmpIOValue == -1)) {
+          accessViolation = true;
+          return 0;  
+        }
+        regSets[setSel].regs[r]=tmpIOValue;
         break;
       case 1:
         /* Unimplemented */
@@ -1610,8 +1617,12 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         if (is5500 && userMode) {
           privilegeViolation = true;
           return 0;
-        }        
-        return ioCtrl->exCom1(regSets[setSel].regs[r]);
+        } 
+        tmpIOValue = ioCtrl->exCom1(regSets[setSel].regs[r]);
+        if (is5500 && (tmpIOValue == -1)) {
+          accessViolation = true;  
+        }               
+        return 0;
         break;
       case 4:
         /* Unimplemented */
@@ -1621,24 +1632,36 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         if (is5500 && userMode) {
           privilegeViolation = true;
           return 0;
-        }        
-        return ioCtrl->exBeep();
+        } 
+        tmpIOValue = ioCtrl->exBeep();
+        if (is5500 && (tmpIOValue == -1)) {
+          accessViolation = true;  
+        }         
+        return 0;
         break;
       case 6:
         /* EX RBK */
         if (is5500 && userMode) {
           privilegeViolation = true;
           return 0;
-        }        
-        return ioCtrl->exRBK();
+        } 
+        tmpIOValue = ioCtrl->exRBK(); 
+        if (is5500 && (tmpIOValue == -1)) {
+          accessViolation = true;  
+        }     
+        return 0;
         break;
       case 7:
         /* EX SF */
         if (is5500 && userMode) {
           privilegeViolation = true;
           return 0;
-        }        
-        return ioCtrl->exSF();
+        } 
+        tmpIOValue = ioCtrl->exSF();
+        if (is5500 && (tmpIOValue == -1)) {
+          accessViolation = true;  
+        }                
+        return 0;
         break;
       }
       break;
@@ -1679,12 +1702,13 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         if (is5500 && userMode) {
           privilegeViolation = true;
           return 0;
-        } 
-        if (is5500 && !userMode) {
-          inputParityFailure = true; // fake parity failure
-          return 0;
-        }       
-        regSets[setSel].regs[r]=ioCtrl->input();
+        }  
+        tmpIOValue = ioCtrl->input();
+        if (is5500 && (tmpIOValue == -1)) {
+          inputParityFailure = true;
+          return 0;  
+        }               
+        regSets[setSel].regs[r]=tmpIOValue;
         return 0;
       case 1:
         /* Unimplemented */
@@ -1694,16 +1718,24 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         if (is5500 && userMode) {
           privilegeViolation = true;
           return 0;
-        }        
-        ioCtrl->exStatus(); 
+        }   
+        tmpIOValue = ioCtrl->exStatus();     
+        if (is5500 && (tmpIOValue == -1)) {
+          accessViolation = true;
+        }  
+        return 0;         
         break;
       case 3:
         /* EX COM2 */
         if (is5500 && userMode) {
           privilegeViolation = true;
           return 0;
-        }         
-        return ioCtrl->exCom2(regSets[setSel].regs[r]);
+        } 
+        tmpIOValue = ioCtrl->exCom2(regSets[setSel].regs[r]);
+        if (is5500 && (tmpIOValue == -1)) {
+          accessViolation = true;
+        }        
+        return 0;
         break;
       case 4:
         /* Unimplemented */
@@ -1713,24 +1745,36 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         if (is5500 && userMode) {
           privilegeViolation = true;
           return 0;
-        }         
-        return ioCtrl->exClick();
+        } 
+        tmpIOValue = ioCtrl->exClick();
+        if (is5500 && (tmpIOValue == -1)) {
+          accessViolation = true;
+        }                
+        return tmpIOValue;
         break;
       case 6:
         /* EX WBK */
         if (is5500 && userMode) {
           privilegeViolation = true;
           return 0;
-        }         
-        return ioCtrl->exWBK();
+        } 
+        tmpIOValue = ioCtrl->exWBK(); 
+        if (is5500 && (tmpIOValue == -1)) {
+          accessViolation = true;
+        }              
+        return 0;
         break;
       case 7:
         /* EX SB */
         if (is5500 && userMode) {
           privilegeViolation = true;
           return 0;
-        }         
-        return ioCtrl->exSB();
+        }
+        tmpIOValue = ioCtrl->exSB();   
+        if (is5500 && (tmpIOValue == -1)) {
+          accessViolation = true;
+        }              
+        return 0;
         break;
       }
       break;
@@ -1756,9 +1800,12 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         break;
       case 2:
         if (is2200) return 1;
-        // Paged Load PL V, (loc)
+        // Paged Load PL C, (loc)
         address = getPagedAddress();
         regSets[setSel].r.regC = memory->read(address, true, false, previousP);
+        if (implicit == 0111) {
+          regSets[setSel].r.regB = memory->read(address+1, true, false, previousP);  
+        }
         break;
       case 3:
         if (is2200) return 1;
@@ -1771,6 +1818,9 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         // Paged Load PL E, (loc)
         address = getPagedAddress();
         regSets[setSel].r.regE = memory->read(address, true, false, previousP);
+        if (implicit == 0113) {
+          regSets[setSel].r.regD = memory->read(address+1, true, false, previousP);  
+        }
         break;
       case 5:
         if (is2200) return 1;
@@ -1783,6 +1833,9 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         // Paged Load PL L, (loc)
         address = getPagedAddress();
         regSets[setSel].r.regL = memory->read(address, true, false, previousP);
+        if (implicit == 0115) {
+          regSets[setSel].r.regH = memory->read(address+1, true, false, previousP);  
+        }
         break;          
       default:
         /* Unimplemented */
@@ -1871,36 +1924,9 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       case 2: 
           if (is2200) return 1;
           address = getPagedAddress();
-          switch (implicit) {
-            case 0:
-              // Paged Store PS C, (loc)
-              memory->write(address, regSets[setSel].r.regC, previousP);
-              break;
-            case 0022:         
-              return 1; 
-            case 0062:        
-              return 1;         
-            case 0111:
-              memory->write(address, regSets[setSel].r.regC, previousP);
-              //printLog("INFO", "memory[address]=%03o C=%03o\n", memory[address], regSets[setSel].r.regC);
-              address++;
-              memory->write(address, regSets[setSel].r.regB, previousP); 
-              //printLog("INFO", "address=%05o memory[address]=%03o B=%03o\n", address, memory[address], regSets[setSel].r.regB);    
-              break;    
-            case 0113:
-              memory->write(address++, regSets[setSel].r.regE, previousP);  
-              memory->write(address, regSets[setSel].r.regD, previousP);     
-              break;         
-            case 0115:
-              memory->write(address++, regSets[setSel].r.regL, previousP);  
-              memory->write(address, regSets[setSel].r.regH, previousP);     
-              break; 
-            case 0117:
-              return 1;
-            case 0174:          
-              return 1;
-            case 0176:
-              return 1;       
+          memory->write(address, regSets[setSel].r.regC, previousP);
+          if (implicit == 0111) {
+            memory->write(address+1, regSets[setSel].r.regB, previousP);     
           }
         break;
       case 3:
@@ -1914,6 +1940,9 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         // Paged Store PS E, (loc)
         address = getPagedAddress();
         memory->write(address, regSets[setSel].r.regE, previousP);
+        if (implicit == 0113) {
+          memory->write(address+1, regSets[setSel].r.regD, previousP);  
+        }
         break;        
       case 5:
         if (is2200) return 1;
@@ -1926,6 +1955,9 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
         // Paged Store PS L, (loc)
         address = getPagedAddress();
         memory->write(address, regSets[setSel].r.regL, previousP);
+        if (implicit == 0115) {
+          memory->write(address+1, regSets[setSel].r.regH, previousP);  
+        }
         break;        
       default:
         /* Unimplemented */

@@ -52,73 +52,86 @@ int IOController::exAdr (unsigned char address) {
   return 0;
 }
 
-void IOController::exStatus () {
-  if (!isDeviceSupported(ioAddress)) return;
+int IOController::exStatus () {
+  if (!isDeviceSupported(ioAddress)) return -1;
   dev[ioAddress]->exStatus();
+  return 0;
 }
 
-void IOController::exData () {
-  if (!isDeviceSupported(ioAddress)) return;
+int IOController::exData () {
+  if (!isDeviceSupported(ioAddress)) return -1;
   dev[ioAddress]->exData();
+  return 0;
 }
 
 int IOController::exWrite(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (!isDeviceSupported(ioAddress)) return -1;
   return dev[ioAddress]->exWrite(data);
 }
 
 int IOController::exCom1(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (!isDeviceSupported(ioAddress)) return -1;
   return dev[ioAddress]->exCom1(data);
 }
 int IOController::exCom2(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (!isDeviceSupported(ioAddress)) return -1;
   return dev[ioAddress]->exCom2(data);
 }
 int IOController::exCom3(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (!isDeviceSupported(ioAddress)) return -1;
   return dev[ioAddress]->exCom3(data);
 }
 int IOController::exCom4(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (!isDeviceSupported(ioAddress)) return -1;
   return dev[ioAddress]->exCom4(data);
 }
 int IOController::exBeep() {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return screenKeyboardDevice->exBeep();
 }
 int IOController::exClick() {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return screenKeyboardDevice->exClick();
 }
 int IOController::exDeck1() {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return cassetteDevice->exDeck1();
 }
 int IOController::exDeck2() {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return cassetteDevice->exDeck2();
 }
 int IOController::exRBK() {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return cassetteDevice->exRBK();
 }
 int IOController::exWBK() {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return cassetteDevice->exWBK();
 }
 int IOController::exBSP() {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return cassetteDevice->exBSP();
 }
 int IOController::exSF() {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return cassetteDevice->exSF();
 }
 int IOController::exSB() {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return cassetteDevice->exSB();
 }
 int IOController::exRewind() {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return cassetteDevice->exRewind();
 }
 int IOController::exTStop() {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return cassetteDevice->exTStop();
 }
 
-unsigned char IOController::input () {
-  if (!isDeviceSupported(ioAddress)) return 0;
+int IOController::input () {
+  if (!isDeviceSupported(ioAddress)) return -1;
   return dev[ioAddress]->input();
 }
 
