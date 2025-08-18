@@ -194,7 +194,8 @@ int IOController::CassetteDevice::exWrite(unsigned char data) {
 }
 
 int IOController::CassetteDevice::exCom1(unsigned char data) {
-  return 1;
+  printLog("INFO", "EX_COM_1 is a noop for the cassette device - why is it executed?.\n");
+  return 0;
 }
 int IOController::CassetteDevice::exCom2(unsigned char data) {
   return 1;
