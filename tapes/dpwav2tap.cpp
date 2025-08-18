@@ -109,7 +109,7 @@ FILE *fIn; // input audio file handle
 
 // period of a zero bit, in Hz, at 1 7/8 ips
 //const float zero_freq = 1084.0f;
-const float zero_freq = 993.243244317f;
+const float zero_freq = 1037.64f;
 const float sampleRate = 44100.0f;
 // pll lock range = nominal +/- 25%
 const float lock_range = 0.25f;
@@ -707,7 +707,7 @@ void Bit(uint32 time, int bit) {
           tprintf(1, "sample %d: bad sync code %03X\n @%ld", time, bits & 7, nSamp);
         }
         tprintf(1, "Bad block @%ld\n", nSamp);
-        //StreamError(0);
+        StreamError(0);
         pll_period = samples_per_bit;
         BSstate = BS_LOST;
       }
@@ -773,9 +773,11 @@ void PLL(int duration) {
 }
 
 void DecodeBits(uint32 time) {
-  /*if (time== 389884) time=389885;
-  if (time == 390017) time = 390019;
-  if (time == 974872) time = 974870; */
+  //if (time== 1076874) time=1076876;
+  //if (time==1018014) time=1018002;
+  //if (time==908698)time=908691;
+  //if (time==908820) time=908821;
+  //if (time==908852) time=908854;
   enum XXX { DB_INIT = 0, DB_HALF_BIT, DB_READY };
   const char * stateStr[] = {"DB_INIT", "DB_HALF_BIT", "DB_READY"};
   static enum XXX DBstate = DB_INIT;
@@ -1264,14 +1266,14 @@ PeakScores calculateScoresSingle (Peaks * ps, bool lastPeakIsHigh,double lastPea
       double totalScore;
       double longPeriod = sampleRate / zero_freq;
       double shortPeriod = sampleRate / (2.0f *zero_freq);
-      double longScore =  pow(((((double) (*ps)[i].bufferIndex) - longPeriod)/longPeriod), 2);
-      double shortScore = pow(((((double) (*ps)[i].bufferIndex) - shortPeriod)/shortPeriod),2); 
+      double longScore =  pow((fabs(((double) (*ps)[i].bufferIndex) - longPeriod)/longPeriod), 3);
+      double shortScore = pow((fabs(((double) (*ps)[i].bufferIndex) - shortPeriod)/shortPeriod),3); 
       double amplitudeDistance = fabs((*ps)[i].scaled - lastPeakAmplitude);
       double amplitudeScore = 1/amplitudeDistance;
       if (longScore<shortScore) {
-        totalScore = 2*longScore+amplitudeScore;
+        totalScore = 8*longScore+0.10*amplitudeScore;
       } else {
-        totalScore = 2*shortScore+amplitudeScore;
+        totalScore = 8*shortScore+0.10*amplitudeScore;
       }  
       s.firstBufferIndex = (*ps)[i].bufferIndex;
       s.firstIndex = (*ps)[i].index;
@@ -1297,7 +1299,7 @@ uint32 findKnee(SampleBuffer * s, uint32 peakBufferIndex) {
   uint32 i;
   for (i=peakBufferIndex; i > 0; i--) {
     tprintf(3, "findKnee: searching. i=%ld highPeak=%s scaled=%f distance=%f scaled/distance=%f\n", i, (*s)[i].highPeak?"TRUE":"FALSE",(*s)[i].scaled, distance, (*s)[i].scaled/distance );
-    if ((fabs(((*s)[i].scaled)-previousPeak)/distance)<0.98f) break; 
+    if ((fabs(((*s)[i].scaled)-previousPeak)/distance)<0.925f) break; 
   }
   tprintf(3, "findKnee: peak=%f previousPeak=%d distance=%f foundKnee=%f at %d (%d) \n", peak, previousPeak, distance, (*s)[i].scaled, (*s)[i].index, i); 
   return (*s)[i].index;  
