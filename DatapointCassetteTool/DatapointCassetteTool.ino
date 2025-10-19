@@ -268,14 +268,12 @@ static const unsigned byte buffer[]  = {
 
 
 void writeCassette() {
-  char mask;
   int bitsinoutbuffer = 0;
   int shifts;
   int shiftOut = 0; 
-  int i;
+  int i,c;
   //spi_tx_reg(SPI2, 0xff); // dummy write 
   //spi_rx_reg(SPI2); // dummy read
-  // fill ringbuffer with  "1" pattern (even number of bytes worth. Approximately 270 bytes
   for (int i=0; i<270; i++) { 
     while (!spi_is_tx_empty(SPI2));
     spi_tx_reg(SPI2, 0xcc);
@@ -283,15 +281,14 @@ void writeCassette() {
   // The CC pattern has 0 as last bit.
   lastBit = 0;
   for (i=0; i < sizeof buffer; i++) {
-    char c = buffer[i];
+    c = buffer[i];
     // Add sync pattern
     shiftIn(0);
     shiftIn(1);
     shiftIn(0);
-    mask = 0x80;
-    for (int j=7; j >=0; j--) {
-      shiftIn(c & mask);
-      mask = mask >> 1;  
+    for (int j=0; j < 8; j++) {
+      shiftIn(c & 0x1);
+      c = c >> 1;  
     }
     shifts = 10 - bitsinoutbuffer; // 32 - 22 since we now have 22 bits to be shifted out and concatenated with the remaining bits.
     shiftOut = shiftOut | bitAcc << shifts;
@@ -302,6 +299,18 @@ void writeCassette() {
       shiftOut = shiftOut << 8; 
     }
   }
+  shiftIn(0);
+  shiftIn(1);
+  shiftIn(0);
+  shifts = 26 - bitsinoutbuffer;
+  shiftOut = shiftOut | bitAcc << shifts;
+  bitsinoutbuffer += 6;
+  for (;bitsinoutbuffer >= 8; bitsinoutbuffer -= 8) {
+    while (!spi_is_tx_empty(SPI2));
+    spi_tx_reg(SPI2, (shiftOut >> 24) & 0xff); 
+    shiftOut = shiftOut << 8; 
+  }
+
   for(i=8-bitsinoutbuffer;i>0; i-=2) {
     shiftIn(1);  
   }
