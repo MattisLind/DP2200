@@ -33,7 +33,8 @@
 #define LOW  0          
 inline void pinMode(int /*pin*/, int /*mode*/) {}
 inline void digitalWrite(int /*pin*/, int /*val*/) {}
-
+inline void noInterrupts() {}
+inline void interrupts() {}
 // --------- time ---------
 inline void delay(unsigned long ms) { usleep(ms*1000); }
 

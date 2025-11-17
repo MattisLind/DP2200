@@ -10,7 +10,18 @@
  */
 
 #include "arduino_shim.hpp"          // Arduino layer replacement
+#ifdef STANDARD
 #include "../tap_fm_tx_sketch.hpp"   // <-- your exact sketch code
+#endif
+#ifdef FIFO
+#include "../tap_fm_tx_sketch_fifo.hpp"
+#endif
+#ifdef LONGACC
+#include "../tap_fm_sketch_64bitacc.hpp"
+#endif
+#ifdef LONGACC_CRITSECTION
+#include "../tap_fm_sketch_64bitacc_critsections.hpp"
+#endif
 
 #ifndef SHIM_LISTEN_PORT
 #define SHIM_LISTEN_PORT 5555
@@ -50,22 +61,24 @@ int main(int argc, char** argv) {
   // Accept TCP client (host) and attach to SerialUSB
   int cli = listen_and_accept(port);
   SerialUSB._attach_fd(cli);
-
+  int counter=0;
   // Run sketch setup()
   setup();
   printf ("After setup\n");
   // Main poll loop: 100 ms cadence acts as both input poll and ISR tick
+
   while (true) {
     // Poll for up to 100 ms; if readable, loop() will read
     //printf("Before poll\n");
     struct pollfd pfd{cli, POLLIN, 0};
     int r = poll(&pfd, 1, 1);
     //printf ("r=%d\n", r);
-    if (r>0 && (pfd.revents & POLLIN)) {
-      loop();                         // <-- handles incoming commands/hex, buffer mgmt, 'A' flow ctrl
-    }
+    loop();                         // <-- handles incoming commands/hex, buffer mgmt, 'A' flow ctrl
     // Even if no input arrived, we still advance the transmitter once per tick
-    onSpiTimerISR();                  // <-- same ISR function as on MCU
+    if ((counter % 50) == 0) {
+      onSpiTimerISR();                  // <-- same ISR function as on MCU
+    }
+
     fflush(f);
   }
 }
