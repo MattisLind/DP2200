@@ -69,7 +69,7 @@
 
 // ================= Configuration =================
 #define PIN_LED        PB1
-#define USB_SERIAL     SerialUSB
+#define USB_SERIAL     Serial
 #define SPI_DEV        SPI
 #define SPI_CS_PIN     PB12
 
