@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
     // Poll for up to 100 ms; if readable, loop() will read
     //printf("Before poll\n");
     struct pollfd pfd{cli, POLLIN, 0};
-    int r = poll(&pfd, 1, 1);
+    poll(&pfd, 1, 1);
     //printf ("r=%d\n", r);
     loop();                         // <-- handles incoming commands/hex, buffer mgmt, 'A' flow ctrl
     // Even if no input arrived, we still advance the transmitter once per tick
