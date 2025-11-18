@@ -27,6 +27,7 @@
 
 // --------- GPIO stubs ---------
 #define PB1   1
+#define PA8 8
 #define PB12  12
 #define OUTPUT 1
 #define HIGH 1          
@@ -35,6 +36,7 @@ inline void pinMode(int /*pin*/, int /*mode*/) {}
 inline void digitalWrite(int /*pin*/, int /*val*/) {}
 inline void noInterrupts() {}
 inline void interrupts() {}
+inline void pwmWrite(int, int) {}
 // --------- time ---------
 inline void delay(unsigned long ms) { usleep(ms*1000); }
 

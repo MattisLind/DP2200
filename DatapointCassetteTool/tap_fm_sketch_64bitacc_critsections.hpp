@@ -64,11 +64,15 @@
   #define DEBUG_LOG(...)   do {} while(0)
 #endif
 
+HardwareTimer pwmtimer(1);
+const int pwmOutPin = PA8; // pin10
+// Connect PA8 to PB13 as the clock input for SPI2
+SPIClass SPI_2(2);
+
 // ================= Configuration =================
-#define PIN_LED        PB1
+#define WRITE_ENABLE        PB1
 #define USB_SERIAL     Serial
-#define SPI_DEV        SPI2
-#define SPI_CS_PIN     PB12
+#define SPI_DEV        SPI_2
 
 #define SYNC_BYTE      0xFF       // 8 logical '1' bits
 #define SYNC_LEN_BYTES 200        // 200 SYNC bytes before/after each record
@@ -691,7 +695,7 @@ static void rxPushTapByte(uint8_t b) {
 // Called when host sends 'S'
 void startRecord() {
     // Turn LED on to indicate active record
-    digitalWrite(PIN_LED, HIGH);
+    digitalWrite(WRITE_ENABLE, HIGH);
 
     // Set RX state to hex mode
     rxState      = RX_RECORD_HEX;
@@ -748,7 +752,7 @@ static void handleHostByte(int c) {
     }
     if (c == 'T') {
         endOfFileFromHost();
-        digitalWrite(PIN_LED, LOW);
+        digitalWrite(WRITE_ENABLE, LOW);
         return;
     }
     if (c == 'E') {
@@ -766,18 +770,28 @@ static void handleHostByte(int c) {
 
 // =============== Arduino-style setup/loop ===============
 void setup() {
-    pinMode(PIN_LED, OUTPUT);
-    digitalWrite(PIN_LED, LOW);
+    
+    digitalWrite(WRITE_ENABLE, LOW);
+    pinMode(WRITE_ENABLE, OUTPUT);
+    
 
+    int prescaler = 73;
+    int divisor = 512;
+    // initialize digital pin LED_BUILTIN as an output.
+    SPI_DEV.beginSlave(); //Initialize the SPI_2 port.
+    SPI_DEV.setBitOrder(MSBFIRST); // Set the SPI_2 bit order
+    SPI_DEV.setDataMode(SPI_MODE0); //Set the  SPI_2 data mode 0
+    pinMode(pwmOutPin, PWM);
+    pwmtimer.pause();
+    pwmtimer.setPrescaleFactor(prescaler);
+    pwmtimer.setOverflow(divisor); 
+    pwmtimer.refresh();
+    pwmtimer.resume();
+    pwmWrite(pwmOutPin, divisor>>1);
     USB_SERIAL.begin();
     while (!USB_SERIAL.isConnected()) {
         // Wait for serial connection to host
     }
-
-    SPI_DEV.begin();
-    pinMode(SPI_CS_PIN, OUTPUT);
-    digitalWrite(SPI_CS_PIN, LOW);
-
     // Initialize buffers and internal state
     resetBuffers();
 }
