@@ -688,6 +688,10 @@ extern "C" void __irq_spi2 (void) {
     }
 }
 
+void onSpiTimerISR() {
+    __irq_spi2();
+} 
+
 // =============== Host input parsing (main loop) ===============
 enum RxState { RX_IDLE=0, RX_RECORD_HEX };
 static RxState rxState = RX_IDLE;

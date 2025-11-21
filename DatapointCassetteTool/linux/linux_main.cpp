@@ -9,7 +9,20 @@
  *     * call onSpiTimerISR() once per iteration (simulated “timer”)
  */
 
+
+
+
 #include "arduino_shim.hpp"          // Arduino layer replacement
+
+void spi_irq_disable (SPIClass, int) {
+
+}
+
+void spi_irq_enable(SPIClass, int) {
+
+}
+
+
 #ifdef STANDARD
 #include "../tap_fm_tx_sketch.hpp"   // <-- your exact sketch code
 #endif
@@ -56,11 +69,11 @@ int main(int argc, char** argv) {
   // Open output file used by SPI shim
   FILE* f = fopen(outpath, "w");
   if (!f) { perror("fopen"); return 1; }
-  SPI._attach_file(f);
+  SPI_2._attach_file(f);
 
   // Accept TCP client (host) and attach to SerialUSB
   int cli = listen_and_accept(port);
-  SerialUSB._attach_fd(cli);
+  Serial._attach_fd(cli);
   int counter=0;
   // Run sketch setup()
   setup();

@@ -28,10 +28,15 @@
   #define DEBUG_LOG(...)   do {} while(0)
 #endif
 
+HardwareTimer pwmtimer(1);
+const int pwmOutPin = PA8; // pin10
+// Connect PA8 to PB13 as the clock input for SPI2
+SPIClass SPI_2(2);
+
 // ================= Configuration =================
 #define PIN_LED        PB1
-#define USB_SERIAL     SerialUSB
-#define SPI_DEV        SPI
+#define USB_SERIAL     Serial
+#define SPI_DEV        SPI_2
 #define SPI_CS_PIN     PB12
 
 #define SYNC_BYTE      0xFF       // 8 logical '1' bits

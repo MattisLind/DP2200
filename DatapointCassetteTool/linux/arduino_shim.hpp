@@ -31,7 +31,12 @@
 #define PB12  12
 #define OUTPUT 1
 #define HIGH 1          
-#define LOW  0          
+#define LOW  0    
+#define PWM 1
+#define SPI_MODE0 0
+#define MSBFIRST 0
+#define LSBFIRST 1
+#define SPI_TXE_INTERRUPT 1
 inline void pinMode(int /*pin*/, int /*mode*/) {}
 inline void digitalWrite(int /*pin*/, int /*val*/) {}
 inline void noInterrupts() {}
@@ -81,32 +86,70 @@ public:
     write(s); write('\n');
   }
 };
-static _ShimSerialUSB SerialUSB;      // global like on Maple
+static _ShimSerialUSB Serial;      // global like on Maple
 
 // --------- SPI shim: MSB -> '1' or '0' to file ---------
-class _ShimSPI {
+class SPIClass {
   FILE* _f = nullptr;                 // opened by linux_main
 public:
+  SPIClass (int) {}
   void _attach_file(FILE* f) { _f = f; }
   void begin() {}
-    uint8_t transfer(uint8_t v) {
-        if (_f) {
-            // Output the *full 8-bit SPI byte* as ASCII '0'/'1'
-            // LSB-first or MSB-first? 
-            // → The FM encoder produces LSB-first in bitAccumulator,
-            //   and ISR sends the lowest 8 bits first.
-            // So we print LSB-first too.
-            
-            for (int i = 0; i < 8; i++) {
-                uint8_t bit = (v >> i) & 1;       // LSB first
-                fputc(bit ? '1' : '0', _f);
-            }
-        }
-        return 0;
-    }
+  uint8_t transfer(uint8_t v) {
+      if (_f) {
+          // Output the *full 8-bit SPI byte* as ASCII '0'/'1'
+          // LSB-first or MSB-first? 
+          // → The FM encoder produces LSB-first in bitAccumulator,
+          //   and ISR sends the lowest 8 bits first.
+          // So we print LSB-first too.
+          
+          for (int i = 0; i < 8; i++) {
+              uint8_t bit = (v >> i) & 1;       // LSB first
+              fputc(bit ? '1' : '0', _f);
+          }
+      }
+      return 0;
+  }
+  void beginSlave() {}
+  void setBitOrder (int) {}
+  void setDataMode (int) {}
+  FILE * getFilePointer() {
+    return _f;
+  }
 };
-static _ShimSPI SPI;
 
+SPIClass SPI2(2);
+
+void spi_rx_reg(SPIClass) {
+
+}
+
+void spi_tx_reg(SPIClass s, uint8_t v) {
+  if (s.getFilePointer()) {
+      // Output the *full 8-bit SPI byte* as ASCII '0'/'1'
+      // LSB-first or MSB-first? 
+      // → The FM encoder produces LSB-first in bitAccumulator,
+      //   and ISR sends the lowest 8 bits first.
+      // So we print LSB-first too.
+      
+      for (int i = 0; i < 8; i++) {
+          uint8_t bit = (v >> i) & 1;       // LSB first
+          fputc(bit ? '1' : '0', s.getFilePointer());
+      }
+  }
+}
+
+
+
+class HardwareTimer {
+  public:
+    HardwareTimer(int) {}
+    void pause() {}
+    void setPrescaleFactor(int) {}
+    void setOverflow(int) {} 
+    void refresh() {}
+    void resume() {}
+};
 // --------- compatibility ---------
 class _ShimUSBConnectedOnce {
 public:
