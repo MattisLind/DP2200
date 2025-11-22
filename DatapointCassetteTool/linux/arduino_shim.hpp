@@ -72,6 +72,9 @@ public:
     uint8_t b;
     ssize_t n = ::read(_fd, &b, 1);
     if (n == 1) return b;
+    if (n == 0) {
+      exit(1);
+    }
     return -1;
   }
 
@@ -113,9 +116,6 @@ public:
   void beginSlave() {}
   void setBitOrder (int) {}
   void setDataMode (int) {}
-  FILE * getFilePointer() {
-    return _f;
-  }
 };
 
 SPIClass SPI2(2);
@@ -125,18 +125,7 @@ void spi_rx_reg(SPIClass) {
 }
 
 void spi_tx_reg(SPIClass s, uint8_t v) {
-  if (s.getFilePointer()) {
-      // Output the *full 8-bit SPI byte* as ASCII '0'/'1'
-      // LSB-first or MSB-first? 
-      // → The FM encoder produces LSB-first in bitAccumulator,
-      //   and ISR sends the lowest 8 bits first.
-      // So we print LSB-first too.
-      
-      for (int i = 0; i < 8; i++) {
-          uint8_t bit = (v >> i) & 1;       // LSB first
-          fputc(bit ? '1' : '0', s.getFilePointer());
-      }
-  }
+  s.transfer(v);
 }
 
 

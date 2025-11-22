@@ -89,15 +89,7 @@ enum class BufState : uint8_t {
 };
 
 // One ping-pong buffer: raw TAP bytes
-struct PingPongBuffer {
-    uint8_t         data[BUF_SIZE];   // raw TAP bytes (leader+payload+trailer)
-    volatile size_t len;              // number of valid bytes
-    volatile BufState state;          // FREE / READY / BUSY
-};
 
-// Two physical buffers
-static PingPongBuffer bufA;
-static PingPongBuffer bufB;
 
 /* ---------------------------------------------------
  * PingPongBuffers : encapsulates writer/reader logic
@@ -109,11 +101,25 @@ static PingPongBuffer bufB;
  *      * READY/FREE transitions
  *      * 'A' ACK when a 512-byte chunk is freed
  */
-struct PingPongBuffers {
-    PingPongBuffer* write   = &bufA;   // current writer buffer
-    PingPongBuffer* read    = nullptr; // current reader buffer
-    size_t          readPos = 0;       // position inside current reader buffer
+class PingPongBuffers {
 
+    class PingPongBuffer {
+        public:
+        uint8_t         data[BUF_SIZE];   // raw TAP bytes (leader+payload+trailer)
+        volatile size_t len;              // number of valid bytes
+        volatile BufState state;          // FREE / READY / BUSY
+    };
+
+// Two physical buffers
+    class PingPongBuffer bufA;
+    class PingPongBuffer bufB;
+
+
+    PingPongBuffer* write;         // current writer buffer
+    PingPongBuffer* read;          // current reader buffer
+    
+    public: 
+    size_t          readPos;       // position inside current reader buffer
     // Reset both buffers and internal pointers
     void reset() {
         // Initialize buffer A
@@ -130,55 +136,23 @@ struct PingPongBuffers {
         readPos = 0;
     }
 
-    // Try to acquire a FREE buffer for the writer if none is assigned.
-    // Returns false if no FREE buffer exists (both are READY/BUSY).
-    bool ensureWriter() {
-        //USB_SERIAL.print('L6-');
-        // If we already have a writer buffer, nothing to do
-        if (write) {
-            //USB_SERIAL.print('L8-');
-            return true;
-        }
-
-        // Try to find a FREE buffer
-        if (bufA.state == BufState::FREE) {
-            write      = &bufA;
-            write->len = 0;
-            //USB_SERIAL.print('L9-');
-            return true;
-        } else if (bufB.state == BufState::FREE) {
-            write      = &bufB;
-            write->len = 0;
-            //USB_SERIAL.print('L10-');
-            return true;
-        }
-
-        // No FREE buffer available -> writer must stall
-        DEBUG_LOG("[RX] ERROR: no FREE buffer available for writing\n");
-        //USB_SERIAL.print('L7-');
-        return false;
-    }
 
     // Push one TAP byte into the writer buffer.
-    // Sets errorFlag externally if needed.
-    bool pushTapByte(uint8_t b, volatile bool& errorFlag) {
-        //char buf[8];
-        // Ensure we have a writer buffer
-        if (!ensureWriter()) {
-            errorFlag = true;
-            //USB_SERIAL.print('L4-');
-            return false;
-        }
-        //sprintf(buf, "L5X%02x-");
-        //USB_SERIAL.print(buf);
-        // Store byte in current writer buffer
-        write->data[write->len++] = b;
 
-        if ((write->len % 64) == 0) {
-            DEBUG_LOG("[RX] filled buf=%c, len=%zu\n",
-                      (write == &bufA) ? 'A' : 'B',
-                      (size_t)write->len);
+    bool pushTapByte(uint8_t b) {
+        // Ensure we have a writer buffer
+        if (write==nullptr) {
+            if (bufA.state == BufState::FREE) {
+                write      = &bufA;
+                write->len = 0;
+                DEBUG_LOG("Selected Buffer A\n");
+            } else if (bufB.state == BufState::FREE) {
+                write      = &bufB;
+                write->len = 0;
+                DEBUG_LOG("Selected Buffer B\n");
+            }
         }
+        write->data[write->len++] = b;
 
         // When buffer is full (512 bytes), mark it READY
         if (write->len == BUF_SIZE) {
@@ -190,14 +164,13 @@ struct PingPongBuffers {
             // Try switching to the other buffer if it's FREE
             PingPongBuffer* other = (write == &bufA) ? &bufB : &bufA;
             if (other->state == BufState::FREE) {
+                DEBUG_LOG("[RX] Switching buffers\n");
                 write      = other;
                 write->len = 0;
-                //USB_SERIAL.print('L11-');
             } else {
-                // No FREE buffer; writer must stall until ISR frees one
+                // No FREE buffer; writer must stall until one is free.
                 DEBUG_LOG("[RX] writer stalled, no FREE buffer after commit\n");
-                write = nullptr;
-                //USB_SERIAL.print('L12-');
+                write = nullptr;;
             }
         }
 
@@ -207,14 +180,12 @@ struct PingPongBuffers {
     // Called when host sends 'T' (EOF):
     // If there's a partially-filled FREE buffer, mark it READY.
     void commitPartialOnEOF() {
-        //USB_SERIAL.print('L13-');
         if (write && write->state == BufState::FREE && write->len > 0) {
             DEBUG_LOG("[EOF] committing partial buffer %c, len=%zu\n",
                       (write == &bufA) ? 'A' : 'B',
                       (size_t)write->len);
             write->state = BufState::READY;
             write        = nullptr;
-            //USB_SERIAL.print('L14-');
         }
     }
 
@@ -223,14 +194,11 @@ struct PingPongBuffers {
     // Returns false if no READY/BUSY data is available.
     bool readTapByte(uint8_t& out) {
         //char buf[9];
-        //USB_SERIAL.print('L15-');
         while (true) {
-            //USB_SERIAL.print('L16-');
             // 1) If we have a current buffer with remaining data, read from it
             if (read && readPos < read->len) {
                 out = read->data[readPos++];
                 //sprintf(buf, "L17X%02x-");
-                //USB_SERIAL.print(buf);
                 if ((readPos % 64) == 0) {
                     DEBUG_LOG("[ISR] TAP byte from buf=%c pos=%zu len=%zu\n",
                               (read == &bufA) ? 'A' : 'B',
@@ -241,7 +209,6 @@ struct PingPongBuffers {
 
             // 2) If the current buffer is exhausted, FREE it and send 'A' to host
             if (read && readPos >= read->len) {
-                //USB_SERIAL.print('L18-');
                 DEBUG_LOG("[ISR] finished buffer %c, len=%zu -> FREE + 'A'\n",
                           (read == &bufA) ? 'A' : 'B',
                           (size_t)read->len);
@@ -258,14 +225,12 @@ struct PingPongBuffers {
 
             // 3) Try to acquire a READY buffer
             if (bufA.state == BufState::READY) {
-                //USB_SERIAL.print('L19-');
                 read        = &bufA;
                 read->state = BufState::BUSY;
                 readPos     = 0;
                 continue; // loop again to consume from it
             }
             if (bufB.state == BufState::READY) {
-                //USB_SERIAL.print('L20-');
                 read        = &bufB;
                 read->state = BufState::BUSY;
                 readPos     = 0;
@@ -520,7 +485,6 @@ static inline void fmPushSyncByte(
  *    noInterrupts()/interrupts() inside fmPush* helpers.
  */
 static void encoderPoll() {
-    //USB_SERIAL.print('L21-');
     if (errorFlag) {
         // In error state we don't encode anything
         return;
@@ -535,29 +499,24 @@ static void encoderPoll() {
     switch (txState) {
 
         case TxState::IDLE: {
-            //USB_SERIAL.print('L21-');
             // Try to get first payload byte of next TAP record.
             // tap.nextPayload() consumes from TAP stream via pp.readTapByte().
             if (!tap.nextPayload(curByte, curIsLastByte, errorFlag)) {
                 // No TAP data available right now -> nothing more to encode.
-                //USB_SERIAL.print('L22-');
                 return;
             }
             // Got first payload byte -> prepare leading SYNC.
             syncCount   = SYNC_LEN_BYTES;  // leading SYNC length (200 bytes)
             frameBitPos = 0;               // reset framing bit position
             txState     = TxState::LEAD_SYNC;
-            //USB_SERIAL.print('L23-');
         } break;
 
         case TxState::LEAD_SYNC:
             if (syncCount == 0) {
-                //USB_SERIAL.print('L24-');
                 // After leading SYNC: send start marker bits 0,1,0 before first payload byte.
                 frameBitPos = 0;            // 0..2 for "010" pre-bits
                 txState     = TxState::PREBITS_START;
             } else {
-                //USB_SERIAL.print('L25-');
                 if (localBitsInAcc > 48) return;
                 // Encode one SYNC byte (0xFF) = 8 logical '1's -> 16 FM bits.
                 fmPushSyncByte(bitAccumulator, bitsInAcc, lastLineBit);
@@ -566,7 +525,6 @@ static void encoderPoll() {
             break;
 
         case TxState::PREBITS_START: {
-            //USB_SERIAL.print('L26-');
             // Send 3 bits: 0,1,0 as start marker before first payload byte.
             static const uint8_t pre[3] = {0,1,0};  // preamble pattern
             if (localBitsInAcc > 62) return;
@@ -577,20 +535,16 @@ static void encoderPoll() {
                 // Done with start marker, move on to payload bits for this byte.
                 frameBitPos = 0;                    // 0..7 for data bits
                 txState     = TxState::FRAME_BITS;
-                //USB_SERIAL.print('L27-');
             }
         } break;
 
         case TxState::FRAME_BITS:
-            //USB_SERIAL.print('L28-');
             if (localBitsInAcc > 62) return;
             if (frameBitPos < 8) {
-                //USB_SERIAL.print('L29-');
                 // Encode 8 data bits of current byte (LSB-first).
                 uint8_t bit = (curByte >> frameBitPos) & 1;   // extract bit i
                 fmPushEncodedBit(bit, bitAccumulator, bitsInAcc, lastLineBit);
             } else if (frameBitPos < 11) {
-                //USB_SERIAL.print('L30-');
                 // After each payload byte, send 3 bits "010".
                 static const uint8_t post[3] = {0,1,0};       // post pattern
                 fmPushEncodedBit(post[frameBitPos - 8],
@@ -599,7 +553,6 @@ static void encoderPoll() {
             ++frameBitPos;                                   // next bit in frame
 
             if (frameBitPos >= 11) {
-                //USB_SERIAL.print('L31-');
                 // 8 data bits + 3 post bits done -> figure out next step.
                 txState = TxState::NEXT_BYTE;
             }
@@ -607,13 +560,11 @@ static void encoderPoll() {
 
         case TxState::NEXT_BYTE:
             if (curIsLastByte) {
-                //USB_SERIAL.print('L32-');
                 // Last payload byte of this TAP record:
                 // We must now send 11 logical ones.
                 onesRemaining = 11;                          // number of ones to send
                 txState       = TxState::END_ONES;
             } else {
-                //USB_SERIAL.print('L33-');
                 // More payload bytes to come -> fetch next one from TAP.
                 if (!tap.nextPayload(curByte, curIsLastByte, errorFlag)) {
                     // No TAP data available right now.
@@ -626,11 +577,9 @@ static void encoderPoll() {
 
         case TxState::END_ONES:
             // Send 11 logical '1' bits after the last payload byte.
-            //USB_SERIAL.print('L34-');
             if (localBitsInAcc > 62) return;
             fmPushEncodedBit(1, bitAccumulator, bitsInAcc, lastLineBit);
             if (--onesRemaining == 0) {
-                //USB_SERIAL.print('L35-');
                 // After 11 ones: send trailing SYNC.
                 syncCount = SYNC_LEN_BYTES;                  // trailing SYNC length
                 txState   = TxState::TRAIL_SYNC;
@@ -638,13 +587,10 @@ static void encoderPoll() {
             break;
 
         case TxState::TRAIL_SYNC:
-            //USB_SERIAL.print('L36-');
             if (syncCount == 0) {
-                //USB_SERIAL.print('L37-');
                 // Done with this TAP record -> back to IDLE for next one.
                 txState = TxState::IDLE;
             } else {
-                //USB_SERIAL.print('L38-');
                 // Encode one trailing SYNC byte (0xFF).
                 if (localBitsInAcc > 48) return;
                 fmPushSyncByte(bitAccumulator, bitsInAcc, lastLineBit);
@@ -658,39 +604,45 @@ static void encoderPoll() {
 // =====================================================
 //  ISR: FM encoder + record framing + TAP parsing
 // =====================================================
-
+#ifndef ARDUINO
+void onSpiTimerISR() {
+#else
 extern "C" void __irq_spi2 (void) {
+#endif
 
 //void onSpiTimerISR() {
-    /*static uint32_t isrCalls = 0;
+    #ifndef ARDUINO
+    static uint32_t isrCalls = 0;
     if (isrCalls < 20 || (isrCalls % 1000) == 0) {
-        DEBUG_LOG("[ISR] tick %u bufA.state=%d lenA=%zu bufB.state=%d lenB=%zu readPos=%zu bitsInAcc=%u\n",
+        DEBUG_LOG("[ISR] tick %u readPos=%zu bitsInAcc=%u\n",
                   isrCalls,
-                  (int)bufA.state, (size_t)bufA.len,
-                  (int)bufB.state, (size_t)bufB.len,
                   pp.readPos,
                   (unsigned)bitsInAcc);
     }
     ++isrCalls;
-    */
+    #endif
 
     // ISR now only sends out a single SPI byte if there are at least 8 FM bits.
     // All accumulation and TAP parsing happens in encoderPoll() in the main loop.
     if (bitsInAcc >= 8) {
+        #ifdef ARDUINO
+        digitalWrite(WRITE_ENABLE, HIGH);
+        #endif
         // Take one byte worth of bits from the accumulator (LSB-first).
         uint8_t outByte = (uint8_t)(bitAccumulator & 0xFF);  // get lowest 8 bits
-        //SPI_DEV.transfer(outByte);                           // send over SPI
         spi_tx_reg(SPI2,outByte);
         bitAccumulator >>= 8;                                // drop the 8 bits we just sent
         bitsInAcc       -= 8;                                // we now have 8 fewer bits stored
     } else {
+        #ifdef ARDUINO
+        digitalWrite(WRITE_ENABLE, LOW);
         spi_tx_reg(SPI2,0x00);
+        #endif
     }
 }
 
-void onSpiTimerISR() {
-    __irq_spi2();
-} 
+
+
 
 // =============== Host input parsing (main loop) ===============
 enum RxState { RX_IDLE=0, RX_RECORD_HEX };
@@ -725,19 +677,11 @@ void resetBuffers() {
     rxHalfNibble = -1;
 }
 
-// Wrapper around PingPongBuffers::pushTapByte
-static void rxPushTapByte(uint8_t b) {
-    if (!pp.pushTapByte(b, errorFlag)) {
-        // errorFlag is set inside pushTapByte
-        return;
-    }
-}
 
 // Called when host sends 'S'
 void startRecord() {
-    //USB_SERIAL.print("L3-");
     // Turn LED on to indicate active record
-    digitalWrite(WRITE_ENABLE, HIGH);
+    
 
     // Set RX state to hex mode
     rxState      = RX_RECORD_HEX;
@@ -750,7 +694,6 @@ void startRecord() {
 // Called when host sends 'T'
 void endOfFileFromHost() {
     // If there's a partially filled buffer, mark it READY
-    //USB_SERIAL.print("L2-");
     pp.commitPartialOnEOF();
 
     rxState     = RX_IDLE;
@@ -764,7 +707,6 @@ static void handleHexInput(int c) {
         // Ignore whitespace, otherwise set error
         if (!(c == ' ' || c == '\r' || c == '\n' || c == '\t')) {
             errorFlag = true;
-            //USB_SERIAL.print("L1-");
         }
         DEBUG_LOG("errorFlag=%d\n", errorFlag);
         return;
@@ -779,8 +721,7 @@ static void handleHexInput(int c) {
     // Second nibble -> build full byte
     uint8_t b = (uint8_t)((rxHalfNibble << 4) | n);
     rxHalfNibble = -1;
-
-    rxPushTapByte(b);
+    pp.pushTapByte(b);
 }
 
 // Handle one byte from host
@@ -792,6 +733,7 @@ static void handleHostByte(int c) {
         startRecord();
         // Initial ACK so host can send first 512-byte chunk
         USB_SERIAL.write('A');
+        USB_SERIAL.write('A');  
         return;
     }
     if (c == 'T') {
@@ -823,7 +765,7 @@ void setup() {
     int divisor = 512;
     // initialize digital pin LED_BUILTIN as an output.
     SPI_DEV.beginSlave(); //Initialize the SPI_2 port.
-    SPI_DEV.setBitOrder(LSBFIRST); // Set the SPI_2 bit order
+    SPI_DEV.setBitOrder(MSBFIRST); // Set the SPI_2 bit order
     SPI_DEV.setDataMode(SPI_MODE0); //Set the  SPI_2 data mode 0
     pinMode(pwmOutPin, PWM);
     pwmtimer.pause();

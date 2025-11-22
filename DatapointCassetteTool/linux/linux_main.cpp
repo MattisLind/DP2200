@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
   // Open output file used by SPI shim
   FILE* f = fopen(outpath, "w");
   if (!f) { perror("fopen"); return 1; }
-  SPI_2._attach_file(f);
+  SPI2._attach_file(f);
 
   // Accept TCP client (host) and attach to SerialUSB
   int cli = listen_and_accept(port);
@@ -88,8 +88,11 @@ int main(int argc, char** argv) {
     //printf ("r=%d\n", r);
     loop();                         // <-- handles incoming commands/hex, buffer mgmt, 'A' flow ctrl
     // Even if no input arrived, we still advance the transmitter once per tick
-    if ((counter % 50) == 0) {
+    if (counter==10) {
+      counter=0;
       onSpiTimerISR();                  // <-- same ISR function as on MCU
+    } else {
+      counter++;
     }
 
     fflush(f);
