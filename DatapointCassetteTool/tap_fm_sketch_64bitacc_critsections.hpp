@@ -68,14 +68,14 @@ HardwareTimer pwmtimer(1);
 const int pwmOutPin = PA8; // pin10
 // Connect PA8 to PB13 as the clock input for SPI2
 SPIClass SPI_2(2);
-
+bool firstBlock;
 // ================= Configuration =================
 #define WRITE_ENABLE        PB1
 #define USB_SERIAL     Serial
 #define SPI_DEV        SPI_2
 
 #define SYNC_BYTE      0xFF       // 8 logical '1' bits
-#define SYNC_LEN_BYTES 200        // 200 SYNC bytes before/after each record
+#define SYNC_LEN_BYTES 100        // 200 SYNC bytes before/after each record
 #define BUF_SIZE       512        // Ping-pong buffer size in TAP bytes
 #define TAP_LITTLE_ENDIAN 1       // TAP length is little-endian
 
@@ -506,7 +506,7 @@ static void encoderPoll() {
                 return;
             }
             // Got first payload byte -> prepare leading SYNC.
-            syncCount   = SYNC_LEN_BYTES;  // leading SYNC length (200 bytes)
+            syncCount   = firstBlock? 2000 : SYNC_LEN_BYTES;  // leading SYNC length (200 bytes)
             frameBitPos = 0;               // reset framing bit position
             txState     = TxState::LEAD_SYNC;
         } break;
@@ -516,6 +516,7 @@ static void encoderPoll() {
                 // After leading SYNC: send start marker bits 0,1,0 before first payload byte.
                 frameBitPos = 0;            // 0..2 for "010" pre-bits
                 txState     = TxState::PREBITS_START;
+                firstBlock = false;
             } else {
                 if (localBitsInAcc > 48) return;
                 // Encode one SYNC byte (0xFF) = 8 logical '1's -> 16 FM bits.
@@ -686,7 +687,7 @@ void startRecord() {
     // Set RX state to hex mode
     rxState      = RX_RECORD_HEX;
     rxHalfNibble = -1;
-
+    firstBlock=true;
     // Reset TAP parser in ISR for this new record
     tap.reset();
 }
@@ -738,7 +739,6 @@ static void handleHostByte(int c) {
     }
     if (c == 'T') {
         endOfFileFromHost();
-        digitalWrite(WRITE_ENABLE, LOW);
         return;
     }
     if (c == 'E') {
@@ -765,7 +765,7 @@ void setup() {
     int divisor = 512;
     // initialize digital pin LED_BUILTIN as an output.
     SPI_DEV.beginSlave(); //Initialize the SPI_2 port.
-    SPI_DEV.setBitOrder(MSBFIRST); // Set the SPI_2 bit order
+    SPI_DEV.setBitOrder(LSBFIRST); // Set the SPI_2 bit order
     SPI_DEV.setDataMode(SPI_MODE0); //Set the  SPI_2 data mode 0
     pinMode(pwmOutPin, PWM);
     pwmtimer.pause();
