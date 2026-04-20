@@ -101,7 +101,7 @@ int FloppyDrive::validateTrack(int track) {
   bool hasBadBlocks=false;
   int sectorMap[26];
   int mode = fgetc(file);
-  for (int i=0; i<26; i++) diskImage[track][sectorMap[i]-1].sectorType = 0;
+  for (int i=0; i<26; i++) diskImage[track][i].sectorType = 0;
   if (feof(file)) {
     return FILE_PREMATURE_EOF;
   }
