@@ -79,6 +79,7 @@ unsigned char inline dp2200_cpu::Memory::read(unsigned short virtualAddress, boo
     }
   } else {
     physicalAddress = virtualAddress;
+    logicalAddress = virtualAddress;
   }
   data = physicalMemoryRead(physicalAddress);
   if (!fetch && performChecks) {
