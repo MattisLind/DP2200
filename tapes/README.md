@@ -1,5 +1,11 @@
 # Tapes
 
+`diagnostics/` contains the diagnostic tapes and other utilities, including the
+fixtures used by the simulator tests. `diagnostics/DIAG6600_V1.1.tap` includes
+the file-header repair needed to boot its menu. `bitsavers/` retains the archival
+collection, including the original TSTPRO dump. The tests use
+`diagnostics/tstpro1.1.tap`.
+
 Thid directory contains various tapes that originate from bitsavers. I wrote a simple program, dp2200tap.c, that reads the tap-formatted files and tries to verify the contents.
 
 Some files verify ok other seems to have some type of problem.
