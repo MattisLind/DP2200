@@ -12,7 +12,10 @@ class CassetteWriteTests(unittest.TestCase):
     def test_write_block_stops_when_no_next_byte_is_supplied(self):
         self.write_and_read_back(explicit_stop=False)
 
-    def write_and_read_back(self, explicit_stop):
+    def test_rewriting_shorter_record_removes_old_suffix(self):
+        self.write_and_read_back(explicit_stop=True, rewrite=True)
+
+    def write_and_read_back(self, explicit_stop, rewrite=False):
         with tempfile.TemporaryDirectory() as work, Harness() as sim:
             output=Path(work)/'output.tap'
             sim.command(f'tape-create 1 {output}')
@@ -31,6 +34,11 @@ class CassetteWriteTests(unittest.TestCase):
                 wait(1)  # Hardware completes a record after the last byte.
             code.append(0o175)  # Rewind.
             wait(1)
+            if rewrite:
+                code.append(0o163)  # Replace BOOT with one byte at BOT.
+                wait(8)
+                code.extend([0o006, ord('Z'), 0o127, 0o177, 0o175])
+                wait(1)
             code.append(0o161)  # RBK.
             wait(4)
             code.extend([0o125,0o101,0o056,32,0o066,0,0o370,0])
@@ -40,8 +48,10 @@ class CassetteWriteTests(unittest.TestCase):
             sim.load(bootstrap)
             state=sim.command('run 1000000')
             self.assertTrue(state['halted'])
-            self.assertEqual(sim.command('memory 8192 1')['memory'],[ord('B')])
-            self.assertEqual(output.read_bytes(),struct.pack('<I',4)+b'BOOT'+struct.pack('<I',4))
+            expected = b'Z' if rewrite else b'BOOT'
+            self.assertEqual(sim.command('memory 8192 1')['memory'],[expected[0]])
+            size = struct.pack('<I', len(expected))
+            self.assertEqual(output.read_bytes(),size+expected+size)
 
     def test_tape_create_preserves_existing_file(self):
         with tempfile.TemporaryDirectory() as work, Harness() as sim:

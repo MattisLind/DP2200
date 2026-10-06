@@ -156,7 +156,7 @@ class HeadlessTests(unittest.TestCase):
             self.sim.run_until("TEST COMPLETED")
 
     def test_tstpro(self):
-        self.sim.load(ROOT / "tapes/tstpro1.1.tap")
+        self.sim.load(ROOT / "tapes/diagnostics/tstpro1.1.tap")
         state = self.sim.run_until("TEST COMPLETED")
         self.assertEqual(state["screen"].strip(), "TEST COMPLETED")
         self.assertTrue(state["halted"])
@@ -169,7 +169,7 @@ class HeadlessTests(unittest.TestCase):
         # the cassette bootstrap alone does not perform that initialization.
         self.sim.command(f"pc {0o170036}")
         self.assertTrue(self.sim.command("run 10000000")["halted"])
-        self.sim.load(ROOT / "tapes/DIAG5500_V1.1.tap")
+        self.sim.load(ROOT / "tapes/diagnostics/DIAG5500_V1.1.tap")
         state = self.sim.command("run 2000000")
         self.assertIn("TEST5556", state["screen"])
         self.sim.key("3")
@@ -201,7 +201,7 @@ class HeadlessTests(unittest.TestCase):
         self.sim.command("cpu 6600")
         self.sim.command(f"pc {0o170036}")
         self.sim.command("run 10000000")
-        self.sim.load(ROOT / "tapes/DIAG6600_V1.1.tap")
+        self.sim.load(ROOT / "tapes/diagnostics/DIAG6600_V1.1.tap")
         state = self.sim.command("run 2000000")
         self.assertFalse(state["halted"])
         for label in ("DIAG6600", "TST6600C", "TST6600D", "LOAD FILE NUMBER?"):

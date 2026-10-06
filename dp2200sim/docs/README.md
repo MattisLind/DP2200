@@ -4,6 +4,9 @@ PLEASE NOTE!  STILL WORK IN PROGRESS.<BR>
  
 At this point it can load CTOS from cassette tape images and boot DOS.C from floppy disks. It also support a local printer which means that it is possible to print from DOS.C to a file.
 
+See the [diagnostic tape inventory](DIAGNOSTIC_TAPE_INVENTORY.md) for all tapes in
+`tapes/diagnostics/`, measured test results and peripheral implementation ideas.
+
 
 [![Watch the video](https://i.imgur.com/zhIMYDc.png)](https://youtu.be/XfsMBhP13ww)
 
@@ -302,7 +305,7 @@ make -C dp2200sim test-headless
 This builds `dp2200sim-headless` with the same CPU, cassette and I/O controller as
 the interactive simulator. It needs a C++17 compiler and Python 3 for the test
 client, and requires neither SDL nor ncurses nor a terminal of any particular
-size. The TSTPRO check uses the regression fixture `../tapes/tstpro1.1.tap`.
+size. The TSTPRO check uses the regression fixture `../tapes/diagnostics/tstpro1.1.tap`.
 Success requires the screen to contain `TEST COMPLETED` and the CPU to
 halt within an instruction budget. A halt without that text and a budget overrun
 both fail. On the current tape it halts at octal PC `04052` after 1,439
@@ -323,6 +326,7 @@ response.
 | `floppy N /path/to/disk.IMD` | Attach a read-only floppy image to drive 0–3. |
 | `tape-create N /path/to/new.tap` | Create a writable cassette for UBOOT. Existing files are rejected. |
 | `tape-stop` | Stop cassette motion and finish an outstanding written block. |
+| `cassette-state` | Inspect selected deck, cassette status, pending transport and per-deck position/presence/protection without consuming data. |
 | `run N` | Execute up to N instructions, stopping on CPU halt. N must be 1–100,000,000. |
 | `pc N` | Set PC to decimal address N and release the halt. |
 | `continue` | Release the halt without changing PC. |
@@ -350,7 +354,7 @@ import path:
 from harness import Harness
 
 with Harness() as simulator:
-    simulator.load("tapes/tstpro1.1.tap")
+    simulator.load("tapes/diagnostics/tstpro1.1.tap")
     result = simulator.run_until("TEST COMPLETED")
     print(result["screen"])
 ```
@@ -366,7 +370,7 @@ lights, and rejection of a halt with the wrong success text.
 
 ### TEST5556 and the 5500 ROM
 
-`tapes/DIAG5500_V1.1.tap` contains both TEST5500 2.2 (menu entry 2) and
+`tapes/diagnostics/DIAG5500_V1.1.tap` contains both TEST5500 2.2 (menu entry 2) and
 TEST5556 1.1, dated 05/09/78 (entry 3). TEST5500 contains a hardcoded ROM
 reference which differs from `5500firmware.inverted.bin`. TEST5556's BRL test
 uses RAM patterns to check relocation instead. It works with the current ROM;
@@ -388,11 +392,10 @@ count while advancing the pointers past it.
 
 ### DIAG6600 tape repair
 
-`../tapes/DIAG6600_V1.1.tap` had no file-1 header between the menu's final
+`../tapes/diagnostics/DIAG6600_V1.1.tap` had no file-1 header between the menu's final
 numeric record and UNITEST. The cassette loader consequently loaded UNITEST
 over the menu. A 12-byte framed record with payload `81 7e 01 fe` was inserted
-at byte offset 1,990; all original bytes remain unchanged. The original local
-dump is preserved as `../tapes/DIAG6600_V1.1.original.tap`.
+at byte offset 1,990; all original bytes remain unchanged.
 
 Original SHA-256: `709c11287e4848fd17c94438de90f2da77917d6eaf7190cdbfa1e774e9f16924`.
 Repaired SHA-256: `fd4c13f0eb61b7849732d0901e7e8ed00dd3d836fc256a6bbf0e56d6416ab9e5`.
@@ -402,6 +405,9 @@ TST6600D and the file-number prompt. This does not validate the complete 6600
 instruction set, which remains work in progress.
 
 ## 9370 and 9374 disk diagnostics
+
+For EXRCASS transport verification, TAPTIM write/read checks and the measured
+timing limitations, see [cassette diagnostic results](CASSETTE_DIAGNOSTICS.md).
 
 Run all five supplied tapes against disposable disk images:
 

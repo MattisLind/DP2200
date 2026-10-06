@@ -97,6 +97,13 @@ test-headless: dp2200sim-headless
 test-disks: dp2200sim-headless
 	python3 tests/disk_diagnostics.py
 
+.PHONY: test-cassettes test-cassette-timing
+test-cassettes: dp2200sim-headless
+	python3 -m unittest discover -s tests -p 'test_cassette*.py' -v
+
+test-cassette-timing: dp2200sim-headless
+	python3 tests/cassette_diagnostics.py --require-timing
+
 .PHONY: install-dos-d
 install-dos-d: dp2200sim-headless
 	python3 tests/install_dos_d.py

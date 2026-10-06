@@ -1,0 +1,678 @@
+{
+  "exrcass": {
+    "tape": "EXRCASS_V1.1.tap",
+    "sha256": "e908b552da57ada2ce0fbb00531b38ad39a1fb5eee504a3d5b9f213d07041ec7",
+    "functional_pass": true,
+    "decks": [
+      {
+        "deck": 0,
+        "bytes": 2256,
+        "forward": {
+          "deck": 0,
+          "status": 215,
+          "running": false,
+          "decks": [
+            {
+              "position": 2256,
+              "open": true,
+              "write_protected": true
+            },
+            {
+              "position": 0,
+              "open": true,
+              "write_protected": true
+            }
+          ]
+        },
+        "reverse": {
+          "deck": 0,
+          "status": 215,
+          "running": false,
+          "decks": [
+            {
+              "position": 0,
+              "open": true,
+              "write_protected": true
+            },
+            {
+              "position": 0,
+              "open": true,
+              "write_protected": true
+            }
+          ]
+        },
+        "rewind": {
+          "deck": 0,
+          "status": 195,
+          "running": false,
+          "decks": [
+            {
+              "position": 0,
+              "open": true,
+              "write_protected": true
+            },
+            {
+              "position": 0,
+              "open": true,
+              "write_protected": true
+            }
+          ]
+        },
+        "stop_position": 27
+      },
+      {
+        "deck": 1,
+        "bytes": 2256,
+        "forward": {
+          "deck": 1,
+          "status": 215,
+          "running": false,
+          "decks": [
+            {
+              "position": 0,
+              "open": true,
+              "write_protected": true
+            },
+            {
+              "position": 2256,
+              "open": true,
+              "write_protected": true
+            }
+          ]
+        },
+        "reverse": {
+          "deck": 1,
+          "status": 215,
+          "running": false,
+          "decks": [
+            {
+              "position": 0,
+              "open": true,
+              "write_protected": true
+            },
+            {
+              "position": 0,
+              "open": true,
+              "write_protected": true
+            }
+          ]
+        },
+        "rewind": {
+          "deck": 1,
+          "status": 195,
+          "running": false,
+          "decks": [
+            {
+              "position": 0,
+              "open": true,
+              "write_protected": true
+            },
+            {
+              "position": 0,
+              "open": true,
+              "write_protected": true
+            }
+          ]
+        },
+        "stop_position": 27
+      }
+    ]
+  },
+  "taptim": [
+    {
+      "tape": "TAPTIM_V1.5.tap",
+      "sha256": "d2e71cba08d5c8eb48186377b8ee8047e0fcf1cdfcc5718ea9b459d8e4ba9d48",
+      "deck": 0,
+      "mode": "T",
+      "screen": "2200 VERSION: 2, TAPE SPEED: 7.5 IPS              DECK: 1   PASS: 002\n\n                                       NOMINAL  +/-  MEASURED\n   MOD BOARD | DELAY                    100     010     000     001*\n    TIMING   | PRE-WRITE                170     017     000     001*\n             | POST-WRITE               140     014     002     001*\n             -----------------------------------------------\n DEMOD BOARD | PRE-READ                 075     008     000     001*\n    TIMING   | REVERSE POST-READ        140     014     004     001*\n             | FORWARD POST-READ        140     014     004     001*\n             | SLEW                     210     021     071     001*",
+      "cassette": {
+        "deck": 0,
+        "status": 64,
+        "running": true,
+        "decks": [
+          {
+            "position": 716,
+            "open": true,
+            "write_protected": false
+          },
+          {
+            "position": 9,
+            "open": true,
+            "write_protected": false
+          }
+        ]
+      },
+      "measurements": [
+        {
+          "test": "DELAY",
+          "nominal": 100,
+          "tolerance": 10,
+          "measured": 0,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "PRE-WRITE",
+          "nominal": 170,
+          "tolerance": 17,
+          "measured": 0,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "POST-WRITE",
+          "nominal": 140,
+          "tolerance": 14,
+          "measured": 2,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "PRE-READ",
+          "nominal": 75,
+          "tolerance": 8,
+          "measured": 0,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "REVERSE POST-READ",
+          "nominal": 140,
+          "tolerance": 14,
+          "measured": 4,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "FORWARD POST-READ",
+          "nominal": 140,
+          "tolerance": 14,
+          "measured": 4,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "SLEW",
+          "nominal": 210,
+          "tolerance": 21,
+          "measured": 71,
+          "error_count": 1,
+          "within_tolerance": false
+        }
+      ],
+      "record_lengths": [
+        600,
+        100,
+        100
+      ],
+      "timing_pass": false,
+      "endurance_pass": null,
+      "bounded_data_pass": null,
+      "pattern_bytes_read": 0,
+      "time_ns": 46421142400
+    },
+    {
+      "tape": "TAPTIM_V1.5.tap",
+      "sha256": "d2e71cba08d5c8eb48186377b8ee8047e0fcf1cdfcc5718ea9b459d8e4ba9d48",
+      "deck": 1,
+      "mode": "T",
+      "screen": "2200 VERSION: 2, TAPE SPEED: 7.5 IPS              DECK: 2   PASS: 002\n\n                                       NOMINAL  +/-  MEASURED\n   MOD BOARD | DELAY                    100     010     000     001*\n    TIMING   | PRE-WRITE                170     017     000     001*\n             | POST-WRITE               140     014     002     001*\n             -----------------------------------------------\n DEMOD BOARD | PRE-READ                 075     008     000     001*\n    TIMING   | REVERSE POST-READ        140     014     004     001*\n             | FORWARD POST-READ        140     014     004     001*\n             | SLEW                     210     021     071     001*",
+      "cassette": {
+        "deck": 1,
+        "status": 64,
+        "running": true,
+        "decks": [
+          {
+            "position": 0,
+            "open": true,
+            "write_protected": false
+          },
+          {
+            "position": 725,
+            "open": true,
+            "write_protected": false
+          }
+        ]
+      },
+      "measurements": [
+        {
+          "test": "DELAY",
+          "nominal": 100,
+          "tolerance": 10,
+          "measured": 0,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "PRE-WRITE",
+          "nominal": 170,
+          "tolerance": 17,
+          "measured": 0,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "POST-WRITE",
+          "nominal": 140,
+          "tolerance": 14,
+          "measured": 2,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "PRE-READ",
+          "nominal": 75,
+          "tolerance": 8,
+          "measured": 0,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "REVERSE POST-READ",
+          "nominal": 140,
+          "tolerance": 14,
+          "measured": 4,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "FORWARD POST-READ",
+          "nominal": 140,
+          "tolerance": 14,
+          "measured": 4,
+          "error_count": 1,
+          "within_tolerance": false
+        },
+        {
+          "test": "SLEW",
+          "nominal": 210,
+          "tolerance": 21,
+          "measured": 71,
+          "error_count": 1,
+          "within_tolerance": false
+        }
+      ],
+      "record_lengths": [
+        1,
+        600,
+        100,
+        100
+      ],
+      "timing_pass": false,
+      "endurance_pass": null,
+      "bounded_data_pass": null,
+      "pattern_bytes_read": 0,
+      "time_ns": 46421139200
+    }
+  ],
+  "endurance": [
+    {
+      "tape": "TAPTIM_V1.5.tap",
+      "sha256": "d2e71cba08d5c8eb48186377b8ee8047e0fcf1cdfcc5718ea9b459d8e4ba9d48",
+      "deck": 0,
+      "mode": "E",
+      "screen": "2200 VERSION: 2, TAPE SPEED: 7.5 IPS              DECK: 1   PASS: 1\n\n       T1,T2 - TIMING DECK 1 OR 2\n       S1,S2 - SPEED DECK 1 OR 2\n       ENTER - ALL TESTS ABOVE\n\n       E1,E2 - ENDURANCE DECK 1 OR 2\n       I1,I2 - IRG DECK 1 OR 2\n           E - ENDURANCE TEST\n\n\n2200 CASSETTE ENDURANCE DECK TEST - 1",
+      "cassette": {
+        "deck": 0,
+        "status": 64,
+        "running": true,
+        "decks": [
+          {
+            "position": 10345,
+            "open": true,
+            "write_protected": false
+          },
+          {
+            "position": 0,
+            "open": true,
+            "write_protected": false
+          }
+        ]
+      },
+      "measurements": [],
+      "record_lengths": [
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        15
+      ],
+      "timing_pass": null,
+      "endurance_pass": null,
+      "bounded_data_pass": true,
+      "pattern_bytes_read": 18786,
+      "time_ns": 196844347200
+    },
+    {
+      "tape": "TAPTIM_V1.5.tap",
+      "sha256": "d2e71cba08d5c8eb48186377b8ee8047e0fcf1cdfcc5718ea9b459d8e4ba9d48",
+      "deck": 1,
+      "mode": "E",
+      "screen": "2200 VERSION: 2, TAPE SPEED: 7.5 IPS              DECK: 1   PASS: 1\n\n       T1,T2 - TIMING DECK 1 OR 2\n       S1,S2 - SPEED DECK 1 OR 2\n       ENTER - ALL TESTS ABOVE\n\n       E1,E2 - ENDURANCE DECK 1 OR 2\n       I1,I2 - IRG DECK 1 OR 2\n           E - ENDURANCE TEST\n\n\n2200 CASSETTE ENDURANCE DECK TEST - 2",
+      "cassette": {
+        "deck": 1,
+        "status": 64,
+        "running": true,
+        "decks": [
+          {
+            "position": 0,
+            "open": true,
+            "write_protected": false
+          },
+          {
+            "position": 10345,
+            "open": true,
+            "write_protected": false
+          }
+        ]
+      },
+      "measurements": [],
+      "record_lengths": [
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        25,
+        51,
+        101,
+        151,
+        201,
+        255,
+        255,
+        255,
+        1,
+        1,
+        1,
+        3,
+        5,
+        7,
+        9,
+        15,
+        15
+      ],
+      "timing_pass": null,
+      "endurance_pass": null,
+      "bounded_data_pass": true,
+      "pattern_bytes_read": 18786,
+      "time_ns": 196844372800
+    }
+  ],
+  "limitations": [
+    {
+      "tape": "TAPTIM_V1.5.tap",
+      "sha256": "d2e71cba08d5c8eb48186377b8ee8047e0fcf1cdfcc5718ea9b459d8e4ba9d48",
+      "deck": 0,
+      "mode": "I",
+      "screen": "2200 VERSION: 2, TAPE SPEED: 7.5 IPS              DECK: 1   PASS: 1\n\n       T1,T2 - TIMING DECK 1 OR 2\n       S1,S2 - SPEED DECK 1 OR 2\n       ENTER - ALL TESTS ABOVE\n\n       E1,E2 - ENDURANCE DECK 1 OR 2\n       I1,I2 - IRG DECK 1 OR 2\n           E - ENDURANCE TEST\n\n\n2200 CASSETTE ENDURANCE DECK TEST - 1 - IRG TIME",
+      "cassette": {
+        "deck": 0,
+        "status": 83,
+        "running": false,
+        "decks": [
+          {
+            "position": 0,
+            "open": true,
+            "write_protected": false
+          },
+          {
+            "position": 9,
+            "open": true,
+            "write_protected": false
+          }
+        ]
+      },
+      "measurements": [],
+      "record_lengths": [],
+      "timing_pass": null,
+      "endurance_pass": null,
+      "bounded_data_pass": null,
+      "pattern_bytes_read": 0,
+      "time_ns": 44221924800
+    },
+    {
+      "tape": "TAPTIM_V1.5.tap",
+      "sha256": "d2e71cba08d5c8eb48186377b8ee8047e0fcf1cdfcc5718ea9b459d8e4ba9d48",
+      "deck": 0,
+      "mode": "S",
+      "screen": "2200 VERSION: 2, TAPE SPEED: 7.5 IPS              DECK: 1   PASS: 1\n\n\n\nSPEED TEST - 300 FT TAPE SHOULD TAKE 480 SECONDS\n               FORWARD: 000    -480 ERROR\n               REVERSE:",
+      "cassette": {
+        "deck": 0,
+        "status": 83,
+        "running": false,
+        "decks": [
+          {
+            "position": 0,
+            "open": true,
+            "write_protected": false
+          },
+          {
+            "position": 9,
+            "open": true,
+            "write_protected": false
+          }
+        ]
+      },
+      "measurements": [],
+      "record_lengths": [],
+      "timing_pass": null,
+      "endurance_pass": null,
+      "bounded_data_pass": null,
+      "pattern_bytes_read": 0,
+      "time_ns": 44184428800
+    }
+  ]
+}

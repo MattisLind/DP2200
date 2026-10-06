@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <stdlib.h>
+#include <unistd.h>
 #include "cassetteTape.h"
 
 void printLog(const char *level, const char *fmt, ...);
@@ -33,13 +34,18 @@ bool CassetteTape::createFile(std::string name) {
 
 bool CassetteTape::writeBlock(const std::vector<unsigned char> &data) {
   if (!file || writeProtect || data.empty() || data.size()>65536) return false;
+  // Synchronize an update stream when changing from reading to writing.
+  if (fseek(file, 0, SEEK_CUR) != 0) return false;
   const uint32_t count=static_cast<uint32_t>(data.size());
   unsigned char size[4]={static_cast<unsigned char>(count),static_cast<unsigned char>(count>>8),
                          static_cast<unsigned char>(count>>16),static_cast<unsigned char>(count>>24)};
   const bool ok=fwrite(size,1,4,file)==4 && fwrite(data.data(),1,count,file)==count
     && fwrite(size,1,4,file)==4 && fflush(file)==0;
   state=TAPE_GAP;
-  return ok;
+  // Rewriting after rewind/backspace replaces the tape's remaining record
+  // sequence. A shorter record must not leave an old trailer/data suffix.
+  const long end = ftell(file);
+  return ok && end >= 0 && ftruncate(fileno(file), end) == 0;
 }
 
 void CassetteTape::closeFile() { 
@@ -164,64 +170,48 @@ bool CassetteTape::isTapeOverGap() {
   return state ==  TAPE_GAP; 
 }
 
-int CassetteTape::readByte(bool forward, unsigned char * data) {
-  bool ret=0;
-  if (file==NULL) return 2;
-  if (forward) {
-    if (state == TAPE_GAP) {
-      fread(&currentBlockSize, 4, 1, file);  
-      printLog("INFO", "readByte direction=%s next block is %d bytes long. state is now=%s\n", forward?"forward":"backwards", currentBlockSize, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
-      state = TAPE_DATA;
-      fread(data, 1, 1, file);  
-      printLog("TAPE", "FORWARD size=%d first=%03o position=%ld error=%d\n",currentBlockSize,*data,ftell(file),ferror(file));
-      readBytes=1;
-      printLog("INFO", "readByte(forward) %02X # bytes read= %d state is now=%s\n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");  
+// 0: byte, 1: byte at tape endpoint, 2: no cassette, 3: endpoint/no byte.
+int CassetteTape::readByte(bool forward, unsigned char *data) {
+  if (!file) return 2;
+  if (state == TAPE_GAP) {
+    if (forward) {
+      if (fread(&currentBlockSize, 4, 1, file) != 1) return 3;
     } else {
-      fread(data, 1, 1, file); 
-      readBytes++;
-      printLog("INFO", "readByte(forward) %02X # bytes read= %d state is now=%s\n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
-      if (readBytes >= currentBlockSize) {
-        int dummy;
-        state = TAPE_GAP;
-        fread(&dummy, 4, 1, file); // read end of record size marker 
-        if (feof(file)) {
-          ret = 1;
-        }
-        printLog("INFO", "readByte(forward) read the end of record blockSizemarker=%d state is now=%s direction=forward\n", dummy, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
-      }
+      if (ftell(file) < 8 || fseek(file, -4, SEEK_CUR) != 0) return 3;
+      if (fread(&currentBlockSize, 4, 1, file) != 1) return 3;
+      if (fseek(file, -4, SEEK_CUR) != 0) return 3;
     }
-  } else {
-    if (state == TAPE_GAP) {
-      fseek(file, -4, SEEK_CUR);
-      fread(&currentBlockSize, 4, 1, file); 
-      fseek(file, -4, SEEK_CUR);
-      printLog("INFO", "readByte direction=%s next block is %d bytes long state is now=%s \n",forward?"forward":"backwards", currentBlockSize, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
-      state = TAPE_DATA;
-      fseek(file, -1, SEEK_CUR);
-      fread(data, 1, 1, file);
-      printLog("TAPE", "BLOCK size=%d first=%03o position=%ld error=%d\n",currentBlockSize,*data,ftell(file),ferror(file));
-      fseek(file, -1, SEEK_CUR);
-      readBytes=currentBlockSize-1;
-      printLog("INFO", "readByte (backwards) %02X # bytes read= %d state is now=%s \n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA"); 
+    if (currentBlockSize <= 0 || currentBlockSize > 65536) return 3;
+    readBytes = forward ? 0 : currentBlockSize;
+    state = TAPE_DATA;
+  }
+  if (!forward && fseek(file, -1, SEEK_CUR) != 0) return 3;
+  if (fread(data, 1, 1, file) != 1) return 3;
+  if (!forward && fseek(file, -1, SEEK_CUR) != 0) return 3;
+  readBytes += forward ? 1 : -1;
+  bool endpoint = false;
+  if ((forward && readBytes == currentBlockSize) || (!forward && readBytes == 0)) {
+    int length;
+    if (!forward && fseek(file, -4, SEEK_CUR) != 0) return 3;
+    if (fread(&length, 4, 1, file) != 1 || length != currentBlockSize) return 3;
+    if (!forward && fseek(file, -4, SEEK_CUR) != 0) return 3;
+    state = TAPE_GAP;
+    if (forward) {
+      // Reading the trailer successfully does not set feof. Probe the next
+      // byte without consuming it, including after a one-byte record.
+      int next = fgetc(file);
+      endpoint = next == EOF;
+      if (!endpoint) ungetc(next, file);
+      clearerr(file);
     } else {
-      fseek(file, -1, SEEK_CUR);
-      fread(data, 1, 1, file);
-      fseek(file, -1, SEEK_CUR);
-      readBytes--;
-      printLog("INFO", "readByte (backwards) %02X # bytes read= %d state is now=%s \n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA"); 
-      if (readBytes <= 0) {
-        int dummy;
-        state = TAPE_GAP;
-        fseek(file, -4, SEEK_CUR);
-        fread(&dummy, 4, 1, file); // read end of record size marker 
-        fseek(file, -4, SEEK_CUR);
-        if (ftell(file)== 0L) {
-          return 1;
-        }
-        printLog("INFO", "readByte (backwards) read the end of record blockSizemarker=%d state is now=%s direction=backwards\n", dummy, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
-      }
-    } 
-    *data = (*data & 0x80) >> 7 | (*data & 0x40) >> 5 | (*data & 0x20) >> 3 | (*data & 0x10) >> 1 | (*data & 0x8) << 1 | (*data & 0x4) << 3 | (*data & 0x2) << 5 | (*data & 0x1) <<7;
-  }  
-  return ret;
+      endpoint = ftell(file) == 0;
+    }
+  }
+  if (!forward) {
+    unsigned char byte = *data;
+    *data = (byte & 0x80) >> 7 | (byte & 0x40) >> 5 | (byte & 0x20) >> 3
+          | (byte & 0x10) >> 1 | (byte & 8) << 1 | (byte & 4) << 3
+          | (byte & 2) << 5 | (byte & 1) << 7;
+  }
+  return endpoint ? 1 : 0;
 }

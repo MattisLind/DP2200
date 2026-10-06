@@ -1,0 +1,6052 @@
+{
+  "method": "read-only; no external media, no input; ROM init on 5500/6600",
+  "budget": 5000000,
+  "tapes": [
+    {
+      "tape": "5500PROCTEST_V2.1.tap",
+      "structure": {
+        "bytes": 21796,
+        "sha256": "3ca5873ca9d226b56c64a521da16902d5daa324a9ce07b9773b055fe3cbb429b",
+        "records": 88,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 21772,
+            "file": 32
+          },
+          {
+            "offset": 21784,
+            "file": 127
+          }
+        ],
+        "numeric_records": 84,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 603632000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6656956800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 33574555200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 946513600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6999838400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 33917436800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 946513600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6999838400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 33917436800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "BAUDRATE.tap",
+      "structure": {
+        "bytes": 3901,
+        "sha256": "8e07ee1524b89b0ae91e3e65e24781188dac6a12fe0f3bc65b683886bd4921f3",
+        "records": 16,
+        "bootstrap_bytes": 1231,
+        "headers": [
+          {
+            "offset": 1239,
+            "file": 0
+          },
+          {
+            "offset": 3877,
+            "file": 32
+          },
+          {
+            "offset": 3889,
+            "file": 127
+          }
+        ],
+        "numeric_records": 12,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 565683200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 504,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6599049600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1219,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 29332129600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "ADR-000  ADR-000       INPUT/OUTPUT |           460 STRAPPING CHART.        B/K.\nJ1-XXXX J9 -XXXX  BUSS1 E34   E37   | 9600-E21 3520-E25 1200-E27 440-E31\nJ2-XXXX J10-XXXX  BUSS2 E35   E38   | 7040-E24 2400-E23  880-E30 300-E29 110-E33\nJ3-XXXX J11-XXXX  BUSS3 E36   E39   | 4800-E22 1760-E26  600-E28 220-E32\nJ4-XXXX J12-XXXX       INPUT/OUTPUT |           462 STRAPPING CHART.\nJ5-XXXX J13-XXXX  BUSS1 E16 E19-E26 | 9600-E50 3520-E55 1200-E45 440-E46 150-E43\nJ6-XXXX J14-XXXX  BUSS2 E17 E27-E34 | 7040-E56 2400-E48  880-E53 300-E44 110-E51\nJ7-XXXX J15-XXXX  BUSS3 E18 E35-E42 | 4800-E49 1760-E54  600-E47 220-E52\nJ8-XXXX J16-XXXX              |                3600 STRAPPING CHART.\nDISPLAY - REPEAT   BAUDRATE   | 9600-8/K  1800-3     440-2/F   200-5     75-14/H\nKEYBOARD-RESTART  TESTER 3.4  | 4800-7/J  1200-10/L  300-12/O  150-11/M\nKEYIN:                        | 2400-9/C   600-13/N  220-4/E   110-6/D",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 504,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6941931200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1219,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 29675011200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "ADR-000  ADR-000       INPUT/OUTPUT |           460 STRAPPING CHART.        B/K.\nJ1-XXXX J9 -XXXX  BUSS1 E34   E37   | 9600-E21 3520-E25 1200-E27 440-E31\nJ2-XXXX J10-XXXX  BUSS2 E35   E38   | 7040-E24 2400-E23  880-E30 300-E29 110-E33\nJ3-XXXX J11-XXXX  BUSS3 E36   E39   | 4800-E22 1760-E26  600-E28 220-E32\nJ4-XXXX J12-XXXX       INPUT/OUTPUT |           462 STRAPPING CHART.\nJ5-XXXX J13-XXXX  BUSS1 E16 E19-E26 | 9600-E50 3520-E55 1200-E45 440-E46 150-E43\nJ6-XXXX J14-XXXX  BUSS2 E17 E27-E34 | 7040-E56 2400-E48  880-E53 300-E44 110-E51\nJ7-XXXX J15-XXXX  BUSS3 E18 E35-E42 | 4800-E49 1760-E54  600-E47 220-E52\nJ8-XXXX J16-XXXX              |                3600 STRAPPING CHART.\nDISPLAY - REPEAT   BAUDRATE   | 9600-8/K  1800-3     440-2/F   200-5     75-14/H\nKEYBOARD-RESTART  TESTER 3.4  | 4800-7/J  1200-10/L  300-12/O  150-11/M\nKEYIN:                        | 2400-9/C   600-13/N  220-4/E   110-6/D",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 504,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6941931200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1219,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 29675011200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "ADR-000  ADR-000       INPUT/OUTPUT |           460 STRAPPING CHART.        B/K.\nJ1-XXXX J9 -XXXX  BUSS1 E34   E37   | 9600-E21 3520-E25 1200-E27 440-E31\nJ2-XXXX J10-XXXX  BUSS2 E35   E38   | 7040-E24 2400-E23  880-E30 300-E29 110-E33\nJ3-XXXX J11-XXXX  BUSS3 E36   E39   | 4800-E22 1760-E26  600-E28 220-E32\nJ4-XXXX J12-XXXX       INPUT/OUTPUT |           462 STRAPPING CHART.\nJ5-XXXX J13-XXXX  BUSS1 E16 E19-E26 | 9600-E50 3520-E55 1200-E45 440-E46 150-E43\nJ6-XXXX J14-XXXX  BUSS2 E17 E27-E34 | 7040-E56 2400-E48  880-E53 300-E44 110-E51\nJ7-XXXX J15-XXXX  BUSS3 E18 E35-E42 | 4800-E49 1760-E54  600-E47 220-E52\nJ8-XXXX J16-XXXX              |                3600 STRAPPING CHART.\nDISPLAY - REPEAT   BAUDRATE   | 9600-8/K  1800-3     440-2/F   200-5     75-14/H\nKEYBOARD-RESTART  TESTER 3.4  | 4800-7/J  1200-10/L  300-12/O  150-11/M\nKEYIN:                        | 2400-9/C   600-13/N  220-4/E   110-6/D",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "COPY06.tap",
+      "structure": {
+        "bytes": 24098,
+        "sha256": "759b77ae666114baed16d64d9855da91b2143ced5c7f034777615e0e3ce2ff9b",
+        "records": 154,
+        "bootstrap_bytes": 256,
+        "headers": [
+          {
+            "offset": 4131,
+            "file": 32
+          },
+          {
+            "offset": 4143,
+            "file": 127
+          },
+          {
+            "offset": 24086,
+            "file": 127
+          }
+        ],
+        "numeric_records": 23,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 9,
+              "halted": true,
+              "instructions": 7,
+              "time_ns": 24000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 7
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 21072,
+              "halted": true,
+              "instructions": 198158,
+              "time_ns": 342910400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 10
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 21072,
+              "halted": true,
+              "instructions": 198158,
+              "time_ns": 342910400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 10
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "COPY06_1.tap",
+      "structure": {
+        "bytes": 24630,
+        "sha256": "14e3b2dcb6bd48dbe49989d8115adb291f6f6feb059ce78d179acc420e453df9",
+        "records": 156,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 4663,
+            "file": 32
+          },
+          {
+            "offset": 4675,
+            "file": 127
+          },
+          {
+            "offset": 24618,
+            "file": 127
+          }
+        ],
+        "numeric_records": 23,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6656956800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4388,
+              "halted": true,
+              "instructions": 1952473,
+              "time_ns": 12922827200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1952473
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6999838400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4388,
+              "halted": true,
+              "instructions": 2150621,
+              "time_ns": 13265708800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1952473
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6999838400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4388,
+              "halted": true,
+              "instructions": 2150621,
+              "time_ns": 13265708800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1952473
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "COPY_V1.9.tap",
+      "structure": {
+        "bytes": 10022,
+        "sha256": "2b3f643eee6b86a1c3adfe90afbc8bd8851370b9ad5267e3a65955d5917ec6cc",
+        "records": 53,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 3342,
+            "file": 32
+          },
+          {
+            "offset": 3354,
+            "file": 127
+          },
+          {
+            "offset": 9998,
+            "file": 32
+          },
+          {
+            "offset": 10010,
+            "file": 127
+          }
+        ],
+        "numeric_records": 47,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628596800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6681912000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 5612,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 35242177600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n                        TAPE DUPLICATING PROGRAM 1.9\n\n     REPLACE THE COPY PROGRAM TAPE IN THE REAR DECK WITH A BLANK TAPE. PLACE\nTHE PROGRAM TAPE TO BE DUPLICATED IN THE FRONT DECK.\n      DEPRESS THE KEYBOARD KEY WHEN YOU ARE READY TO BEGIN AND TO RESTART THE\nPROGRAM IF AN ERROR OCCURS WHILE DUPLICATING.",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024793600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 5612,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35585059200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n                        TAPE DUPLICATING PROGRAM 1.9\n\n     REPLACE THE COPY PROGRAM TAPE IN THE REAR DECK WITH A BLANK TAPE. PLACE\nTHE PROGRAM TAPE TO BE DUPLICATED IN THE FRONT DECK.\n      DEPRESS THE KEYBOARD KEY WHEN YOU ARE READY TO BEGIN AND TO RESTART THE\nPROGRAM IF AN ERROR OCCURS WHILE DUPLICATING.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024793600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 5612,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35585059200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n                        TAPE DUPLICATING PROGRAM 1.9\n\n     REPLACE THE COPY PROGRAM TAPE IN THE REAR DECK WITH A BLANK TAPE. PLACE\nTHE PROGRAM TAPE TO BE DUPLICATED IN THE FRONT DECK.\n      DEPRESS THE KEYBOARD KEY WHEN YOU ARE READY TO BEGIN AND TO RESTART THE\nPROGRAM IF AN ERROR OCCURS WHILE DUPLICATING.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "CTOS_V3.2_GEDIT_V2.7_LISTER_V2.3_COPY_V1.9_ASM_V4.6.tap",
+      "structure": {
+        "bytes": 30120,
+        "sha256": "e878a2489f4a225ce5419e0e3ed94a702600b718698b11f601ae1cf74301503a",
+        "records": 157,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 8478,
+            "file": 1
+          },
+          {
+            "offset": 8638,
+            "file": 2
+          },
+          {
+            "offset": 12753,
+            "file": 3
+          },
+          {
+            "offset": 15575,
+            "file": 4
+          },
+          {
+            "offset": 23098,
+            "file": 5
+          },
+          {
+            "offset": 30080,
+            "file": 32
+          },
+          {
+            "offset": 30108,
+            "file": 127
+          }
+        ],
+        "numeric_records": 148,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628596800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 506,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6645131200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 7690,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 33856593600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n                                 C T O S  3.2\n\n\n\nREADY",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 506,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6988012800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 7690,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34199475200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n                                 C T O S  3.2\n\n\n\nREADY",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 506,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6988012800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 7690,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34199475200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n                                 C T O S  3.2\n\n\n\nREADY",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "CTOS_V3.2_KE5302.tap",
+      "structure": {
+        "bytes": 14072,
+        "sha256": "623bbece03b9228a419df565044c7ba8518381aea404144218e725218154db5f",
+        "records": 75,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 8462,
+            "file": 1
+          },
+          {
+            "offset": 8606,
+            "file": 2
+          },
+          {
+            "offset": 14048,
+            "file": 32
+          },
+          {
+            "offset": 14060,
+            "file": 127
+          }
+        ],
+        "numeric_records": 69,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628596800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6631985600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 7692,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 33915262400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n                                 C T O S  3.2\n\n\n\nREADY",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6974867200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 7692,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34258144000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n                                 C T O S  3.2\n\n\n\nREADY",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6974867200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 7692,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34258144000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n                                 C T O S  3.2\n\n\n\nREADY",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "DEMO.tap",
+      "structure": {
+        "bytes": 21000,
+        "sha256": "738a36e27506ad7ed69f6b4c3326459f946d390f2497828deb02e688ca1d58ac",
+        "records": 108,
+        "bootstrap_bytes": 4,
+        "headers": [
+          {
+            "offset": 0,
+            "file": 0
+          },
+          {
+            "offset": 3666,
+            "file": 127
+          },
+          {
+            "offset": 7097,
+            "file": 1
+          },
+          {
+            "offset": 7174,
+            "file": 2
+          },
+          {
+            "offset": 10413,
+            "file": 3
+          },
+          {
+            "offset": 13674,
+            "file": 127
+          },
+          {
+            "offset": 13686,
+            "file": 127
+          },
+          {
+            "offset": 16370,
+            "file": 6
+          },
+          {
+            "offset": 17849,
+            "file": 53
+          },
+          {
+            "offset": 19328,
+            "file": 54
+          },
+          {
+            "offset": 20807,
+            "file": 127
+          },
+          {
+            "offset": 20819,
+            "file": 127
+          },
+          {
+            "offset": 20988,
+            "file": 127
+          }
+        ],
+        "numeric_records": 95,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": [
+          12,
+          273,
+          534,
+          795,
+          1058,
+          1319,
+          1580,
+          1841,
+          2102,
+          2363,
+          2624,
+          2885,
+          3146,
+          3407,
+          13698,
+          13960,
+          14222,
+          14484,
+          14746,
+          14903,
+          15165,
+          15427,
+          15689,
+          15951,
+          16213,
+          16382,
+          16644,
+          16906,
+          17168,
+          17430,
+          17692,
+          17861,
+          18123,
+          18385,
+          18647,
+          18909,
+          19171,
+          19340,
+          19602,
+          19864,
+          20126,
+          20388,
+          20650,
+          20831
+        ]
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 1,
+              "halted": true,
+              "instructions": 2,
+              "time_ns": 3200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 2
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 3,
+              "halted": true,
+              "instructions": 198150,
+              "time_ns": 342884800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 2
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 3,
+              "halted": true,
+              "instructions": 198150,
+              "time_ns": 342884800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 2
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "DIAG2200_V1.1.tap",
+      "structure": {
+        "bytes": 33189,
+        "sha256": "82b1424d671d3cdca63d01be5819640dffb048266b66543a3156f0e308cea577",
+        "records": 165,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 1271,
+            "file": 1
+          },
+          {
+            "offset": 2662,
+            "file": 2
+          },
+          {
+            "offset": 8168,
+            "file": 3
+          },
+          {
+            "offset": 14656,
+            "file": 4
+          },
+          {
+            "offset": 18943,
+            "file": 5
+          },
+          {
+            "offset": 19822,
+            "file": 32
+          },
+          {
+            "offset": 19834,
+            "file": 127
+          },
+          {
+            "offset": 20160,
+            "file": 11
+          },
+          {
+            "offset": 28681,
+            "file": 12
+          },
+          {
+            "offset": 29168,
+            "file": 13
+          },
+          {
+            "offset": 29822,
+            "file": 14
+          },
+          {
+            "offset": 33165,
+            "file": 32
+          },
+          {
+            "offset": 33177,
+            "file": 127
+          }
+        ],
+        "numeric_records": 150,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6243825600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 30643825600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6586707200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30986707200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6586707200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30986707200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "DIAG5500_V1.1.tap",
+      "structure": {
+        "bytes": 60610,
+        "sha256": "58c0e1aea0c4ec32abda7a353d09e61e3e45c636faf68e50c03353612b02f71b",
+        "records": 252,
+        "bootstrap_bytes": 1231,
+        "headers": [
+          {
+            "offset": 1239,
+            "file": 0
+          },
+          {
+            "offset": 1990,
+            "file": 1
+          },
+          {
+            "offset": 5248,
+            "file": 2
+          },
+          {
+            "offset": 26503,
+            "file": 3
+          },
+          {
+            "offset": 45752,
+            "file": 4
+          },
+          {
+            "offset": 52240,
+            "file": 5
+          },
+          {
+            "offset": 56527,
+            "file": 6
+          },
+          {
+            "offset": 60586,
+            "file": 32
+          },
+          {
+            "offset": 60598,
+            "file": 127
+          }
+        ],
+        "numeric_records": 242,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 565683200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6197979200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 30597979200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6540860800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30940860800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6540860800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30940860800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "structure": {
+        "bytes": 95973,
+        "sha256": "fd4c13f0eb61b7849732d0901e7e8ed00dd3d836fc256a6bbf0e56d6416ab9e5",
+        "records": 388,
+        "bootstrap_bytes": 1231,
+        "headers": [
+          {
+            "offset": 1239,
+            "file": 0
+          },
+          {
+            "offset": 1990,
+            "file": 1
+          },
+          {
+            "offset": 5248,
+            "file": 2
+          },
+          {
+            "offset": 45227,
+            "file": 3
+          },
+          {
+            "offset": 81115,
+            "file": 4
+          },
+          {
+            "offset": 87603,
+            "file": 5
+          },
+          {
+            "offset": 91890,
+            "file": 6
+          },
+          {
+            "offset": 95949,
+            "file": 32
+          },
+          {
+            "offset": 95961,
+            "file": 127
+          }
+        ],
+        "numeric_records": 378,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 565683200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6197979200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 30597979200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6540860800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30940860800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6540860800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 3606,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30940860800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "DOSC_BOOT.tap",
+      "structure": {
+        "bytes": 4372,
+        "sha256": "414f455948dcd1b081969cd9a6c3d977897f0fa988ed16e68a1b93ae8d209b9e",
+        "records": 20,
+        "bootstrap_bytes": 504,
+        "headers": [
+          {
+            "offset": 4348,
+            "file": 32
+          },
+          {
+            "offset": 4360,
+            "file": 127
+          }
+        ],
+        "numeric_records": 17,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 416,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 535798400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 430,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 5500003200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 166,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 27563160000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 416,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 878680000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 430,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 5842884800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 166,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 27906041600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 416,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 878680000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 430,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 5842884800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 166,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 27906041600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "EM3360_V1.1.tap",
+      "structure": {
+        "bytes": 1661,
+        "sha256": "c1e9e739af421b88c46d22058c62d164acce6d1ef48bc47df77c94b9db963e35",
+        "records": 11,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 1649,
+            "file": 32
+          }
+        ],
+        "numeric_records": 8,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628596800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 1502,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6782475200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n** EM3360 1.1 **\n\nBAUD RATE?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1502,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 35582475200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n** EM3360 1.1 **\n\nBAUD RATE?",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 1502,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7125356800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n** EM3360 1.1 **\n\nBAUD RATE?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1502,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35925356800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n** EM3360 1.1 **\n\nBAUD RATE?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 1502,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7125356800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n** EM3360 1.1 **\n\nBAUD RATE?",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1502,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35925356800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n** EM3360 1.1 **\n\nBAUD RATE?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "EM3780B_V3.1.tap",
+      "structure": {
+        "bytes": 82303,
+        "sha256": "69fc61205d34430b2cfdd219cd93e5832a81d6aab0d0348278e7295ae06f2c41",
+        "records": 828,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 11108,
+            "file": 32
+          },
+          {
+            "offset": 11120,
+            "file": 127
+          }
+        ],
+        "numeric_records": 47,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 603632000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 500,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6626100800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10816,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 33187337600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "A = TRANSMIT NORMAL          READER:         PRINTER:         PUNCH:  3780B 3.1\nB = TRANSMIT TRANSPARENT    *F = REAR DECK   K = FRONT DECK  *P = FRONT DECK\nC = RECEIVE                  G = KEYBOARD   *L = PRINTER      Q = MAG TAPE\nD = READER TO PRINTER        H = MAG TAPE    M = CRT SCREEN\nE = EOF IS ENABLED           I = CARD RDR    N = MAG TAPE\n\nCURRENT MODE:   COMMAND\nERROR MESSAGES:\nENTER COMMAND:",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 946513600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 500,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6968982400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10828,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 33529364800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "A = TRANSMIT NORMAL          READER:         PRINTER:         PUNCH:  3780B 3.1\nB = TRANSMIT TRANSPARENT    *F = REAR DECK   K = FRONT DECK  *P = FRONT DECK\nC = RECEIVE                  G = KEYBOARD   *L = PRINTER      Q = MAG TAPE\nD = READER TO PRINTER        H = MAG TAPE    M = CRT SCREEN\nE = EOF IS ENABLED           I = CARD RDR    N = MAG TAPE\n\nCURRENT MODE:   COMMAND\nERROR MESSAGES:\nENTER COMMAND:",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 946513600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 500,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6968982400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10836,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 33528622400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "A = TRANSMIT NORMAL          READER:         PRINTER:         PUNCH:  3780B 3.1\nB = TRANSMIT TRANSPARENT    *F = REAR DECK   K = FRONT DECK  *P = FRONT DECK\nC = RECEIVE                  G = KEYBOARD   *L = PRINTER      Q = MAG TAPE\nD = READER TO PRINTER        H = MAG TAPE    M = CRT SCREEN\nE = EOF IS ENABLED           I = CARD RDR    N = MAG TAPE\n\nCURRENT MODE:   COMMAND\nERROR MESSAGES:\nENTER COMMAND:",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "EM3780TRACE_V3.1.tap",
+      "structure": {
+        "bytes": 78779,
+        "sha256": "814119f1ea5eeed6d482635c1c508e7c3d1e67a33516863b4d016bd7b3426324",
+        "records": 843,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 2855,
+            "file": 32
+          },
+          {
+            "offset": 2867,
+            "file": 127
+          }
+        ],
+        "numeric_records": 11,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628596800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6656953600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10637,
+              "halted": true,
+              "instructions": 1093642,
+              "time_ns": 7255326400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1093642
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6999835200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10637,
+              "halted": true,
+              "instructions": 1291790,
+              "time_ns": 7598208000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1093642
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6999835200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10637,
+              "halted": true,
+              "instructions": 1291790,
+              "time_ns": 7598208000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1093642
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "EXRCASS_V1.1.tap",
+      "structure": {
+        "bytes": 70051,
+        "sha256": "e908b552da57ada2ce0fbb00531b38ad39a1fb5eee504a3d5b9f213d07041ec7",
+        "records": 701,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 1371,
+            "file": 32
+          },
+          {
+            "offset": 1383,
+            "file": 127
+          }
+        ],
+        "numeric_records": 5,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628596800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 527,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6219190400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 530,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 30313310400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 527,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6562072000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 530,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30656192000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 527,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6562072000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 530,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30656192000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "EXRIBM_V2.3.A.tap",
+      "structure": {
+        "bytes": 9432,
+        "sha256": "08f05e5515d4b594819e402064f2e1c23aa7a9fe4241f6dd1ee92c89a85a007c",
+        "records": 39,
+        "bootstrap_bytes": 1231,
+        "headers": [
+          {
+            "offset": 1239,
+            "file": 0
+          },
+          {
+            "offset": 9408,
+            "file": 32
+          },
+          {
+            "offset": 9420,
+            "file": 127
+          }
+        ],
+        "numeric_records": 35,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 565683200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 504,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6599049600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 582,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 33033785600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n\nE X R I B M  2.3.A\n(7) or (9) TRACK ?",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 504,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6941931200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 582,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 33376667200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n\nE X R I B M  2.3.A\n(7) or (9) TRACK ?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 504,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6941931200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 582,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 33376667200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n\nE X R I B M  2.3.A\n(7) or (9) TRACK ?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "EXTDISPTEST.tap",
+      "structure": {
+        "bytes": 5122,
+        "sha256": "681218980d3a5945a2d5b4afce44dc0c8aa04ac90d999bcf315425561f3acae7",
+        "records": 23,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 5098,
+            "file": 32
+          },
+          {
+            "offset": 5110,
+            "file": 127
+          }
+        ],
+        "numeric_records": 19,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6681915200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1643,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 28303132800,
+              "keyboard_ready": false,
+              "beeps": 1,
+              "screen": "                        DISPLAY TEST LIST FOR THE CRT.             J/W.  NOV 77\n\n    S..........OUTPUT SLIDING CHAR.         E..........MOVE CURSOR HOME\n    H..........OUTPUT CHAR. HORZ.           V..........OUTPUT CHAR. VERT.\n    N..........ERASE END OF LINE            I..........INPUT CHARACTERS\n    O..........CURSOR ON                    F..........CURSOR OFF\n    L..........SET LOOP                     R..........RESET LOOP\n    U..........ROLL UP                      P..........ENB/DIS PRINTING\n    ENTER......HELP LIST                    Z..........BEEP\n    X..........CLICK                        D..........ROLL DOWN\n\n                                    SELECTION.",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1643,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 28646014400,
+              "keyboard_ready": false,
+              "beeps": 1,
+              "screen": "                        DISPLAY TEST LIST FOR THE CRT.             J/W.  NOV 77\n\n    S..........OUTPUT SLIDING CHAR.         E..........MOVE CURSOR HOME\n    H..........OUTPUT CHAR. HORZ.           V..........OUTPUT CHAR. VERT.\n    N..........ERASE END OF LINE            I..........INPUT CHARACTERS\n    O..........CURSOR ON                    F..........CURSOR OFF\n    L..........SET LOOP                     R..........RESET LOOP\n    U..........ROLL UP                      P..........ENB/DIS PRINTING\n    ENTER......HELP LIST                    Z..........BEEP\n    X..........CLICK                        D..........ROLL DOWN\n\n                                    SELECTION.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1643,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 28646014400,
+              "keyboard_ready": false,
+              "beeps": 1,
+              "screen": "                        DISPLAY TEST LIST FOR THE CRT.             J/W.  NOV 77\n\n    S..........OUTPUT SLIDING CHAR.         E..........MOVE CURSOR HOME\n    H..........OUTPUT CHAR. HORZ.           V..........OUTPUT CHAR. VERT.\n    N..........ERASE END OF LINE            I..........INPUT CHARACTERS\n    O..........CURSOR ON                    F..........CURSOR OFF\n    L..........SET LOOP                     R..........RESET LOOP\n    U..........ROLL UP                      P..........ENB/DIS PRINTING\n    ENTER......HELP LIST                    Z..........BEEP\n    X..........CLICK                        D..........ROLL DOWN\n\n                                    SELECTION.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "HRLYMEMT.tap",
+      "structure": {
+        "bytes": 69161,
+        "sha256": "34608383430e5fafc15eb8af708d601202eeb1cc3ee0fe8b53b983ea6741ba43",
+        "records": 270,
+        "bootstrap_bytes": 1231,
+        "headers": [
+          {
+            "offset": 1239,
+            "file": 0
+          },
+          {
+            "offset": 2118,
+            "file": 32
+          },
+          {
+            "offset": 2130,
+            "file": 127
+          },
+          {
+            "offset": 16944,
+            "file": 2
+          },
+          {
+            "offset": 37641,
+            "file": 3
+          },
+          {
+            "offset": 69149,
+            "file": 32
+          }
+        ],
+        "numeric_records": 263,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": [
+          2142,
+          2405,
+          2668,
+          2931,
+          3194,
+          3457,
+          3720,
+          3983,
+          4246,
+          4509,
+          4772,
+          5035,
+          5298,
+          5561,
+          5824,
+          6087,
+          6350,
+          6613,
+          6875,
+          7138,
+          7401,
+          7664,
+          7927,
+          8190,
+          8452,
+          8715,
+          8978,
+          9241,
+          9504,
+          9767,
+          10030,
+          10292,
+          10554,
+          10817,
+          11080,
+          11342,
+          11605,
+          11867,
+          12130,
+          12393,
+          12656,
+          12919,
+          13182,
+          13445,
+          13708,
+          13971,
+          14234,
+          14497,
+          14760,
+          15023,
+          15286,
+          15549,
+          15811,
+          16074,
+          16336,
+          16599,
+          16862,
+          16956,
+          17219,
+          17482,
+          17745,
+          18008,
+          18271,
+          18534,
+          18797,
+          19060,
+          19323,
+          19585,
+          19847,
+          20110,
+          20373,
+          20636,
+          20899,
+          21162,
+          21425,
+          21688,
+          21951,
+          22214,
+          22477,
+          22740,
+          23003,
+          23266,
+          23529,
+          23792,
+          24055,
+          24318,
+          24581,
+          24844,
+          25107,
+          25370,
+          25633,
+          25896,
+          26159,
+          26421,
+          26684,
+          26947,
+          27210,
+          27473,
+          27736,
+          27999,
+          28262,
+          28525,
+          28788,
+          29051,
+          29314,
+          29577,
+          29840,
+          30102,
+          30365,
+          30628,
+          30891,
+          31154,
+          31416,
+          31679,
+          31942,
+          32205,
+          32468,
+          32731,
+          32994,
+          33257,
+          33520,
+          33783,
+          34046,
+          34309,
+          34571,
+          34834,
+          35097,
+          35360,
+          35623,
+          35886,
+          36149,
+          36412,
+          36675,
+          36938,
+          37201,
+          37464,
+          37653,
+          37916,
+          38178,
+          38440,
+          38703,
+          38966,
+          39229,
+          39492,
+          39755,
+          40018,
+          40281,
+          40544,
+          40807,
+          41070,
+          41333,
+          41595,
+          41858,
+          42120,
+          42382,
+          42645,
+          42908,
+          43171,
+          43434,
+          43697,
+          43960,
+          44223,
+          44486,
+          44748,
+          45011,
+          45274,
+          45537,
+          45800,
+          46063,
+          46325,
+          46588,
+          46850,
+          47112,
+          47375,
+          47638,
+          47901,
+          48164,
+          48427,
+          48690,
+          48953,
+          49216,
+          49479,
+          49742,
+          50005,
+          50268,
+          50530,
+          50793,
+          51056,
+          51319,
+          51581,
+          51844,
+          52107,
+          52370,
+          52633,
+          52896,
+          53159,
+          53422,
+          53685,
+          53948,
+          54211,
+          54473,
+          54736,
+          54999,
+          55262,
+          55525,
+          55788,
+          56051,
+          56314,
+          56577,
+          56840,
+          57102,
+          57365,
+          57628,
+          57891,
+          58154,
+          58417,
+          58680,
+          58942,
+          59205,
+          59468,
+          59731,
+          59994,
+          60257,
+          60520,
+          60783,
+          61046,
+          61309,
+          61571,
+          61834,
+          62097,
+          62360,
+          62623,
+          62886,
+          63148,
+          63411,
+          63674,
+          63937,
+          64200,
+          64463,
+          64726,
+          64989,
+          65252,
+          65514,
+          65777,
+          66040,
+          66303,
+          66566,
+          66829,
+          67092,
+          67355,
+          67618,
+          67881,
+          68144,
+          68407,
+          68670,
+          68933
+        ]
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 565683200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 100,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 5752355200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n\n            HOURLY MEMORY TEST FOR DATAPOINT 2200 VERSION II 16K",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 100,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 30987193600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n\n            HOURLY MEMORY TEST FOR DATAPOINT 2200 VERSION II 16K",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 100,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6088768000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n\n            HOURLY MEMORY TEST FOR DATAPOINT 2200 VERSION II 16K",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 100,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 31244262400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n\n            HOURLY MEMORY TEST FOR DATAPOINT 2200 VERSION II 16K",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 100,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6088768000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n\n            HOURLY MEMORY TEST FOR DATAPOINT 2200 VERSION II 16K",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 100,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 31244262400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n\n            HOURLY MEMORY TEST FOR DATAPOINT 2200 VERSION II 16K",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "KE0105.tap",
+      "structure": {
+        "bytes": 6145,
+        "sha256": "43a2646ead7199b98471347e01ce94fb6a269c9d4fc69f294ead93c43c66caf9",
+        "records": 33,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 6121,
+            "file": 32
+          },
+          {
+            "offset": 6133,
+            "file": 127
+          }
+        ],
+        "numeric_records": 29,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 497,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 553603200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6631985600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4512,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 34539094400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n          PROGRAMM KE01.05\n\nBAND EINLEGEN\nB = BEGINN D. ERF.\nS = FORTS. D. ERF. M. NEUEM SACHGEB.",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 497,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 896484800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6974867200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4512,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34881976000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n          PROGRAMM KE01.05\n\nBAND EINLEGEN\nB = BEGINN D. ERF.\nS = FORTS. D. ERF. M. NEUEM SACHGEB.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 497,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 896484800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6974867200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4512,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34881976000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n          PROGRAMM KE01.05\n\nBAND EINLEGEN\nB = BEGINN D. ERF.\nS = FORTS. D. ERF. M. NEUEM SACHGEB.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "KE1504.tap",
+      "structure": {
+        "bytes": 8438,
+        "sha256": "e6c2590bd98284c636a4d4136ad8eb8579dc3ea1c87568f9caf2ef0d2ebc6ee9",
+        "records": 69,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 4667,
+            "file": 32
+          },
+          {
+            "offset": 4679,
+            "file": 127
+          },
+          {
+            "offset": 4707,
+            "file": 32
+          },
+          {
+            "offset": 4719,
+            "file": 127
+          },
+          {
+            "offset": 8426,
+            "file": 127
+          }
+        ],
+        "numeric_records": 23,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 497,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 553603200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6631985600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4510,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 34880768000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n          PROGRAMM KE15.04\n\nBAND EINLEGEN\nB = BEGINN D. ERF.\nS = FORTS. D. ERF. M. NEUEM SACHGEB.",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 497,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 896484800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6974867200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4510,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35223649600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n          PROGRAMM KE15.04\n\nBAND EINLEGEN\nB = BEGINN D. ERF.\nS = FORTS. D. ERF. M. NEUEM SACHGEB.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 497,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 896484800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6974867200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4510,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35223649600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n          PROGRAMM KE15.04\n\nBAND EINLEGEN\nB = BEGINN D. ERF.\nS = FORTS. D. ERF. M. NEUEM SACHGEB.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "LGO_A.tap",
+      "structure": {
+        "bytes": 74565,
+        "sha256": "435a5097b05eacb7cedc06cf63eb856877ad24808e571c30feb3c53bdc755aa4",
+        "records": 793,
+        "bootstrap_bytes": 1231,
+        "headers": [
+          {
+            "offset": 1239,
+            "file": 0
+          },
+          {
+            "offset": 1831,
+            "file": 32
+          },
+          {
+            "offset": 1843,
+            "file": 127
+          },
+          {
+            "offset": 3392,
+            "file": 32
+          },
+          {
+            "offset": 3404,
+            "file": 127
+          }
+        ],
+        "numeric_records": 12,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 565683200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 630,
+              "halted": true,
+              "instructions": 347044,
+              "time_ns": 2155024000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 347044
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 630,
+              "halted": true,
+              "instructions": 545192,
+              "time_ns": 2497905600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 347044
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 630,
+              "halted": true,
+              "instructions": 545192,
+              "time_ns": 2497905600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 347044
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "MA374_V1.2.B.tap",
+      "structure": {
+        "bytes": 21311,
+        "sha256": "3310e6a350e397618dfe4e33ea07c49517cb8f32d77b318623c54e5be6a7173d",
+        "records": 88,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 3270,
+            "file": 32
+          },
+          {
+            "offset": 3282,
+            "file": 127
+          }
+        ],
+        "numeric_records": 12,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6681915200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 6398,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 35247596800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "              MA374 - 20 MEGABYTE DISK ALIGNMENT DIAGNOSTIC   V1.2.B\n\n    * MENU *                            0.0||0.0.0||0.0\n1. HEAD ALIGNMENT     PHYSICAL DRIVE ?  | |  | | |  | | L_ON LINE AND SAFE\n2. SECTOR ALIGNMENT   LOGICAL DRIVE  ?  | |  | | |  | L___TRANSFER IN PROGRESS\n3. SEQUENTIAL SEEKS   PHYSICAL HEAD  ?  | |  | | |  L_____DISK BUSY\n4. ALTERNATE SEEKS                      | |  | | L________SEEK INCOMPLETE\n                                        | |  | L__________CRCC ERROR\n                                        | |  L____________WRITE PROTECTED\n                                        | L_______________SECTOR NOT FOUND\n                                        L_________________BUFFER PARITY ERROR\nWHICH PHYSICAL DRIVE (0-7) ?",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 6398,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35590478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "              MA374 - 20 MEGABYTE DISK ALIGNMENT DIAGNOSTIC   V1.2.B\n\n    * MENU *                            0.0||0.0.0||0.0\n1. HEAD ALIGNMENT     PHYSICAL DRIVE ?  | |  | | |  | | L_ON LINE AND SAFE\n2. SECTOR ALIGNMENT   LOGICAL DRIVE  ?  | |  | | |  | L___TRANSFER IN PROGRESS\n3. SEQUENTIAL SEEKS   PHYSICAL HEAD  ?  | |  | | |  L_____DISK BUSY\n4. ALTERNATE SEEKS                      | |  | | L________SEEK INCOMPLETE\n                                        | |  | L__________CRCC ERROR\n                                        | |  L____________WRITE PROTECTED\n                                        | L_______________SECTOR NOT FOUND\n                                        L_________________BUFFER PARITY ERROR\nWHICH PHYSICAL DRIVE (0-7) ?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 6398,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35590478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "              MA374 - 20 MEGABYTE DISK ALIGNMENT DIAGNOSTIC   V1.2.B\n\n    * MENU *                            0.0||0.0.0||0.0\n1. HEAD ALIGNMENT     PHYSICAL DRIVE ?  | |  | | |  | | L_ON LINE AND SAFE\n2. SECTOR ALIGNMENT   LOGICAL DRIVE  ?  | |  | | |  | L___TRANSFER IN PROGRESS\n3. SEQUENTIAL SEEKS   PHYSICAL HEAD  ?  | |  | | |  L_____DISK BUSY\n4. ALTERNATE SEEKS                      | |  | | L________SEEK INCOMPLETE\n                                        | |  | L__________CRCC ERROR\n                                        | |  L____________WRITE PROTECTED\n                                        | L_______________SECTOR NOT FOUND\n                                        L_________________BUFFER PARITY ERROR\nWHICH PHYSICAL DRIVE (0-7) ?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "MD370_V1.1.tap",
+      "structure": {
+        "bytes": 6798,
+        "sha256": "efa82548ee190cd096eec4a48529d0bbec91e5b825bc2c6d53e4f440f5a9df7a",
+        "records": 31,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 6774,
+            "file": 32
+          },
+          {
+            "offset": 6786,
+            "file": 127
+          }
+        ],
+        "numeric_records": 27,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6632011200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 548,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 30632497600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "MD370  ** VERSION 1.1 **  MASS STORAGE DISK DIAGNOSTIC.\n    MONITOR OBSERVES THE FOLLOWING CONVENTIONS :\n         TO MODIFY DISK ADDRESS , TYPE SPECIFIED LETTER , THEN ENTER NUMBER.\n         TO EXECUTE MANUAL FUNCTIONS TYPE SPECIFIED NUMBER.\n         ALL CURSOR COMMANDS ARE TERMINATED BY \"ENTER\".\n         ALL NUMERIC DISPLAYS ARE DECIMAL.\n         PRESS DISPLAY KEY TO UPDATE PARAMETERS DURING TEST.\n         DEFAULT DISPLAY PARAMETERS ARE DISK ADDRESS AND STATUS FROM LAST ERROR.\n    CONTROL METACOMMANDS :     KEYBOARD ALWAYS ACTIVE.\n         X - AUTOMODE          KYBD - MONITOR      ? - RTN TO THIS DISPLAY.\n    ** WARNING ** DO NOT FORMAT OR RUN AUTO MODE ON ALIGNMENT PACK !\n    FOR FURTHER INFORMATION REFER TO PROGRAM USER GUIDE.",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6974892800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 552,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30970164800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "MD370  ** VERSION 1.1 **  MASS STORAGE DISK DIAGNOSTIC.\n    MONITOR OBSERVES THE FOLLOWING CONVENTIONS :\n         TO MODIFY DISK ADDRESS , TYPE SPECIFIED LETTER , THEN ENTER NUMBER.\n         TO EXECUTE MANUAL FUNCTIONS TYPE SPECIFIED NUMBER.\n         ALL CURSOR COMMANDS ARE TERMINATED BY \"ENTER\".\n         ALL NUMERIC DISPLAYS ARE DECIMAL.\n         PRESS DISPLAY KEY TO UPDATE PARAMETERS DURING TEST.\n         DEFAULT DISPLAY PARAMETERS ARE DISK ADDRESS AND STATUS FROM LAST ERROR.\n    CONTROL METACOMMANDS :     KEYBOARD ALWAYS ACTIVE.\n         X - AUTOMODE          KYBD - MONITOR      ? - RTN TO THIS DISPLAY.\n    ** WARNING ** DO NOT FORMAT OR RUN AUTO MODE ON ALIGNMENT PACK !\n    FOR FURTHER INFORMATION REFER TO PROGRAM USER GUIDE.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6974892800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 548,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30959769600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "MD370  ** VERSION 1.1 **  MASS STORAGE DISK DIAGNOSTIC.\n    MONITOR OBSERVES THE FOLLOWING CONVENTIONS :\n         TO MODIFY DISK ADDRESS , TYPE SPECIFIED LETTER , THEN ENTER NUMBER.\n         TO EXECUTE MANUAL FUNCTIONS TYPE SPECIFIED NUMBER.\n         ALL CURSOR COMMANDS ARE TERMINATED BY \"ENTER\".\n         ALL NUMERIC DISPLAYS ARE DECIMAL.\n         PRESS DISPLAY KEY TO UPDATE PARAMETERS DURING TEST.\n         DEFAULT DISPLAY PARAMETERS ARE DISK ADDRESS AND STATUS FROM LAST ERROR.\n    CONTROL METACOMMANDS :     KEYBOARD ALWAYS ACTIVE.\n         X - AUTOMODE          KYBD - MONITOR      ? - RTN TO THIS DISPLAY.\n    ** WARNING ** DO NOT FORMAT OR RUN AUTO MODE ON ALIGNMENT PACK !\n    FOR FURTHER INFORMATION REFER TO PROGRAM USER GUIDE.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "MD370_V1.2.tap",
+      "structure": {
+        "bytes": 4642,
+        "sha256": "96504b2eed6d675d4a655de2e83006daec85ddf429b37e1f925fad2b79b80a35",
+        "records": 31,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 3690,
+            "file": 32
+          },
+          {
+            "offset": 3702,
+            "file": 127
+          }
+        ],
+        "numeric_records": 15,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6681915200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 2443,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 28365731200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                    **** 370 DISK MAINTENANCE AID  1.2 ****\n\n\n\nPHYSICAL DRIVE NUMBER -",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 2443,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 28708612800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                    **** 370 DISK MAINTENANCE AID  1.2 ****\n\n\n\nPHYSICAL DRIVE NUMBER -",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 2443,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 28708612800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                    **** 370 DISK MAINTENANCE AID  1.2 ****\n\n\n\nPHYSICAL DRIVE NUMBER -",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "MD374_V1.1.tap",
+      "structure": {
+        "bytes": 7178,
+        "sha256": "3e8ff60c9eb75f843396cbb834a70325738fc9434bc34d1cb2aba825e135172c",
+        "records": 33,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 7154,
+            "file": 32
+          },
+          {
+            "offset": 7166,
+            "file": 127
+          }
+        ],
+        "numeric_records": 29,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6632011200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 822,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 30859254400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "MD374  ** RELEASE  1.1 ** MASS STORAGE DISK DIAGNOSTIC.\n    MONITOR OBSERVES THE FOLLOWING CONVENTIONS :\n         TO MODIFY DISK ADDRESS , TYPE SPECIFIED LETTER , THEN ENTER NUMBER.\n         TO EXECUTE MANUAL FUNCTIONS TYPE SPECIFIED NUMBER.\n         ALL CURSOR COMMANDS ARE TERMINATED BY \"ENTER\".\n         ALL NUMERIC DISPLAYS ARE DECIMAL.\n         PRESS DISPLAY KEY TO UPDATE PARAMETERS DURING TEST.\n         DEFAULT DISPLAY PARAMETERS ARE DISK ADDRESS AND STATUS FROM LAST ERROR.\n    CONTROL METACOMMANDS :     KEYBOARD ALWAYS ACTIVE.\n         X - AUTOMODE          KYBD - MONITOR      ? - RTN TO THIS DISPLAY.\n    ** WARNING ** DO NOT FORMAT OR RUN AUTO MODE ON ALIGNMENT PACK !\n    FOR FURTHER INFORMATION REFER TO PROGRAM USER GUIDE.",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6974892800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 817,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 31197489600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "MD374  ** RELEASE  1.1 ** MASS STORAGE DISK DIAGNOSTIC.\n    MONITOR OBSERVES THE FOLLOWING CONVENTIONS :\n         TO MODIFY DISK ADDRESS , TYPE SPECIFIED LETTER , THEN ENTER NUMBER.\n         TO EXECUTE MANUAL FUNCTIONS TYPE SPECIFIED NUMBER.\n         ALL CURSOR COMMANDS ARE TERMINATED BY \"ENTER\".\n         ALL NUMERIC DISPLAYS ARE DECIMAL.\n         PRESS DISPLAY KEY TO UPDATE PARAMETERS DURING TEST.\n         DEFAULT DISPLAY PARAMETERS ARE DISK ADDRESS AND STATUS FROM LAST ERROR.\n    CONTROL METACOMMANDS :     KEYBOARD ALWAYS ACTIVE.\n         X - AUTOMODE          KYBD - MONITOR      ? - RTN TO THIS DISPLAY.\n    ** WARNING ** DO NOT FORMAT OR RUN AUTO MODE ON ALIGNMENT PACK !\n    FOR FURTHER INFORMATION REFER TO PROGRAM USER GUIDE.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6974892800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 815,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 31188204800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "MD374  ** RELEASE  1.1 ** MASS STORAGE DISK DIAGNOSTIC.\n    MONITOR OBSERVES THE FOLLOWING CONVENTIONS :\n         TO MODIFY DISK ADDRESS , TYPE SPECIFIED LETTER , THEN ENTER NUMBER.\n         TO EXECUTE MANUAL FUNCTIONS TYPE SPECIFIED NUMBER.\n         ALL CURSOR COMMANDS ARE TERMINATED BY \"ENTER\".\n         ALL NUMERIC DISPLAYS ARE DECIMAL.\n         PRESS DISPLAY KEY TO UPDATE PARAMETERS DURING TEST.\n         DEFAULT DISPLAY PARAMETERS ARE DISK ADDRESS AND STATUS FROM LAST ERROR.\n    CONTROL METACOMMANDS :     KEYBOARD ALWAYS ACTIVE.\n         X - AUTOMODE          KYBD - MONITOR      ? - RTN TO THIS DISPLAY.\n    ** WARNING ** DO NOT FORMAT OR RUN AUTO MODE ON ALIGNMENT PACK !\n    FOR FURTHER INFORMATION REFER TO PROGRAM USER GUIDE.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "MPXTEST.tap",
+      "structure": {
+        "bytes": 10700,
+        "sha256": "dd97196ab70c7c6b3c931a1bd1f2d95e03b50afc3522a0442c52043de7b648de",
+        "records": 62,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 7309,
+            "file": 32
+          },
+          {
+            "offset": 7321,
+            "file": 127
+          }
+        ],
+        "numeric_records": 44,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6681915200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 7690,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 34010468800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\nMULTIPORT ADAPTOR ADDRESS?",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 7690,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34353350400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\nMULTIPORT ADAPTOR ADDRESS?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 7690,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34353350400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\nMULTIPORT ADAPTOR ADDRESS?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "PCMTEST_V1.1.tap",
+      "structure": {
+        "bytes": 3175,
+        "sha256": "28e0acd2650b2a51ec51dc83268c140f29806c912133023fd3bc7c12bd0d522e",
+        "records": 18,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 1911,
+            "file": 1
+          },
+          {
+            "offset": 3151,
+            "file": 32
+          },
+          {
+            "offset": 3163,
+            "file": 127
+          }
+        ],
+        "numeric_records": 13,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": [
+          1923,
+          2186,
+          2449,
+          2712,
+          2975
+        ]
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628596800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 1085,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 5592115200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "       PATHOLOGICAL CASE MEMORY TEST PROGRAM VERSION 1.1 - MARCH 21, 1977\n                        16K MACHINE  PASS     1  ROW   0\nIN          NUMBER OF ERRORS IN EACH 1K RAM STARTING AT LOCATION/1K\nBIT#    0   1   2   3     4   5   6   7     8   9  10  11    12  13  14  15\n 7      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 6      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 5      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 4      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 3      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 2      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 1      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 0      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 468,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 20086620800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "       PATHOLOGICAL CASE MEMORY TEST PROGRAM VERSION 1.1 - MARCH 21, 1977\n                        16K MACHINE  PASS     1  ROW   4\nIN          NUMBER OF ERRORS IN EACH 1K RAM STARTING AT LOCATION/1K\nBIT#    0   1   2   3     4   5   6   7     8   9  10  11    12  13  14  15\n 7      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 6      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 5      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 4      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 3      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 2      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 1      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 0      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 1085,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 5934996800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "       PATHOLOGICAL CASE MEMORY TEST PROGRAM VERSION 1.1 - MARCH 21, 1977\n                        16K MACHINE  PASS     1  ROW   0\nIN          NUMBER OF ERRORS IN EACH 1K RAM STARTING AT LOCATION/1K\nBIT#    0   1   2   3     4   5   6   7     8   9  10  11    12  13  14  15\n 7      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 6      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 5      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 4      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 3      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 2      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 1      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 0      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 468,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 20429502400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "       PATHOLOGICAL CASE MEMORY TEST PROGRAM VERSION 1.1 - MARCH 21, 1977\n                        16K MACHINE  PASS     1  ROW   4\nIN          NUMBER OF ERRORS IN EACH 1K RAM STARTING AT LOCATION/1K\nBIT#    0   1   2   3     4   5   6   7     8   9  10  11    12  13  14  15\n 7      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 6      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 5      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 4      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 3      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 2      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 1      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 0      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 1085,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 5934996800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "       PATHOLOGICAL CASE MEMORY TEST PROGRAM VERSION 1.1 - MARCH 21, 1977\n                        16K MACHINE  PASS     1  ROW   0\nIN          NUMBER OF ERRORS IN EACH 1K RAM STARTING AT LOCATION/1K\nBIT#    0   1   2   3     4   5   6   7     8   9  10  11    12  13  14  15\n 7      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 6      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 5      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 4      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 3      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 2      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 1      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 0      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 468,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 20429502400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "       PATHOLOGICAL CASE MEMORY TEST PROGRAM VERSION 1.1 - MARCH 21, 1977\n                        16K MACHINE  PASS     1  ROW   4\nIN          NUMBER OF ERRORS IN EACH 1K RAM STARTING AT LOCATION/1K\nBIT#    0   1   2   3     4   5   6   7     8   9  10  11    12  13  14  15\n 7      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 6      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 5      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 4      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 3      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 2      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 1      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 0      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "PRINTERTEST.tap",
+      "structure": {
+        "bytes": 4194,
+        "sha256": "0b450d6c565b78115da15aa5f7fbfa448ebef52a63f43530422932f104511c61",
+        "records": 24,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 4048,
+            "file": 32
+          },
+          {
+            "offset": 4060,
+            "file": 127
+          },
+          {
+            "offset": 4170,
+            "file": 32
+          },
+          {
+            "offset": 4182,
+            "file": 127
+          }
+        ],
+        "numeric_records": 17,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6681915200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 5178,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 30271422400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "IS THE PRINTER TO BE TESTED CONNECTED TO\n      (1) A 3360 TERMINAL,\n      (2) A 3600 TERMINAL,\n   OR (3) NEITHER?",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 5184,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30588507200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "IS THE PRINTER TO BE TESTED CONNECTED TO\n      (1) A 3360 TERMINAL,\n      (2) A 3600 TERMINAL,\n   OR (3) NEITHER?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 5114,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30576489600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "IS THE PRINTER TO BE TESTED CONNECTED TO\n      (1) A 3360 TERMINAL,\n      (2) A 3600 TERMINAL,\n   OR (3) NEITHER?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "RIMTEST.tap",
+      "structure": {
+        "bytes": 10169,
+        "sha256": "f38ef550bc0520fce5a4e0f7d5cb27c479375acb186bab2cecf12fd1bbd2e151",
+        "records": 39,
+        "bootstrap_bytes": 1231,
+        "headers": [
+          {
+            "offset": 1239,
+            "file": 0
+          },
+          {
+            "offset": 10145,
+            "file": 32
+          },
+          {
+            "offset": 10157,
+            "file": 127
+          }
+        ],
+        "numeric_records": 35,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 565683200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6618998400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 11086,
+              "halted": true,
+              "instructions": 4023178,
+              "time_ns": 26947281600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 4023178
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6961880000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 15507,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 33107470400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -\n\n\n\n\n\nI.D. for RIM under test (Left):",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6961880000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 15454,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 33105785600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -\n\n\n\n\n\nI.D. for RIM under test (Left):",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "SURVAR_V1.1.tap",
+      "structure": {
+        "bytes": 73300,
+        "sha256": "4816a1c3108229c18f2bc7c2ca1731497033bbe40f650522eef90b683dfae378",
+        "records": 776,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 3641,
+            "file": 32
+          },
+          {
+            "offset": 3653,
+            "file": 127
+          }
+        ],
+        "numeric_records": 13,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6681915200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10718,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 28344742400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n2316 SURFACE VERIFICATION   VERSION 1.1\n\nON WHICH -PHYSICAL- DRIVE IS THE PACK TO BE VERIFIED? (0-7):",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10718,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 28687624000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n2316 SURFACE VERIFICATION   VERSION 1.1\n\nON WHICH -PHYSICAL- DRIVE IS THE PACK TO BE VERIFIED? (0-7):",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10718,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 28687624000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\n2316 SURFACE VERIFICATION   VERSION 1.1\n\nON WHICH -PHYSICAL- DRIVE IS THE PACK TO BE VERIFIED? (0-7):",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "SV374_V1.1.tap",
+      "structure": {
+        "bytes": 9760,
+        "sha256": "c84a2c919aeeb7d88954df5693bb40faa94ab9e07adb7e6aa4f04dc947b23c5e",
+        "records": 48,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 6134,
+            "file": 32
+          },
+          {
+            "offset": 6146,
+            "file": 127
+          }
+        ],
+        "numeric_records": 24,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628596800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6681912000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 5593,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 29960180800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\nSV374 - SURFACE VERIFICATION  -  V 1.1\n\nWHICH -PHYSICAL- DRIVE IS TO BE VERIFIED? (0-7):",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024793600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 5593,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30303062400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\nSV374 - SURFACE VERIFICATION  -  V 1.1\n\nWHICH -PHYSICAL- DRIVE IS TO BE VERIFIED? (0-7):",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024793600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 5593,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 30303062400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n\n\n\n\n\n\n\nSV374 - SURFACE VERIFICATION  -  V 1.1\n\nWHICH -PHYSICAL- DRIVE IS TO BE VERIFIED? (0-7):",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "TAPTIM_V1.5.tap",
+      "structure": {
+        "bytes": 4464,
+        "sha256": "d2e71cba08d5c8eb48186377b8ee8047e0fcf1cdfcc5718ea9b459d8e4ba9d48",
+        "records": 20,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 4440,
+            "file": 32
+          },
+          {
+            "offset": 4452,
+            "file": 127
+          }
+        ],
+        "numeric_records": 16,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628596800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6681912000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4042,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 35052720000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "TAPTIM 1.5 - PLACE SCRATCH TAPES IN BOTH DECKS\n\n       T1,T2 - TIMING DECK 1 OR 2\n       S1,S2 - SPEED DECK 1 OR 2\n       ENTER - ALL TESTS ABOVE\n\n       E1,E2 - ENDURANCE DECK 1 OR 2\n       I1,I2 - IRG DECK 1 OR 2\n           E - ENDURANCE TEST\n\n\nWHEN READY PRESS ENTER",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024793600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4042,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35395601600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "TAPTIM 1.5 - PLACE SCRATCH TAPES IN BOTH DECKS\n\n       T1,T2 - TIMING DECK 1 OR 2\n       S1,S2 - SPEED DECK 1 OR 2\n       ENTER - ALL TESTS ABOVE\n\n       E1,E2 - ENDURANCE DECK 1 OR 2\n       I1,I2 - IRG DECK 1 OR 2\n           E - ENDURANCE TEST\n\n\nWHEN READY PRESS ENTER",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024793600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 4042,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35395601600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "TAPTIM 1.5 - PLACE SCRATCH TAPES IN BOTH DECKS\n\n       T1,T2 - TIMING DECK 1 OR 2\n       S1,S2 - SPEED DECK 1 OR 2\n       ENTER - ALL TESTS ABOVE\n\n       E1,E2 - ENDURANCE DECK 1 OR 2\n       I1,I2 - IRG DECK 1 OR 2\n           E - ENDURANCE TEST\n\n\nWHEN READY PRESS ENTER",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "TST404.tap",
+      "structure": {
+        "bytes": 13887,
+        "sha256": "af083bed7c342a37587ea779421fdeff743f7a738a1188d6b0a8b767785c4d3d",
+        "records": 60,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 8703,
+            "file": 32
+          },
+          {
+            "offset": 8715,
+            "file": 127
+          },
+          {
+            "offset": 13875,
+            "file": 127
+          }
+        ],
+        "numeric_records": 55,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6681915200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1006,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 34163774400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n            9900-404 SYNCHRONOUS COMMUNICATIONS ADAPTOR TEST PROGRAM\n                                    (TST404)\n\n\n\n\nSTANDARD DEVICE ADDRESS = 0245\nCHANGE IT?",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1006,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34506656000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n            9900-404 SYNCHRONOUS COMMUNICATIONS ADAPTOR TEST PROGRAM\n                                    (TST404)\n\n\n\n\nSTANDARD DEVICE ADDRESS = 0245\nCHANGE IT?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7024796800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 1006,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34506656000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "\n\n            9900-404 SYNCHRONOUS COMMUNICATIONS ADAPTOR TEST PROGRAM\n                                    (TST404)\n\n\n\n\nSTANDARD DEVICE ADDRESS = 0245\nCHANGE IT?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "TSTDIS.tap",
+      "structure": {
+        "bytes": 1958,
+        "sha256": "cda78794191b2a908c8f527d1ed67320abe4f77a3049a3a88f8423b40f63bf0f",
+        "records": 13,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 1934,
+            "file": 32
+          },
+          {
+            "offset": 1946,
+            "file": 127
+          }
+        ],
+        "numeric_records": 9,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628596800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 815,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6670017600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                          2200 DISPLAY TEST\n\nThis diagnostic is in three sections. The first section displays the 2200\ncharacter set. The second writes full lines of @?@?..., rolling up the\nscreen when it becomes full. The third sections tests the following\ndisplay capabilities of the 2200: ERASE EOL, ERASE EOF, CURSOR ON, CURSOR\nOFF, KEYBOARD LIGHT ON, DISPLAY LIGHT ON. Depress the DISPLAY key to proceed\nfrom one section to the next and between each part of the last section.\n\nDepress the DISPLAY key to begin the test.",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 815,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 35470017600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                          2200 DISPLAY TEST\n\nThis diagnostic is in three sections. The first section displays the 2200\ncharacter set. The second writes full lines of @?@?..., rolling up the\nscreen when it becomes full. The third sections tests the following\ndisplay capabilities of the 2200: ERASE EOL, ERASE EOF, CURSOR ON, CURSOR\nOFF, KEYBOARD LIGHT ON, DISPLAY LIGHT ON. Depress the DISPLAY key to proceed\nfrom one section to the next and between each part of the last section.\n\nDepress the DISPLAY key to begin the test.",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 815,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7012899200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                          2200 DISPLAY TEST\n\nThis diagnostic is in three sections. The first section displays the 2200\ncharacter set. The second writes full lines of @?@?..., rolling up the\nscreen when it becomes full. The third sections tests the following\ndisplay capabilities of the 2200: ERASE EOL, ERASE EOF, CURSOR ON, CURSOR\nOFF, KEYBOARD LIGHT ON, DISPLAY LIGHT ON. Depress the DISPLAY key to proceed\nfrom one section to the next and between each part of the last section.\n\nDepress the DISPLAY key to begin the test.",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 815,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35812899200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                          2200 DISPLAY TEST\n\nThis diagnostic is in three sections. The first section displays the 2200\ncharacter set. The second writes full lines of @?@?..., rolling up the\nscreen when it becomes full. The third sections tests the following\ndisplay capabilities of the 2200: ERASE EOL, ERASE EOF, CURSOR ON, CURSOR\nOFF, KEYBOARD LIGHT ON, DISPLAY LIGHT ON. Depress the DISPLAY key to proceed\nfrom one section to the next and between each part of the last section.\n\nDepress the DISPLAY key to begin the test.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971478400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 815,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 7012899200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                          2200 DISPLAY TEST\n\nThis diagnostic is in three sections. The first section displays the 2200\ncharacter set. The second writes full lines of @?@?..., rolling up the\nscreen when it becomes full. The third sections tests the following\ndisplay capabilities of the 2200: ERASE EOL, ERASE EOF, CURSOR ON, CURSOR\nOFF, KEYBOARD LIGHT ON, DISPLAY LIGHT ON. Depress the DISPLAY key to proceed\nfrom one section to the next and between each part of the last section.\n\nDepress the DISPLAY key to begin the test.",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 815,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 35812899200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                          2200 DISPLAY TEST\n\nThis diagnostic is in three sections. The first section displays the 2200\ncharacter set. The second writes full lines of @?@?..., rolling up the\nscreen when it becomes full. The third sections tests the following\ndisplay capabilities of the 2200: ERASE EOL, ERASE EOF, CURSOR ON, CURSOR\nOFF, KEYBOARD LIGHT ON, DISPLAY LIGHT ON. Depress the DISPLAY key to proceed\nfrom one section to the next and between each part of the last section.\n\nDepress the DISPLAY key to begin the test.",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "TSTKEY.tap",
+      "structure": {
+        "bytes": 11198,
+        "sha256": "08d69a777ce00eab949385a404c9e330aa3037da4834f5612bd3205b90c7e4b9",
+        "records": 48,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 2671,
+            "file": 32
+          },
+          {
+            "offset": 2683,
+            "file": 127
+          }
+        ],
+        "numeric_records": 10,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 628600000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 505,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6642891200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 923,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 33828593600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "OLD OR NEW KEYBOARD?",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 505,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6985772800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 923,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34171475200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "OLD OR NEW KEYBOARD?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 971481600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 505,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6985772800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 923,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 34171475200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "OLD OR NEW KEYBOARD?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "TSTUBE55_V1.2.tap",
+      "structure": {
+        "bytes": 13316,
+        "sha256": "709e4cfd443f3612f1a5696e2dd7a34e4881ef82422caa05d48cbe1630c01a9f",
+        "records": 53,
+        "bootstrap_bytes": 1231,
+        "headers": [
+          {
+            "offset": 1239,
+            "file": 0
+          },
+          {
+            "offset": 13292,
+            "file": 32
+          },
+          {
+            "offset": 13304,
+            "file": 127
+          }
+        ],
+        "numeric_records": 49,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 565683200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6618998400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 33511638400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6961880000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 33854520000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 908564800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6961880000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 33854520000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "TSTUBE_V1.A.tap",
+      "structure": {
+        "bytes": 9556,
+        "sha256": "9f8af28f29a60942b49091f733d7d3f91fae1453a86e8f7025bd51df6f7ba78c",
+        "records": 48,
+        "bootstrap_bytes": 512,
+        "headers": [
+          {
+            "offset": 520,
+            "file": 0
+          },
+          {
+            "offset": 9532,
+            "file": 32
+          },
+          {
+            "offset": 9544,
+            "file": 127
+          }
+        ],
+        "numeric_records": 44,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 603628800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 6656953600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10775,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 31843275200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                      TSTUBE 1.A - DATASTATION DIAGNOSTIC\n  MODE -                                PORT CONFIGURATION:\n  ACTIVE PORT NO. -                     Port 1 -         Port  9 -\n  SINGLE PORT MODE TESTS                Port 2 -         Port 10 -\n  A = Cursor Test                       Port 3 -         Port 11 -\n  B = Character Display Test            Port 4 -         Port 12 -\n  C = Rollup Test                       Port 5 -         Port 13 -\n  D = Erase EOL & EOF Test              Port 6 -         Port 14 -\n  E = Keyboard Test                     Port 7 -         Port 15 -\n  F = Printer Test                      Port 8 -         Port 16 -\n\n  DO YOU WISH TO RECONFIGURE SYSTEM ?",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 946510400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6999835200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10772,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 32190320000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                      TSTUBE 1.A - DATASTATION DIAGNOSTIC\n  MODE -                                PORT CONFIGURATION:\n  ACTIVE PORT NO. -                     Port 1 -         Port  9 -\n  SINGLE PORT MODE TESTS                Port 2 -         Port 10 -\n  A = Cursor Test                       Port 3 -         Port 11 -\n  B = Character Display Test            Port 4 -         Port 12 -\n  C = Rollup Test                       Port 5 -         Port 13 -\n  D = Erase EOL & EOF Test              Port 6 -         Port 14 -\n  E = Keyboard Test                     Port 7 -         Port 15 -\n  F = Printer Test                      Port 8 -         Port 16 -\n\n  DO YOU WISH TO RECONFIGURE SYSTEM ?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 496,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 946510400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 498,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 6999835200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 10773,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 32184492800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "                      TSTUBE 1.A - DATASTATION DIAGNOSTIC\n  MODE -                                PORT CONFIGURATION:\n  ACTIVE PORT NO. -                     Port 1 -         Port  9 -\n  SINGLE PORT MODE TESTS                Port 2 -         Port 10 -\n  A = Cursor Test                       Port 3 -         Port 11 -\n  B = Character Display Test            Port 4 -         Port 12 -\n  C = Rollup Test                       Port 5 -         Port 13 -\n  D = Erase EOL & EOF Test              Port 6 -         Port 14 -\n  E = Keyboard Test                     Port 7 -         Port 15 -\n  F = Printer Test                      Port 8 -         Port 16 -\n\n  DO YOU WISH TO RECONFIGURE SYSTEM ?",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "UBOOT-2.tap",
+      "structure": {
+        "bytes": 512,
+        "sha256": "1d2e22587eebb73046c934366d830dfb1efea8927eebd66cb08cd26cb293df68",
+        "records": 1,
+        "bootstrap_bytes": 504,
+        "headers": [],
+        "numeric_records": 0,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": []
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 416,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 535798400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 430,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 5500003200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 166,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 27563160000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 416,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 878680000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 430,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 5842884800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 166,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 27906041600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 416,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 878680000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 430,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 5842884800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 166,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 27906041600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "UBOOT.tap",
+      "structure": {
+        "bytes": 3195,
+        "sha256": "91968af0c974e0b63787b7ce898e0b63fa003cff37eedcab65f77019f102f926",
+        "records": 29,
+        "bootstrap_bytes": 504,
+        "headers": [
+          {
+            "offset": 532,
+            "file": 1
+          },
+          {
+            "offset": 2036,
+            "file": 32
+          },
+          {
+            "offset": 2048,
+            "file": 127
+          }
+        ],
+        "numeric_records": 15,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": [
+          544,
+          566,
+          671,
+          776,
+          881,
+          986,
+          1091,
+          1196,
+          1301,
+          1406,
+          1511,
+          1616,
+          1721,
+          1826,
+          1931
+        ]
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 416,
+              "halted": false,
+              "instructions": 100000,
+              "time_ns": 535798400,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 430,
+              "halted": false,
+              "instructions": 1000000,
+              "time_ns": 5500003200,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 166,
+              "halted": false,
+              "instructions": 5000000,
+              "time_ns": 27563160000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 416,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 878680000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 430,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 5842884800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 166,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 27906041600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 416,
+              "halted": false,
+              "instructions": 298148,
+              "time_ns": 878680000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 100000
+            },
+            {
+              "pc": 430,
+              "halted": false,
+              "instructions": 1198148,
+              "time_ns": 5842884800,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 1000000
+            },
+            {
+              "pc": 166,
+              "halted": false,
+              "instructions": 5198148,
+              "time_ns": 27906041600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "",
+              "tape_instructions": 5000000
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    },
+    {
+      "tape": "tstpro1.1.tap",
+      "structure": {
+        "bytes": 6459,
+        "sha256": "082cab64ebe752c4c1da4d6eccb1ff9af172de1b94013edc69d29c9bc20d6bcd",
+        "records": 40,
+        "bootstrap_bytes": 2246,
+        "headers": [
+          {
+            "offset": 2254,
+            "file": 127
+          },
+          {
+            "offset": 6447,
+            "file": 1
+          }
+        ],
+        "numeric_records": 37,
+        "framing_issues": [],
+        "bad_numeric_checksums": [],
+        "bad_numeric_addresses": [
+          2266,
+          2379,
+          2492,
+          2605,
+          2718,
+          2831,
+          2944,
+          3057,
+          3170,
+          3283,
+          3396,
+          3509,
+          3622,
+          3735,
+          3848,
+          3961,
+          4074,
+          4187,
+          4300,
+          4413,
+          4526,
+          4639,
+          4752,
+          4865,
+          4978,
+          5091,
+          5204,
+          5317,
+          5430,
+          5543,
+          5656,
+          5769,
+          5882,
+          5995,
+          6108,
+          6221,
+          6334
+        ]
+      },
+      "probes": [
+        {
+          "cpu": 2200,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 2090,
+              "halted": true,
+              "instructions": 1439,
+              "time_ns": 5944000,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "TEST COMPLETED",
+              "tape_instructions": 1439
+            }
+          ]
+        },
+        {
+          "cpu": 5500,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 2090,
+              "halted": true,
+              "instructions": 199587,
+              "time_ns": 348825600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "TEST COMPLETED",
+              "tape_instructions": 1439
+            }
+          ],
+          "rom_halted": true
+        },
+        {
+          "cpu": 6600,
+          "budget": 5000000,
+          "snapshots": [
+            {
+              "pc": 2090,
+              "halted": true,
+              "instructions": 199587,
+              "time_ns": 348825600,
+              "keyboard_ready": false,
+              "beeps": 0,
+              "screen": "TEST COMPLETED",
+              "tape_instructions": 1439
+            }
+          ],
+          "rom_halted": true
+        }
+      ]
+    }
+  ]
+}

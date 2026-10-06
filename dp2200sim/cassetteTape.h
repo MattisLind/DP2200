@@ -26,6 +26,7 @@ class CassetteTape {
   bool writeBlock(const std::vector<unsigned char> &data);
   bool isWriteProtected() const { return writeProtect; }
   bool atBeginning() const { return file && ftell(file)==0; }
+  long position() const { return file ? ftell(file) : -1; }
   void closeFile ();
 
   void rewind();

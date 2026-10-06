@@ -104,11 +104,11 @@ class IOController {
     bool forward;
     bool stopAtGap;
     void readFromTape ();
+    void scheduleReadByte();
     std::vector<class callbackRecord *>outStandingCallbacks;
     void removeFromOutstandCallbacks (class callbackRecord *);
     void removeAllCallbacks();
     void printStatus(const char *);
-    const char * endOfTapeStrings[3]={"Normal", "End of tape", "Cassette not in place"};
     public:
     CassetteTape * tapeDrive[2];
     unsigned char input ();
@@ -134,6 +134,8 @@ class IOController {
     bool loadBoot (std::function<void(int address, unsigned char)> writeMem);
     CassetteDevice();
     bool transportRunning() const { return writing || !outStandingCallbacks.empty(); }
+    int selectedDeck() const { return tapeDeckSelected; }
+    unsigned char cassetteStatus() const { return statusRegister; }
   };
 
     class ScreenKeyboardDevice : public virtual IODevice  {

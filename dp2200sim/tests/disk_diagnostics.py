@@ -74,7 +74,7 @@ def run_diagnostic(name, output=None, full_surface=True):
                 if name == "MA374_V1.2.B" or (name == "SV374_V1.1" and not full_surface):
                     sim.command(f"disk-protect {drive} 1")
             sim.command(f"printer {work}/printer.txt")
-            sim.load(ROOT / f"tapes/{name}.tap")
+            sim.load(ROOT / f"tapes/diagnostics/{name}.tap")
             session = Session(sim)
             session.run(20000000)
 

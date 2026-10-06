@@ -1,0 +1,4250 @@
+{
+  "experiments": [
+    {
+      "tape": "DIAG2200_V1.1.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG2200_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 30643825600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "1"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 31253785600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER? 1"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 496,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 31908649600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 437,
+          "halted": false,
+          "instructions": 30200000,
+          "time_ns": 124119904000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "       PATHOLOGICAL CASE MEMORY TEST PROGRAM VERSION 1.1 - MARCH 21, 1977\n                        16K MACHINE  PASS     1  ROW  27\nIN          NUMBER OF ERRORS IN EACH 1K RAM STARTING AT LOCATION/1K\nBIT#    0   1   2   3     4   5   6   7     8   9  10  11    12  13  14  15\n 7      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 6      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 5      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 4      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 3      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 2      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 1      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 0      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0"
+        },
+        {
+          "command": "inspect",
+          "pc": 437,
+          "halted": false,
+          "instructions": 30200000,
+          "time_ns": 124119904000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "       PATHOLOGICAL CASE MEMORY TEST PROGRAM VERSION 1.1 - MARCH 21, 1977\n                        16K MACHINE  PASS     1  ROW  27\nIN          NUMBER OF ERRORS IN EACH 1K RAM STARTING AT LOCATION/1K\nBIT#    0   1   2   3     4   5   6   7     8   9  10  11    12  13  14  15\n 7      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 6      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 5      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 4      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 3      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 2      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 1      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 0      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0",
+          "debug": "bank=0 0 248 94 3 96 64 0 0 C=0 Z=0 S=1 P=1\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=0\n445: ADC\n446: LCA\n447: LA 000\n449: ACB\n450: LBA\n451: JFC 000641\n417: LA 000\n419: LA 000\n421: LA 000\n423: LA 000\n425: LA 000\n427: LA 000\n429: LA 000\n431: LA 000\n433: LA 000\n435: LA 000\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG2200_V1.1.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG2200_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 30643825600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "2"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 31253785600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER? 2"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 31934380800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 5779,
+          "halted": false,
+          "instructions": 30200000,
+          "time_ns": 164890545600,
+          "keyboard_ready": false,
+          "beeps": 9560,
+          "screen": "TP1122 1.1    2200 INSTRUCTION TEST 02AUG79    MODE: BETA   PASS:      1\nTESTING --->\n\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PU"
+        },
+        {
+          "command": "inspect",
+          "pc": 5779,
+          "halted": false,
+          "instructions": 30200000,
+          "time_ns": 164890545600,
+          "keyboard_ready": false,
+          "beeps": 9560,
+          "screen": "TP1122 1.1    2200 INSTRUCTION TEST 02AUG79    MODE: BETA   PASS:      1\nTESTING --->\n\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PUSH/POP      1\nPUSH/POP      1     PUSH/POP      1     PUSH/POP      1     PU",
+          "debug": "bank=0 17 160 1 61 0 7 147 0 C=0 Z=0 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=15\n5775: LA 341\n5777: EX_ADR\n5778: INPUT\n5779: SRC\n5780: JFC 013217\n5783: XRA\n5784: EX_COM1\n5785: RET\n5706: LAM\n5707: CP 040\n5709: JFC 013142\n5730: EX_WRITE\n5731: CALL 013217\n5775: LA 341\n5777: EX_ADR\n5778: INPUT\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG2200_V1.1.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG2200_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 30643825600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "3"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 31253785600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER? 3"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 31934380800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 6362,
+          "halted": false,
+          "instructions": 30200000,
+          "time_ns": 185497449600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "TAPTIM 2.1      CASSETTE ENDURANCE AND TIMING DIAGNOSTIC\n\n\n\n\n\n\n\n\n\n\nALIGNMENT ONLY? (Y OR N)"
+        },
+        {
+          "command": "inspect",
+          "pc": 6362,
+          "halted": false,
+          "instructions": 30200000,
+          "time_ns": 185497449600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "TAPTIM 2.1      CASSETTE ENDURANCE AND TIMING DIAGNOSTIC\n\n\n\n\n\n\n\n\n\n\nALIGNMENT ONLY? (Y OR N)",
+          "debug": "bank=0 0 2 2 25 11 10 73 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n6347: LA 341\n6349: EX_ADR\n6350: NOP\n6351: INPUT\n6352: SRC\n6353: JFC 014313\n6356: LAE\n6357: EX_COM3\n6358: LAD\n6359: EX_COM2\n6360: RET\n6365: LA 020\n6367: EX_COM1\n6368: INPUT\n6369: ND 002\n6371: JTZ 014332\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG2200_V1.1.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG2200_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 30643825600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "4"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 31253785600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER? 4"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 31934380800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 4339,
+          "halted": false,
+          "instructions": 30200000,
+          "time_ns": 195784700800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                    KDTEST 1.2.  KEYBOARD/DISPLAY TEST\n\n\n          A- ALIGN DISPLAY              *- RETURN TO DOS\n          C- CHARACTER TEST             KEYBOARD KEY - ABORT\n          D- DISPLAY TEST               DISPLAY KEY - PAUSE\n          K- KEYBOARD TEST              SPACE BAR - ADVANCE\n\n\n\n\n                              OPTION:"
+        },
+        {
+          "command": "inspect",
+          "pc": 4339,
+          "halted": false,
+          "instructions": 30200000,
+          "time_ns": 195784700800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                    KDTEST 1.2.  KEYBOARD/DISPLAY TEST\n\n\n          A- ALIGN DISPLAY              *- RETURN TO DOS\n          C- CHARACTER TEST             KEYBOARD KEY - ABORT\n          D- DISPLAY TEST               DISPLAY KEY - PAUSE\n          K- KEYBOARD TEST              SPACE BAR - ADVANCE\n\n\n\n\n                              OPTION:",
+          "debug": "bank=0 17 0 48 38 11 4 251 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=1\n4344: INPUT\n4345: ND 002\n4347: JTZ 010362\n4338: INPUT\n4339: ND 004\n4341: JFZ 004544\n4344: INPUT\n4345: ND 002\n4347: JTZ 010362\n4338: INPUT\n4339: ND 004\n4341: JFZ 004544\n4344: INPUT\n4345: ND 002\n4347: JTZ 010362\n4338: INPUT\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG2200_V1.1.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG2200_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 30643825600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "5"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 31253785600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\nLOAD FILE NUMBER? 5"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 31934380800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG2200   1.1      2200 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - PCMTST     1.1\n2 - TP1122     1.1\n3 - TAPTIM     2.1\n4 - KDTEST     1.2\n5 - HRLYMENT   1.2\n\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 100,
+          "halted": false,
+          "instructions": 30200000,
+          "time_ns": 194243094400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                            MINUTES:  1\n\n\n\n\n\n\n\n\n\n            HOURLY MEMORY TEST FOR DATAPOINT 2200 VERSION II 16K"
+        },
+        {
+          "command": "inspect",
+          "pc": 100,
+          "halted": false,
+          "instructions": 30200000,
+          "time_ns": 194243094400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                            MINUTES:  1\n\n\n\n\n\n\n\n\n\n            HOURLY MEMORY TEST FOR DATAPOINT 2200 VERSION II 16K",
+          "debug": "bank=0 183 0 2 177 183 0 176 0 C=1 Z=0 S=1 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=1\n2: ADD\n3: LDA\n4: SU 372\n6: RFZ\n100: JMP 000144\n100: JMP 000144\n100: JMP 000144\n100: JMP 000144\n100: JMP 000144\n100: JMP 000144\n100: JMP 000144\n100: JMP 000144\n100: JMP 000144\n100: JMP 000144\n100: JMP 000144\n100: JMP 000144\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG5500_V1.1.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG5500_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "1"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 1"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 496,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32205684800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 58752,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 181940819200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "- UNIVERSAL PROCESSOR MEMORY TEST - UNITEST 1.2 - RELEASE - 23MAY79\n\n\n\n\n\n\n\n\n\n\nLOG ERRORS ON LOCAL PRINTER ?\u007f\u007f"
+        },
+        {
+          "command": "inspect",
+          "pc": 58752,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 181940819200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "- UNIVERSAL PROCESSOR MEMORY TEST - UNITEST 1.2 - RELEASE - 23MAY79\n\n\n\n\n\n\n\n\n\n\nLOG ERRORS ON LOCAL PRINTER ?\u007f\u007f",
+          "debug": "bank=0 68 8 15 31 11 227 146 224 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n58751: SRC\n58752: JFC 162574\n58748: EX_STATUS\n58749: INPUT\n58750: SRC\n58751: SRC\n58752: JFC 162574\n58748: EX_STATUS\n58749: INPUT\n58750: SRC\n58751: SRC\n58752: JFC 162574\n58748: EX_STATUS\n58749: INPUT\n58750: SRC\n58751: SRC\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG5500_V1.1.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG5500_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "2"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 2"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 4992,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 188491486400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n5500 PROCESSOR TEST RELEASE 2.2 04/06/76.   TYPE LETTER OF DESIRED TEST.\n  A. TEST KEYBOARD\n  B. TEST SCREEN\n  C. TEST 2200 INSTRUCTIONS\n  D. TEST 5500 MEMORY\n  E. TEST 5500 INSTRUCTIONS\n  F. REPEATED 5500 MEMORY/INSTRUCTION CYCLE"
+        },
+        {
+          "command": "inspect",
+          "pc": 4992,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 188491486400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n5500 PROCESSOR TEST RELEASE 2.2 04/06/76.   TYPE LETTER OF DESIRED TEST.\n  A. TEST KEYBOARD\n  B. TEST SCREEN\n  C. TEST 2200 INSTRUCTIONS\n  D. TEST 5500 MEMORY\n  E. TEST 5500 INSTRUCTIONS\n  F. REPEATED 5500 MEMORY/INSTRUCTION CYCLE",
+          "debug": "bank=0 0 2 1 43 0 16 85 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=1\n4995: INPUT\n4996: NDB\n4997: RFZ\n4998: JMP 011600\n4992: LA 341\n4994: EX_ADR\n4995: INPUT\n4996: NDB\n4997: RFZ\n4998: JMP 011600\n4992: LA 341\n4994: EX_ADR\n4995: INPUT\n4996: NDB\n4997: RFZ\n4998: JMP 011600\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG5500_V1.1.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG5500_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "3"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 3"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 5244,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 197999288000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n5556 Processor Test 1.1 - 05/09/78.   Type Letter of Desired Test.\n  A. Test Keyboard\n  B. Test Screen\n  C. Test 2200 Instructions\n  D. Test 5556 Memory\n  E. Test 5556 Instructions\n  F. Repeated 5556 Memory/Instruction Cycle"
+        },
+        {
+          "command": "inspect",
+          "pc": 5244,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 197999288000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n5556 Processor Test 1.1 - 05/09/78.   Type Letter of Desired Test.\n  A. Test Keyboard\n  B. Test Screen\n  C. Test 2200 Instructions\n  D. Test 5556 Memory\n  E. Test 5556 Instructions\n  F. Repeated 5556 Memory/Instruction Cycle",
+          "debug": "bank=0 225 2 1 43 0 17 79 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=1\n5246: NDB\n5247: RFZ\n5248: JMP 012172\n5242: LA 341\n5244: EX_ADR\n5245: INPUT\n5246: NDB\n5247: RFZ\n5248: JMP 012172\n5242: LA 341\n5244: EX_ADR\n5245: INPUT\n5246: NDB\n5247: RFZ\n5248: JMP 012172\n5242: LA 341\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG5500_V1.1.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG5500_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "4"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 4"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 6369,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 202654006400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "TAPTIM 2.1      CASSETTE ENDURANCE AND TIMING DIAGNOSTIC\n\n\n\n\n\n\n\n\n\n\nALIGNMENT ONLY? (Y OR N)"
+        },
+        {
+          "command": "inspect",
+          "pc": 6369,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 202654006400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "TAPTIM 2.1      CASSETTE ENDURANCE AND TIMING DIAGNOSTIC\n\n\n\n\n\n\n\n\n\n\nALIGNMENT ONLY? (Y OR N)",
+          "debug": "bank=0 17 2 2 25 11 10 73 0 C=1 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n6371: JTZ 014332\n6362: CALL 014313\n6347: LA 341\n6349: EX_ADR\n6350: NOP\n6351: INPUT\n6352: SRC\n6353: JFC 014313\n6356: LAE\n6357: EX_COM3\n6358: LAD\n6359: EX_COM2\n6360: RET\n6365: LA 020\n6367: EX_COM1\n6368: INPUT\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG5500_V1.1.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG5500_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "5"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 5"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 4341,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 205502812800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                    KDTEST 1.2.  KEYBOARD/DISPLAY TEST\n\n\n          A- ALIGN DISPLAY              *- RETURN TO DOS\n          C- CHARACTER TEST             KEYBOARD KEY - ABORT\n          D- DISPLAY TEST               DISPLAY KEY - PAUSE\n          K- KEYBOARD TEST              SPACE BAR - ADVANCE\n\n\n\n\n                              OPTION:"
+        },
+        {
+          "command": "inspect",
+          "pc": 4341,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 205502812800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                    KDTEST 1.2.  KEYBOARD/DISPLAY TEST\n\n\n          A- ALIGN DISPLAY              *- RETURN TO DOS\n          C- CHARACTER TEST             KEYBOARD KEY - ABORT\n          D- DISPLAY TEST               DISPLAY KEY - PAUSE\n          K- KEYBOARD TEST              SPACE BAR - ADVANCE\n\n\n\n\n                              OPTION:",
+          "debug": "bank=0 0 0 48 38 11 4 251 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=1\n4345: ND 002\n4347: JTZ 010362\n4338: INPUT\n4339: ND 004\n4341: JFZ 004544\n4344: INPUT\n4345: ND 002\n4347: JTZ 010362\n4338: INPUT\n4339: ND 004\n4341: JFZ 004544\n4344: INPUT\n4345: ND 002\n4347: JTZ 010362\n4338: INPUT\n4339: ND 004\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG5500_V1.1.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG5500_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "6"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 6"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 498,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 206562667200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "inspect",
+          "pc": 498,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 206562667200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *",
+          "debug": "bank=0 192 6 66 56 1 29 62 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "cpu": 6600,
+      "actions": [
+        {
+          "command": "cpu 6600",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG6600_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "1"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 1"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 496,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32205684800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 58751,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 181924320000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "- UNIVERSAL PROCESSOR MEMORY TEST - UNITEST 1.2 - RELEASE - 23MAY79\n\n\n\n\n\n\n\n\n\n\nLOG ERRORS ON LOCAL PRINTER ?\u007f\u007f"
+        },
+        {
+          "command": "inspect",
+          "pc": 58751,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 181924320000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "- UNIVERSAL PROCESSOR MEMORY TEST - UNITEST 1.2 - RELEASE - 23MAY79\n\n\n\n\n\n\n\n\n\n\nLOG ERRORS ON LOCAL PRINTER ?\u007f\u007f",
+          "debug": "bank=0 136 8 15 31 11 227 146 224 C=1 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n58750: SRC\n58751: SRC\n58752: JFC 162574\n58748: EX_STATUS\n58749: INPUT\n58750: SRC\n58751: SRC\n58752: JFC 162574\n58748: EX_STATUS\n58749: INPUT\n58750: SRC\n58751: SRC\n58752: JFC 162574\n58748: EX_STATUS\n58749: INPUT\n58750: SRC\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "cpu": 6600,
+      "actions": [
+        {
+          "command": "cpu 6600",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG6600_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "2"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 2"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 472,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 202068403200,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *\nWRONG MICRO-CODE ROM"
+        },
+        {
+          "command": "inspect",
+          "pc": 472,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 202068403200,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *\nWRONG MICRO-CODE ROM",
+          "debug": "bank=0 0 2 6 195 60 1 255 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "cpu": 6600,
+      "actions": [
+        {
+          "command": "cpu 6600",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG6600_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "3"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 3"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 500,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 205336120000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "inspect",
+          "pc": 500,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 205336120000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *",
+          "debug": "bank=0 0 3 56 136 33 56 149 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "cpu": 6600,
+      "actions": [
+        {
+          "command": "cpu 6600",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG6600_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "4"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 4"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "inspect",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *",
+          "debug": "bank=0 0 4 6 195 11 1 255 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "cpu": 6600,
+      "actions": [
+        {
+          "command": "cpu 6600",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG6600_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "5"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 5"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "inspect",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *",
+          "debug": "bank=0 0 5 6 195 11 1 255 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "cpu": 6600,
+      "actions": [
+        {
+          "command": "cpu 6600",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG6600_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "6"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 6"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "inspect",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *",
+          "debug": "bank=0 0 6 6 195 11 1 255 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n470: INPUT\n471: NDC\n472: JTZ 000726\n"
+        }
+      ]
+    },
+    {
+      "tape": "5500PROCTEST_V2.1.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/5500PROCTEST_V2.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 496,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 33917436800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "inspect",
+          "pc": 496,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 33917436800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "",
+          "debug": "bank=0 0 0 201 129 66 42 199 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n"
+        },
+        {
+          "command": "button keyboard 1",
+          "pc": 496,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 33917436800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 498,
+          "halted": false,
+          "instructions": 6198148,
+          "time_ns": 40647064000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "button keyboard 0",
+          "pc": 498,
+          "halted": false,
+          "instructions": 6198148,
+          "time_ns": 40647064000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 25000000",
+          "pc": 4996,
+          "halted": false,
+          "instructions": 31198148,
+          "time_ns": 190307721600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n5500 PROCESSOR TEST RELEASE 2.1 20/05/75.   TYPE LETTER OF DESIRED TEST.\n  A. TEST KEYBOARD\n  B. TEST SCREEN\n  C. TEST 2200 INSTRUCTIONS\n  D. TEST 5500 MEMORY\n  E. TEST 5500 INSTRUCTIONS\n  F. REPEATED 5500 MEMORY/INSTRUCTION CYCLE"
+        }
+      ]
+    },
+    {
+      "tape": "TSTUBE55_V1.2.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/TSTUBE55_V1.2.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 496,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 33854520000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "inspect",
+          "pc": 496,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 33854520000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "",
+          "debug": "bank=0 0 0 46 206 152 57 164 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n"
+        },
+        {
+          "command": "button keyboard 1",
+          "pc": 496,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 33854520000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 12930,
+          "halted": false,
+          "instructions": 6198148,
+          "time_ns": 39940398400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\n\n\n\nTHERE IS NO MULTIPORT 1  (ADDRESS 0151)  ENTER ADDRESS:"
+        },
+        {
+          "command": "button keyboard 0",
+          "pc": 12930,
+          "halted": false,
+          "instructions": 6198148,
+          "time_ns": 39940398400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\n\n\n\nTHERE IS NO MULTIPORT 1  (ADDRESS 0151)  ENTER ADDRESS:"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 12238,
+          "halted": false,
+          "instructions": 31198148,
+          "time_ns": 180705129600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\n\n\n\nTHERE IS NO MULTIPORT 1  (ADDRESS 0151)  ENTER ADDRESS:"
+        }
+      ]
+    },
+    {
+      "tape": "COPY06_1.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/COPY06_1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 4388,
+          "halted": true,
+          "instructions": 2150621,
+          "time_ns": 13265708800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "inspect",
+          "pc": 4388,
+          "halted": true,
+          "instructions": 2150621,
+          "time_ns": 13265708800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "",
+          "debug": "bank=0 0 113 1 129 64 9 55 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=1\n475: RET\n333: LL 077\n335: LH 000\n337: LAM\n338: ORA\n339: JTZ 000670\n342: XRA\n343: RET\n57: JFC 000075\n61: JMP 004661\n2481: LL 067\n2483: LH 011\n2485: LB 161\n2487: LE 100\n2489: CALL 010443\n4387: HALT\n"
+        },
+        {
+          "command": "continue",
+          "pc": 4388,
+          "halted": false,
+          "instructions": 2150621,
+          "time_ns": 13265708800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 4389,
+          "halted": true,
+          "instructions": 2150622,
+          "time_ns": 13265708800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        }
+      ]
+    },
+    {
+      "tape": "EM3780TRACE_V3.1.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/EM3780TRACE_V3.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 10637,
+          "halted": true,
+          "instructions": 1291790,
+          "time_ns": 7598208000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "inspect",
+          "pc": 10637,
+          "halted": true,
+          "instructions": 1291790,
+          "time_ns": 7598208000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "",
+          "debug": "bank=0 0 9 1 129 0 16 26 0 C=1 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n4340: EX_ADR\n4341: XRA\n4342: EX_COM1\n4343: CALL 010466\n4406: EX_STATUS\n4407: INPUT\n4408: SRC\n4409: JFC 010466\n4412: LAD\n4413: EX_COM2\n4414: LAE\n4415: EX_COM3\n4416: RET\n4346: LBM\n4347: CALL 024614\n10636: HALT\n"
+        },
+        {
+          "command": "continue",
+          "pc": 10637,
+          "halted": false,
+          "instructions": 1291790,
+          "time_ns": 7598208000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 10638,
+          "halted": true,
+          "instructions": 1291791,
+          "time_ns": 7598208000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        }
+      ]
+    },
+    {
+      "tape": "LGO_A.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/LGO_A.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 630,
+          "halted": true,
+          "instructions": 545192,
+          "time_ns": 2497905600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "inspect",
+          "pc": 630,
+          "halted": true,
+          "instructions": 545192,
+          "time_ns": 2497905600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "",
+          "debug": "bank=0 0 0 1 0 11 46 0 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=1\n335: LH 000\n337: LAM\n338: ORA\n339: JTZ 000670\n342: XRA\n343: RET\n57: JFC 000075\n61: JMP 017214\n7820: LE 013\n7822: LD 000\n7824: LL 000\n7826: LH 036\n7828: CALL 001162\n626: LH 056\n628: BRL\n629: HALT\n"
+        },
+        {
+          "command": "continue",
+          "pc": 630,
+          "halted": false,
+          "instructions": 545192,
+          "time_ns": 2497905600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 62377,
+          "halted": false,
+          "instructions": 5545192,
+          "time_ns": 34496100800,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\n\n\n\n\n\n\n\n                                                                          001175\n                                                                          *  052\n                                                                          037052"
+        }
+      ]
+    },
+    {
+      "tape": "PCMTEST_V1.1.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/PCMTEST_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 468,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 20086620800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "       PATHOLOGICAL CASE MEMORY TEST PROGRAM VERSION 1.1 - MARCH 21, 1977\n                        16K MACHINE  PASS     1  ROW   4\nIN          NUMBER OF ERRORS IN EACH 1K RAM STARTING AT LOCATION/1K\nBIT#    0   1   2   3     4   5   6   7     8   9  10  11    12  13  14  15\n 7      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 6      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 5      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 4      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 3      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 2      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 1      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 0      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0"
+        },
+        {
+          "command": "run 100000000",
+          "pc": 2594,
+          "halted": false,
+          "instructions": 105000000,
+          "time_ns": 382358672000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "       PATHOLOGICAL CASE MEMORY TEST PROGRAM VERSION 1.1 - MARCH 21, 1977\n                        16K MACHINE  PASS     4  ROW  22\nIN          NUMBER OF ERRORS IN EACH 1K RAM STARTING AT LOCATION/1K\nBIT#    0   1   2   3     4   5   6   7     8   9  10  11    12  13  14  15\n 7      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 6      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 5      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 4      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 3      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 2      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 1      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0\n 0      0   0   0   0     0   0   0   0     0   0   0   0     0   0   0   0"
+        }
+      ]
+    },
+    {
+      "tape": "HRLYMEMT.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/HRLYMEMT.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 100,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 30987193600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\n\n\n            HOURLY MEMORY TEST FOR DATAPOINT 2200 VERSION II 16K"
+        },
+        {
+          "command": "run 100000000",
+          "pc": 100,
+          "halted": false,
+          "instructions": 105000000,
+          "time_ns": 661852971200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                            MINUTES: 10\n\n\n\n\n\n\n\n\n\n            HOURLY MEMORY TEST FOR DATAPOINT 2200 VERSION II 16K"
+        }
+      ]
+    },
+    {
+      "tape": "EXTDISPTEST.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/EXTDISPTEST.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 1643,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 28303132800,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "                        DISPLAY TEST LIST FOR THE CRT.             J/W.  NOV 77\n\n    S..........OUTPUT SLIDING CHAR.         E..........MOVE CURSOR HOME\n    H..........OUTPUT CHAR. HORZ.           V..........OUTPUT CHAR. VERT.\n    N..........ERASE END OF LINE            I..........INPUT CHARACTERS\n    O..........CURSOR ON                    F..........CURSOR OFF\n    L..........SET LOOP                     R..........RESET LOOP\n    U..........ROLL UP                      P..........ENB/DIS PRINTING\n    ENTER......HELP LIST                    Z..........BEEP\n    X..........CLICK                        D..........ROLL DOWN\n\n                                    SELECTION."
+        },
+        {
+          "host_key": "Z"
+        },
+        {
+          "command": "run 100000",
+          "pc": 1355,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 28797196800,
+          "keyboard_ready": false,
+          "beeps": 2,
+          "screen": "                        DISPLAY TEST LIST FOR THE CRT.             J/W.  NOV 77\n\n    S..........OUTPUT SLIDING CHAR.         E..........MOVE CURSOR HOME\n    H..........OUTPUT CHAR. HORZ.           V..........OUTPUT CHAR. VERT.\n    N..........ERASE END OF LINE            I..........INPUT CHARACTERS\n    O..........CURSOR ON                    F..........CURSOR OFF\n    L..........SET LOOP                     R..........RESET LOOP\n    U..........ROLL UP                      P..........ENB/DIS PRINTING\n    ENTER......HELP LIST                    Z..........BEEP\n    X..........CLICK                        D..........ROLL DOWN\n\n                                    SELECTION."
+        },
+        {
+          "command": "run 1000000",
+          "pc": 1632,
+          "halted": false,
+          "instructions": 6100000,
+          "time_ns": 33737540800,
+          "keyboard_ready": false,
+          "beeps": 2,
+          "screen": "                        DISPLAY TEST LIST FOR THE CRT.             J/W.  NOV 77\n\n    S..........OUTPUT SLIDING CHAR.         E..........MOVE CURSOR HOME\n    H..........OUTPUT CHAR. HORZ.           V..........OUTPUT CHAR. VERT.\n    N..........ERASE END OF LINE            I..........INPUT CHARACTERS\n    O..........CURSOR ON                    F..........CURSOR OFF\n    L..........SET LOOP                     R..........RESET LOOP\n    U..........ROLL UP                      P..........ENB/DIS PRINTING\n    ENTER......HELP LIST                    Z..........BEEP\n    X..........CLICK                        D..........ROLL DOWN\n\n                                    SELECTION."
+        }
+      ]
+    },
+    {
+      "tape": "TSTDIS.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/TSTDIS.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 815,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 35470017600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                          2200 DISPLAY TEST\n\nThis diagnostic is in three sections. The first section displays the 2200\ncharacter set. The second writes full lines of @?@?..., rolling up the\nscreen when it becomes full. The third sections tests the following\ndisplay capabilities of the 2200: ERASE EOL, ERASE EOF, CURSOR ON, CURSOR\nOFF, KEYBOARD LIGHT ON, DISPLAY LIGHT ON. Depress the DISPLAY key to proceed\nfrom one section to the next and between each part of the last section.\n\nDepress the DISPLAY key to begin the test."
+        },
+        {
+          "command": "button display 1",
+          "pc": 815,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 35470017600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                          2200 DISPLAY TEST\n\nThis diagnostic is in three sections. The first section displays the 2200\ncharacter set. The second writes full lines of @?@?..., rolling up the\nscreen when it becomes full. The third sections tests the following\ndisplay capabilities of the 2200: ERASE EOL, ERASE EOF, CURSOR ON, CURSOR\nOFF, KEYBOARD LIGHT ON, DISPLAY LIGHT ON. Depress the DISPLAY key to proceed\nfrom one section to the next and between each part of the last section.\n\nDepress the DISPLAY key to begin the test."
+        },
+        {
+          "command": "run 100000",
+          "pc": 7807,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 35947016000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@AB"
+        },
+        {
+          "command": "button display 0",
+          "pc": 7807,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 35947016000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n !\"#$%&'()*+,-./0123456789:;<=>?@AB"
+        },
+        {
+          "command": "run 100000",
+          "pc": 818,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 36659272000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "ERASE END OF LINE\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno"
+        },
+        {
+          "command": "button display 1",
+          "pc": 818,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 36659272000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "ERASE END OF LINE\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno\n\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmno"
+        },
+        {
+          "command": "run 100000",
+          "pc": 7913,
+          "halted": false,
+          "instructions": 5300000,
+          "time_ns": 37136272000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?"
+        },
+        {
+          "command": "button display 0",
+          "pc": 7913,
+          "halted": false,
+          "instructions": 5300000,
+          "time_ns": 37136272000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?"
+        },
+        {
+          "command": "run 100000",
+          "pc": 7794,
+          "halted": false,
+          "instructions": 5400000,
+          "time_ns": 37613494400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?"
+        },
+        {
+          "command": "button display 1",
+          "pc": 7794,
+          "halted": false,
+          "instructions": 5400000,
+          "time_ns": 37613494400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?@?\n@?@?@?@?@?@?@?@?@?@?"
+        },
+        {
+          "command": "run 100000",
+          "pc": 7837,
+          "halted": false,
+          "instructions": 5500000,
+          "time_ns": 38090606400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "ERASE END OF LINE\nERASE END OF FRAME\nCURSOR ON\nCURSOR"
+        },
+        {
+          "command": "button display 0",
+          "pc": 7837,
+          "halted": false,
+          "instructions": 5500000,
+          "time_ns": 38090606400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "ERASE END OF LINE\nERASE END OF FRAME\nCURSOR ON\nCURSOR"
+        },
+        {
+          "command": "run 100000",
+          "pc": 814,
+          "halted": false,
+          "instructions": 5600000,
+          "time_ns": 38810107200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "ERASE END OF LINE\nERASE END OF FRAME\nCURSOR ON\nCURSOR OFF"
+        }
+      ]
+    },
+    {
+      "tape": "TSTKEY.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/TSTKEY.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 923,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 33828593600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "OLD OR NEW KEYBOARD?"
+        },
+        {
+          "host_key": "N"
+        },
+        {
+          "command": "run 100000",
+          "pc": 923,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 34455000000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                          2200 KEYBOARD TEST\n\nA set of instructions and a row of characters will be displayed on the\nscreen. Respond by typing in the row of characters exactly as they are\nshown. Then enter the line by depressing the ENTER key.\n\nThe program will beep if an error is found, that is, if one of the\ncharacters fails to compare with the corresponding characters above it.\nThe line will be erased if too many or too few characters are typed on\nthe line entered. You must then retype the line.\n\nDepress the ENTER key when you are ready to begin."
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 961,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 35166307200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "TYPE THE TOP OR FIRST ROW OF KEYS INCLUDING BACKSPACE.\n1234567890-_[\b"
+        },
+        {
+          "command": "run 1000000",
+          "pc": 961,
+          "halted": false,
+          "instructions": 6200000,
+          "time_ns": 42366307200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "TYPE THE TOP OR FIRST ROW OF KEYS INCLUDING BACKSPACE.\n1234567890-_[\b"
+        }
+      ]
+    },
+    {
+      "tape": "MPXTEST.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/MPXTEST.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 7690,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 34010468800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS?"
+        },
+        {
+          "host_key": "1"
+        },
+        {
+          "command": "run 100000",
+          "pc": 7694,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 34730352000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS? 1"
+        },
+        {
+          "host_key": "5"
+        },
+        {
+          "command": "run 100000",
+          "pc": 7692,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 35450235200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS? 15"
+        },
+        {
+          "host_key": "1"
+        },
+        {
+          "command": "run 100000",
+          "pc": 7691,
+          "halted": false,
+          "instructions": 5300000,
+          "time_ns": 36170113600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS? 151"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 7691,
+          "halted": false,
+          "instructions": 5400000,
+          "time_ns": 36887617600,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS?\nILLEGAL ADDRESS"
+        },
+        {
+          "command": "run 1000000",
+          "pc": 7691,
+          "halted": false,
+          "instructions": 6400000,
+          "time_ns": 44087617600,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS?\nILLEGAL ADDRESS"
+        }
+      ]
+    },
+    {
+      "tape": "TST404.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/TST404.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 1006,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 34163774400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n            9900-404 SYNCHRONOUS COMMUNICATIONS ADAPTOR TEST PROGRAM\n                                    (TST404)\n\n\n\n\nSTANDARD DEVICE ADDRESS = 0245\nCHANGE IT?"
+        },
+        {
+          "host_key": "N"
+        },
+        {
+          "command": "run 100000",
+          "pc": 1004,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 34883648000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n            9900-404 SYNCHRONOUS COMMUNICATIONS ADAPTOR TEST PROGRAM\n                                    (TST404)\n\n\n\n\nSTANDARD DEVICE ADDRESS = 0245\nCHANGE IT?\nN"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 1006,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 35572860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nAUTO-TESTS                              MANUAL RCV/XMT TESTS\nA  - ALL 404 TESTS (NO CLOCK)           RA - RECEIVE, ASCII\nAB - ALL BUT ADDRESS TESTS              RE - RECEIVE, EBCDIC\nAC - CLOCK OPTION TESTS                 XA - TRANSMIT, ASCII\n                                        XE - TRANSMIT, EBCDIC\n\n\nMANUAL INTERFACE MANIPULATION - M\n\n\nCOMMAND ="
+        },
+        {
+          "command": "run 1000000",
+          "pc": 1006,
+          "halted": false,
+          "instructions": 6200000,
+          "time_ns": 42772860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nAUTO-TESTS                              MANUAL RCV/XMT TESTS\nA  - ALL 404 TESTS (NO CLOCK)           RA - RECEIVE, ASCII\nAB - ALL BUT ADDRESS TESTS              RE - RECEIVE, EBCDIC\nAC - CLOCK OPTION TESTS                 XA - TRANSMIT, ASCII\n                                        XE - TRANSMIT, EBCDIC\n\n\nMANUAL INTERFACE MANIPULATION - M\n\n\nCOMMAND ="
+        }
+      ]
+    },
+    {
+      "tape": "EXRIBM_V2.3.A.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/EXRIBM_V2.3.A.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 582,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 33033785600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\n\n\nE X R I B M  2.3.A\n(7) or (9) TRACK ?"
+        },
+        {
+          "host_key": "9"
+        },
+        {
+          "command": "run 100000",
+          "pc": 977,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 33669632000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\n\nIs TAPE Controller ADDRESS 0264 ?\nType (Y) or correct ADDRESS."
+        },
+        {
+          "host_key": "Y"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3066,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 34204596800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "*MAG TAPE SYSTEM EXERCISER*  P-Dpy KEYIN Cmnds  H- **HALT**  S 0      RX  RN  RK\n  0     10     20     30     Z-Zero Counters    DISPLAY:     T 0 PRM:000/000/000\n  1     11     21     31     k-Keyin Data     L-LGO List     A 0 HDW:000/000/000\n  2     12     22     32     S-Store List     O-Old List     T       CPR:000/000\n  3     13     23     33     ENTER-Ex S Mode  N-Rd Buf:Octal    RaW  LTH:000/000\n  4     14     24     34       \"DPY\":Repeat   D-Rd Buf:Alpha WN:000  H&C:000/000\n  5     15     25     35     X-Exec List      I-Instr Codes  WK:000  H&L:000/000\n  6     16     26     36     C-Cycle List       for List     WF:000 Position:000\n  7     17     27     37      X/C Mode:\"KBD\"-HLT if Wrt Err         CYCLES:00000\n  8     18     28     38               \"DPY\"-HLT Rd/Pos Err  SINGLE MODE\n  9     19     29     39    Last > LGTH:0     ERR LOC:       Instruction:\nKeyin:                      Read > DATA:"
+        },
+        {
+          "command": "run 1000000",
+          "pc": 3035,
+          "halted": false,
+          "instructions": 6200000,
+          "time_ns": 39815412800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "*MAG TAPE SYSTEM EXERCISER*  P-Dpy KEYIN Cmnds  H- **HALT**  S 0      RX  RN  RK\n  0     10     20     30     Z-Zero Counters    DISPLAY:     T 0 PRM:000/000/000\n  1     11     21     31     k-Keyin Data     L-LGO List     A 0 HDW:000/000/000\n  2     12     22     32     S-Store List     O-Old List     T       CPR:000/000\n  3     13     23     33     ENTER-Ex S Mode  N-Rd Buf:Octal    RaW  LTH:000/000\n  4     14     24     34       \"DPY\":Repeat   D-Rd Buf:Alpha WN:000  H&C:000/000\n  5     15     25     35     X-Exec List      I-Instr Codes  WK:000  H&L:000/000\n  6     16     26     36     C-Cycle List       for List     WF:000 Position:000\n  7     17     27     37      X/C Mode:\"KBD\"-HLT if Wrt Err         CYCLES:00000\n  8     18     28     38               \"DPY\"-HLT Rd/Pos Err  SINGLE MODE\n  9     19     29     39    Last > LGTH:0     ERR LOC:       Instruction:\nKeyin:                      Read > DATA:"
+        }
+      ]
+    },
+    {
+      "tape": "DOSC_BOOT.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "floppy 0 {root}/DOS.C/003.IMD",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DOSC_BOOT.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3979,
+          "halted": true,
+          "instructions": 403408,
+          "time_ns": 1857076800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\nDOS.C 2.4 DATAPOINT CORPORATION'S  DISK OPERATING SYSTEM\n\nREADY"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 3979,
+          "halted": true,
+          "instructions": 403408,
+          "time_ns": 1857076800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\nDOS.C 2.4 DATAPOINT CORPORATION'S  DISK OPERATING SYSTEM\n\nREADY"
+        }
+      ]
+    },
+    {
+      "tape": "UBOOT-2.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "floppy 0 {root}/DOS.C/003.IMD",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/UBOOT-2.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3979,
+          "halted": true,
+          "instructions": 403408,
+          "time_ns": 1857076800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\nDOS.C 2.4 DATAPOINT CORPORATION'S  DISK OPERATING SYSTEM\n\nREADY"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 3979,
+          "halted": true,
+          "instructions": 403408,
+          "time_ns": 1857076800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\nDOS.C 2.4 DATAPOINT CORPORATION'S  DISK OPERATING SYSTEM\n\nREADY"
+        }
+      ]
+    },
+    {
+      "tape": "UBOOT.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "floppy 0 {root}/DOS.C/003.IMD",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/UBOOT.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3979,
+          "halted": true,
+          "instructions": 403408,
+          "time_ns": 1857076800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\nDOS.C 2.4 DATAPOINT CORPORATION'S  DISK OPERATING SYSTEM\n\nREADY"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 3979,
+          "halted": true,
+          "instructions": 403408,
+          "time_ns": 1857076800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\nDOS.C 2.4 DATAPOINT CORPORATION'S  DISK OPERATING SYSTEM\n\nREADY"
+        }
+      ]
+    },
+    {
+      "tape": "EXRCASS_V1.1.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/EXRCASS_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 530,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 30313310400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER"
+        },
+        {
+          "host_key": "2"
+        },
+        {
+          "command": "run 100000",
+          "pc": 527,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 30914888000,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER"
+        },
+        {
+          "host_key": "S"
+        },
+        {
+          "command": "run 100000",
+          "pc": 860,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 31516737600,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER"
+        },
+        {
+          "host_key": "1"
+        },
+        {
+          "command": "run 100000",
+          "pc": 526,
+          "halted": false,
+          "instructions": 5300000,
+          "time_ns": 32118307200,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER"
+        },
+        {
+          "host_key": "S"
+        },
+        {
+          "command": "run 100000",
+          "pc": 858,
+          "halted": false,
+          "instructions": 5400000,
+          "time_ns": 32720163200,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER"
+        },
+        {
+          "command": "run 1000000",
+          "pc": 524,
+          "halted": false,
+          "instructions": 6400000,
+          "time_ns": 38743692800,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "                    EXRCASS 1.1\n\n> SELECT REAR DECK   -  1\n  SELECT FRONT DECK  -  2\n\n  SLEW FORWARD       -  F  OR  9\n  SLEW BACKWARD      -  B  OR  7\n  REWIND             -  R  OR  4\n> STOP               -  S  OR  8 OR 0\n  HALT, CONTINUE     -  ENTER"
+        }
+      ]
+    },
+    {
+      "tape": "MPXTEST.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/MPXTEST.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 7690,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 34010468800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS?"
+        },
+        {
+          "host_key": "1"
+        },
+        {
+          "command": "run 100000",
+          "pc": 7694,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 34730352000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS? 1"
+        },
+        {
+          "host_key": "0"
+        },
+        {
+          "command": "run 100000",
+          "pc": 7692,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 35450235200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS? 10"
+        },
+        {
+          "host_key": "5"
+        },
+        {
+          "command": "run 100000",
+          "pc": 7691,
+          "halted": false,
+          "instructions": 5300000,
+          "time_ns": 36170113600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS? 105"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 7691,
+          "halted": false,
+          "instructions": 5400000,
+          "time_ns": 36887617600,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS?\nILLEGAL ADDRESS"
+        },
+        {
+          "command": "run 1000000",
+          "pc": 7691,
+          "halted": false,
+          "instructions": 6400000,
+          "time_ns": 44087617600,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\nMULTIPORT ADAPTOR ADDRESS?\nILLEGAL ADDRESS"
+        }
+      ]
+    },
+    {
+      "tape": "TST404.tap",
+      "cpu": 2200,
+      "actions": [
+        {
+          "command": "cpu 2200",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/TST404.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 1006,
+          "halted": false,
+          "instructions": 5000000,
+          "time_ns": 34163774400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n            9900-404 SYNCHRONOUS COMMUNICATIONS ADAPTOR TEST PROGRAM\n                                    (TST404)\n\n\n\n\nSTANDARD DEVICE ADDRESS = 0245\nCHANGE IT?"
+        },
+        {
+          "host_key": "N"
+        },
+        {
+          "command": "run 100000",
+          "pc": 1004,
+          "halted": false,
+          "instructions": 5100000,
+          "time_ns": 34883648000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n            9900-404 SYNCHRONOUS COMMUNICATIONS ADAPTOR TEST PROGRAM\n                                    (TST404)\n\n\n\n\nSTANDARD DEVICE ADDRESS = 0245\nCHANGE IT?\nN"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 1006,
+          "halted": false,
+          "instructions": 5200000,
+          "time_ns": 35572860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nAUTO-TESTS                              MANUAL RCV/XMT TESTS\nA  - ALL 404 TESTS (NO CLOCK)           RA - RECEIVE, ASCII\nAB - ALL BUT ADDRESS TESTS              RE - RECEIVE, EBCDIC\nAC - CLOCK OPTION TESTS                 XA - TRANSMIT, ASCII\n                                        XE - TRANSMIT, EBCDIC\n\n\nMANUAL INTERFACE MANIPULATION - M\n\n\nCOMMAND ="
+        },
+        {
+          "host_key": "A"
+        },
+        {
+          "command": "run 100000",
+          "pc": 1004,
+          "halted": false,
+          "instructions": 5300000,
+          "time_ns": 36292734400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\nAUTO-TESTS                              MANUAL RCV/XMT TESTS\nA  - ALL 404 TESTS (NO CLOCK)           RA - RECEIVE, ASCII\nAB - ALL BUT ADDRESS TESTS              RE - RECEIVE, EBCDIC\nAC - CLOCK OPTION TESTS                 XA - TRANSMIT, ASCII\n                                        XE - TRANSMIT, EBCDIC\n\n\nMANUAL INTERFACE MANIPULATION - M\n\n\nCOMMAND =A"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 1139,
+          "halted": false,
+          "instructions": 5400000,
+          "time_ns": 36916940800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\n\nCTS LAMP SHOULD BE BLINKING.  PRESS DISPLAY SWITCH IF IT IS.\n\nHIT SPACE BAR TO STOP AT END OF NEXT PASS."
+        },
+        {
+          "command": "run 1000000",
+          "pc": 1139,
+          "halted": false,
+          "instructions": 6400000,
+          "time_ns": 43245737600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\n\nCTS LAMP SHOULD BE BLINKING.  PRESS DISPLAY SWITCH IF IT IS.\n\nHIT SPACE BAR TO STOP AT END OF NEXT PASS."
+        }
+      ]
+    },
+    {
+      "tape": "SURVAR_V1.1.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "disk-model 9370",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "disk 0 0 {work}/disk.dsk",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "disk-protect 0 1",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "printer {work}/printer.txt",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/SURVAR_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 10718,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 28687624000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\n\n2316 SURFACE VERIFICATION   VERSION 1.1\n\nON WHICH -PHYSICAL- DRIVE IS THE PACK TO BE VERIFIED? (0-7):"
+        },
+        {
+          "host_key": "0"
+        },
+        {
+          "command": "run 100000",
+          "pc": 10702,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 29213190400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n\n2316 SURFACE VERIFICATION   VERSION 1.1\n\nON WHICH -PHYSICAL- DRIVE IS THE PACK TO BE VERIFIED? (0-7): 0\nOCTAL OR DECIMAL ERROR OUTPUT ? -"
+        },
+        {
+          "host_key": "D"
+        },
+        {
+          "command": "run 100000",
+          "pc": 10720,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 29737950400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\n\n\n2316 SURFACE VERIFICATION   VERSION 1.1\n\nON WHICH -PHYSICAL- DRIVE IS THE PACK TO BE VERIFIED? (0-7): 0\nOCTAL OR DECIMAL ERROR OUTPUT ? - DECIMAL OUTPUT\nDO YOU WANT FULL VERIFICATION OR READ ONLY ? -"
+        },
+        {
+          "host_key": "R"
+        },
+        {
+          "command": "run 100000",
+          "pc": 10709,
+          "halted": false,
+          "instructions": 5498148,
+          "time_ns": 30262152000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n2316 SURFACE VERIFICATION   VERSION 1.1\n\nON WHICH -PHYSICAL- DRIVE IS THE PACK TO BE VERIFIED? (0-7): 0\nOCTAL OR DECIMAL ERROR OUTPUT ? - DECIMAL OUTPUT\nREAD ONLY VERIFICATION PASS (CRC & SECTOR CHECK)\n\n\nENTER PACK SERIAL NUMBER -"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 10456,
+          "halted": false,
+          "instructions": 5598148,
+          "time_ns": 30681828800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n2316 SURFACE VERIFICATION   VERSION 1.1\n\nON WHICH -PHYSICAL- DRIVE IS THE PACK TO BE VERIFIED? (0-7): 0\nOCTAL OR DECIMAL ERROR OUTPUT ? - DECIMAL OUTPUT\nREAD ONLY VERIFICATION PASS (CRC & SECTOR CHECK)\n\n\nENTER PACK SERIAL NUMBER -\n\nRESULTS OF TEST WILL BE POSTED ON LOCAL PRINTER"
+        },
+        {
+          "command": "run 100000000",
+          "pc": 5889,
+          "halted": true,
+          "instructions": 35686172,
+          "time_ns": 156199044800,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "ON WHICH -PHYSICAL- DRIVE IS THE PACK TO BE VERIFIED? (0-7): 0\nOCTAL OR DECIMAL ERROR OUTPUT ? - DECIMAL OUTPUT\nREAD ONLY VERIFICATION PASS (CRC & SECTOR CHECK)\n\n\nENTER PACK SERIAL NUMBER -\n\nRESULTS OF TEST WILL BE POSTED ON LOCAL PRINTER\nTOTAL BAD SECTORS =   0\n\n\n** DISK PACK VERIFICATION COMPLETE **"
+        },
+        {
+          "command": "disk-state",
+          "pc": 5889,
+          "halted": true,
+          "instructions": 35686172,
+          "time_ns": 156199044800,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "ON WHICH -PHYSICAL- DRIVE IS THE PACK TO BE VERIFIED? (0-7): 0\nOCTAL OR DECIMAL ERROR OUTPUT ? - DECIMAL OUTPUT\nREAD ONLY VERIFICATION PASS (CRC & SECTOR CHECK)\n\n\nENTER PACK SERIAL NUMBER -\n\nRESULTS OF TEST WILL BE POSTED ON LOCAL PRINTER\nTOTAL BAD SECTORS =   0\n\n\n** DISK PACK VERIFICATION COMPLETE **",
+          "disk": {
+            "model": 9370,
+            "reads": 97440,
+            "writes": 0,
+            "formats": 0,
+            "seeks": 204,
+            "errors": 0,
+            "max_cylinder": 202,
+            "max_head": 19,
+            "max_sector": 23
+          }
+        }
+      ]
+    },
+    {
+      "tape": "DIAG5500_V1.1.tap",
+      "cpu": 5500,
+      "actions": [
+        {
+          "command": "cpu 5500",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG5500_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "6"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 6"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 498,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 206562667200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "button keyboard 1",
+          "pc": 498,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 206562667200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG5500   1.1      5500 PROCESSOR DIAGNOSTIC TAPE    17DEC79\n\n\n1 - UNITEST    1.2\n2 - TEST5500   2.2\n3 - TEST5556   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 1000000",
+          "pc": 4347,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 212974876800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\"MOVING INVERSION\" MEMORY TEST PROGRAM\n\n\nHOLD ON ERROR?:\nPRINT ERRORS?:\nSTARTING SECTOR (0 - 11)?:"
+        },
+        {
+          "command": "button keyboard 0",
+          "pc": 4347,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 212974876800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\"MOVING INVERSION\" MEMORY TEST PROGRAM\n\n\nHOLD ON ERROR?:\nPRINT ERRORS?:\nSTARTING SECTOR (0 - 11)?:"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 4348,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 372974880000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\"MOVING INVERSION\" MEMORY TEST PROGRAM\n\n\nHOLD ON ERROR?:\nPRINT ERRORS?:\nSTARTING SECTOR (0 - 11)?:"
+        },
+        {
+          "command": "inspect",
+          "pc": 4348,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 372974880000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\"MOVING INVERSION\" MEMORY TEST PROGRAM\n\n\nHOLD ON ERROR?:\nPRINT ERRORS?:\nSTARTING SECTOR (0 - 11)?:",
+          "debug": "bank=0 17 0 1 16 7 16 16 16 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 16 C=0 Z=0 S=0 P=0\nselected=0 stackptr=1\n4347: INPUT\n4348: ND 002\n4350: JTZ 010373\n4347: INPUT\n4348: ND 002\n4350: JTZ 010373\n4347: INPUT\n4348: ND 002\n4350: JTZ 010373\n4347: INPUT\n4348: ND 002\n4350: JTZ 010373\n4347: INPUT\n4348: ND 002\n4350: JTZ 010373\n4347: INPUT\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "cpu": 6600,
+      "actions": [
+        {
+          "command": "cpu 6600",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG6600_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "2"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 2"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 472,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 202068403200,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *\nWRONG MICRO-CODE ROM"
+        },
+        {
+          "command": "button keyboard 1",
+          "pc": 472,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 202068403200,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *\nWRONG MICRO-CODE ROM"
+        },
+        {
+          "command": "run 1000000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 209030163200,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *\nWRONG MICRO-CODE ROM"
+        },
+        {
+          "command": "button keyboard 0",
+          "pc": 497,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 209030163200,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *\nWRONG MICRO-CODE ROM"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 379656339200,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *\nWRONG MICRO-CODE ROM"
+        },
+        {
+          "command": "inspect",
+          "pc": 497,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 379656339200,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *\nWRONG MICRO-CODE ROM",
+          "debug": "bank=0 0 2 237 225 60 122 228 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=2\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n496: EX_STATUS\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "cpu": 6600,
+      "actions": [
+        {
+          "command": "cpu 6600",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG6600_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "3"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 3"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 500,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 205336120000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "button keyboard 1",
+          "pc": 500,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 205336120000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 1000000",
+          "pc": 500,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 212059280000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "button keyboard 0",
+          "pc": 500,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 212059280000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 412,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 383761860800,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *\nWRONG MICRO-CODE ROM"
+        },
+        {
+          "command": "inspect",
+          "pc": 412,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 383761860800,
+          "keyboard_ready": false,
+          "beeps": 1,
+          "screen": "\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *\nWRONG MICRO-CODE ROM",
+          "debug": "bank=0 75 3 12 71 231 10 250 0 C=0 Z=0 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=1\n500: JTZ 000760\n496: EX_STATUS\n497: INPUT\n498: ND 024\n500: JTZ 000760\n503: SLC\n504: SLC\n505: SLC\n506: SLC\n507: RTC\n508: EX_DATA\n509: INPUT\n510: RET\n407: JTC 000677\n410: LCA\n411: XRD\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "cpu": 6600,
+      "actions": [
+        {
+          "command": "cpu 6600",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG6600_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "4"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 4"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "button keyboard 1",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 1000000",
+          "pc": 500,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 214114390400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "button keyboard 0",
+          "pc": 500,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 214114390400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 6356,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 373010084800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "TAPTIM 2.1      CASSETTE ENDURANCE AND TIMING DIAGNOSTIC\n\n\n\n\n\n\n\n\n\n\nALIGNMENT ONLY? (Y OR N)"
+        },
+        {
+          "command": "inspect",
+          "pc": 6356,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 373010084800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "TAPTIM 2.1      CASSETTE ENDURANCE AND TIMING DIAGNOSTIC\n\n\n\n\n\n\n\n\n\n\nALIGNMENT ONLY? (Y OR N)",
+          "debug": "bank=0 136 2 2 25 11 10 73 0 C=1 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=3\n6357: EX_COM3\n6358: LAD\n6359: EX_COM2\n6360: RET\n6365: LA 020\n6367: EX_COM1\n6368: INPUT\n6369: ND 002\n6371: JTZ 014332\n6362: CALL 014313\n6347: LA 341\n6349: EX_ADR\n6350: NOP\n6351: INPUT\n6352: SRC\n6353: JFC 014313\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "cpu": 6600,
+      "actions": [
+        {
+          "command": "cpu 6600",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG6600_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "5"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 5"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "button keyboard 1",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 1000000",
+          "pc": 500,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 214114390400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "button keyboard 0",
+          "pc": 500,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 214114390400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 4347,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 380976515200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                    KDTEST 1.2.  KEYBOARD/DISPLAY TEST\n\n\n          A- ALIGN DISPLAY              *- RETURN TO DOS\n          C- CHARACTER TEST             KEYBOARD KEY - ABORT\n          D- DISPLAY TEST               DISPLAY KEY - PAUSE\n          K- KEYBOARD TEST              SPACE BAR - ADVANCE\n\n\n\n\n                              OPTION:"
+        },
+        {
+          "command": "inspect",
+          "pc": 4347,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 380976515200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "                    KDTEST 1.2.  KEYBOARD/DISPLAY TEST\n\n\n          A- ALIGN DISPLAY              *- RETURN TO DOS\n          C- CHARACTER TEST             KEYBOARD KEY - ABORT\n          D- DISPLAY TEST               DISPLAY KEY - PAUSE\n          K- KEYBOARD TEST              SPACE BAR - ADVANCE\n\n\n\n\n                              OPTION:",
+          "debug": "bank=0 0 0 48 38 11 4 251 0 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 0 C=0 Z=0 S=0 P=0\nselected=0 stackptr=1\n4339: ND 004\n4341: JFZ 004544\n4344: INPUT\n4345: ND 002\n4347: JTZ 010362\n4338: INPUT\n4339: ND 004\n4341: JFZ 004544\n4344: INPUT\n4345: ND 002\n4347: JTZ 010362\n4338: INPUT\n4339: ND 004\n4341: JFZ 004544\n4344: INPUT\n4345: ND 002\n"
+        }
+      ]
+    },
+    {
+      "tape": "DIAG6600_V1.1.tap",
+      "cpu": 6600,
+      "actions": [
+        {
+          "command": "cpu 6600",
+          "pc": 0,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "pc 61470",
+          "pc": 61470,
+          "halted": false,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 1000000",
+          "pc": 65527,
+          "halted": true,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/DIAG6600_V1.1.tap",
+          "pc": 0,
+          "halted": false,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": ""
+        },
+        {
+          "command": "run 5000000",
+          "pc": 3606,
+          "halted": false,
+          "instructions": 5198148,
+          "time_ns": 30940860800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER?"
+        },
+        {
+          "host_key": "6"
+        },
+        {
+          "command": "run 100000",
+          "pc": 3604,
+          "halted": false,
+          "instructions": 5298148,
+          "time_ns": 31550820800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\nLOAD FILE NUMBER? 6"
+        },
+        {
+          "host_key": "\n"
+        },
+        {
+          "command": "run 100000",
+          "pc": 497,
+          "halted": false,
+          "instructions": 5398148,
+          "time_ns": 32231416000,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "button keyboard 1",
+          "pc": 470,
+          "halted": false,
+          "instructions": 30398148,
+          "time_ns": 207109156800,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 1000000",
+          "pc": 500,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 214114390400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "button keyboard 0",
+          "pc": 500,
+          "halted": false,
+          "instructions": 31398148,
+          "time_ns": 214114390400,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "DIAG6600   1.1      6600 PROCESSOR DIAGNOSTIC TAPE    10JAN80\n\n\n1 - UNITEST    1.2\n2 - TST6600C   1.1\n3 - TST6600D   1.1\n4 - TAPTIM     2.1\n5 - KDTEST     1.2\n6 - MOVI       2.1\n\n\n* WAIT - LOADING FILE *"
+        },
+        {
+          "command": "run 25000000",
+          "pc": 4347,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 382048675200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\"MOVING INVERSION\" MEMORY TEST PROGRAM\n\n\nHOLD ON ERROR?:\nPRINT ERRORS?:\nSTARTING SECTOR (0 - 31)?:"
+        },
+        {
+          "command": "inspect",
+          "pc": 4347,
+          "halted": false,
+          "instructions": 56398148,
+          "time_ns": 382048675200,
+          "keyboard_ready": false,
+          "beeps": 0,
+          "screen": "\n\n\n\n\"MOVING INVERSION\" MEMORY TEST PROGRAM\n\n\nHOLD ON ERROR?:\nPRINT ERRORS?:\nSTARTING SECTOR (0 - 31)?:",
+          "debug": "bank=0 0 50 1 16 7 16 16 16 C=0 Z=1 S=0 P=0\nbank=1 0 0 0 0 0 0 0 16 C=0 Z=0 S=0 P=0\nselected=0 stackptr=1\n4350: JTZ 010373\n4347: INPUT\n4348: ND 002\n4350: JTZ 010373\n4347: INPUT\n4348: ND 002\n4350: JTZ 010373\n4347: INPUT\n4348: ND 002\n4350: JTZ 010373\n4347: INPUT\n4348: ND 002\n4350: JTZ 010373\n4347: INPUT\n4348: ND 002\n4350: JTZ 010373\n"
+        }
+      ]
+    }
+  ]
+}

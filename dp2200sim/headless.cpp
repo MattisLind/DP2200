@@ -116,6 +116,19 @@ int main() {
           +",\"formats\":"+std::to_string(stats.formats)+",\"seeks\":"+std::to_string(stats.seeks)
           +",\"errors\":"+std::to_string(stats.errors)+",\"max_cylinder\":"+std::to_string(stats.maxCylinder)
           +",\"max_head\":"+std::to_string(stats.maxHead)+",\"max_sector\":"+std::to_string(stats.maxSector)+"}";
+      } else if (command=="cassette-state") {
+        auto * cassette=cpu.ioCtrl->cassetteDevice;
+        extra=",\"cassette\":{\"deck\":"+std::to_string(cassette->selectedDeck())
+          +",\"status\":"+std::to_string(cassette->cassetteStatus())
+          +",\"running\":"+(cassette->transportRunning()?"true":"false")+",\"decks\":[";
+        for (int deck=0; deck<2; ++deck) {
+          auto * tape=cassette->tapeDrive[deck];
+          if (deck) extra+=",";
+          extra+="{\"position\":"+std::to_string(tape->position())
+            +",\"open\":"+(tape->isOpen()?"true":"false")
+            +",\"write_protected\":"+(tape->isWriteProtected()?"true":"false")+"}";
+        }
+        extra+="]}";
       } else if (command=="floppy") {
         int drive=-1; input>>drive;
         std::string path; std::getline(input>>std::ws,path);
