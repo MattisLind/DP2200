@@ -93,6 +93,10 @@ dp2200sim-headless: $(HEADLESS_OBJECTS)
 test-headless: dp2200sim-headless
 	python3 -m unittest discover -s tests -p 'test_*.py' -v
 
+.PHONY: test-console-diagnostics
+test-console-diagnostics: dp2200sim-headless
+	python3 -m unittest discover -s tests -p 'test_console_diagnostics.py' -v
+
 .PHONY: test-disks
 test-disks: dp2200sim-headless
 	python3 tests/disk_diagnostics.py

@@ -311,11 +311,24 @@ halt within an instruction budget. A halt without that text and a budget overrun
 both fail. On the current tape it halts at octal PC `04052` after 1,439
 instructions, without keyboard input.
 
+The original PCMTEST, TSTDIS and TSTKEY tapes also run as regressions in this
+suite. Run just these checks with `make -C dp2200sim test-console-diagnostics`.
+PCMTEST must reach pass 2 within 60 million instructions, with all 128 displayed
+bit/1K error counters zero at every sample and visible row progression. TSTDIS
+must produce the exact character-set and erase layouts, rolling-line patterns,
+cursor and light transitions, then return to its instructions. TSTKEY tests the
+new-keyboard path through all four rows, shifted rows, spaces and keypad with
+no error beeps; a separate check verifies a wrong byte beeps and a short line
+is erased for retry. These console checks use native keyboard bytes, including
+BACKSPACE, CANCEL and DEL. They verify the headless character/control state;
+physical keyboard scanning and rendered glyph appearance remain outside their
+scope. The checks are in [test_console_diagnostics.py](../tests/test_console_diagnostics.py).
+
 The executable accepts one command per stdin line and flushes one JSON response
 per command. Every response includes the complete 80 × 12 screen, with spaces
 preserved and a newline after each row, CPU position, cumulative executed
-instructions, simulated time, halt status, keyboard latch status and light
-states. Errors return `ok: false` with an `error` string. `quit` exits without a
+instructions, simulated time, halt status, keyboard latch status, cursor
+visibility and light states. Errors return `ok: false` with an `error` string. `quit` exits without a
 response.
 
 | Command | Effect |

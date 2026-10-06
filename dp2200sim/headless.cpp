@@ -272,6 +272,7 @@ int main() {
       <<",\"keyboard_ready\":"<<(cpu.ioCtrl->screenKeyboardDevice->keyboardReady()?"true":"false")
       <<",\"keyboard_light\":"<<(console.keyboardLight?"true":"false")
       <<",\"display_light\":"<<(console.displayLight?"true":"false")
+      <<",\"cursor_visible\":"<<(console.cursor?"true":"false")
       <<",\"beeps\":"<<console.beeps
       <<",\"debug\":"<<quote(debug)<<",\"screen\":"<<quote(console.snapshot())<<extra<<"}"<<std::endl;
   }

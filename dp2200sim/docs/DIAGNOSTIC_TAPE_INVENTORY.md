@@ -355,8 +355,12 @@ controller from the presence of a stub or from a disk-sounding filename.
 
 ## Recommended order of work
 
-1. Turn the demonstrated PCMTEST, TSTDIS/TSTKEY interactions and SURVAR
-   read-only pass into narrowly defined regression checks. Investigate the
+1. PCMTEST and TSTDIS/TSTKEY now have regression checks in
+   [test_console_diagnostics.py](../tests/test_console_diagnostics.py), run by
+   `make -C dp2200sim test-console-diagnostics` and `test-headless`. These require
+   a completed memory pass with zero counters, exact display/control states,
+   and new-keyboard row/keypad comparisons plus error/retry behavior. Turn the
+   SURVAR read-only pass into a regression check. Investigate the
    incomplete COPY06 prefix, COPY06_1/trace halts and the reason for collection loader/button waits.
 2. Implement 9460/9462 register/status/timing and loopback. Use MPXTEST and
    TSTUBE55 hardware recognition as the first acceptance checks.
