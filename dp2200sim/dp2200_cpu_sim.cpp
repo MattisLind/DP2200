@@ -12,6 +12,7 @@
 #include <functional>
 #include <algorithm>
 #include "5500firmware.h"
+static_assert(sizeof firmware == 4096, "the system ROM must contain all 4096 bytes");
 
 extern bool running; 
 
@@ -31,6 +32,8 @@ unsigned char dp2200_cpu::Memory::physicalMemoryRead(int physicalAddress) {
   if (*is5500) {
     if ((physicalAddress >= 0) && ( physicalAddress< 0xC000)) {
       return memory[physicalAddress]; 
+    } else if (*is6600 && physicalAddress>=0 && physicalAddress<131072 && (physicalAddress<0xF000 || physicalAddress>0xFFFF)) {
+      return memory[physicalAddress];
     } else if (physicalAddress >= 0xE000 && (physicalAddress < 0xF000) ) {
       return memory[physicalAddress]; 
     } else if ((physicalAddress >= 0xF000) && ( physicalAddress<= 0xFFFF)) {
@@ -46,10 +49,12 @@ void dp2200_cpu::Memory::physicalMemoryWrite(int physicalAddress, unsigned char 
   if (*is5500) {
     if ((physicalAddress >= 0) && ( physicalAddress< 0xC000)) {
       memory[physicalAddress]= data; 
+    } else if (*is6600 && physicalAddress>=0 && physicalAddress<131072 && (physicalAddress<0xF000 || physicalAddress>0xFFFF)) {
+      memory[physicalAddress]=data;
     } else if (physicalAddress >= 0xE000 && (physicalAddress < 0xF000) ) {
       memory[physicalAddress]=data; 
     } else if ((physicalAddress >= 0xF000) && ( physicalAddress<= 0xFFFF)) {
-      firmware[physicalAddress & 0xFFF]=data;
+      // Physical ROM is read-only.
     }
   } else {
     if (physicalAddress < 0x4000) {
@@ -71,7 +76,7 @@ unsigned char inline dp2200_cpu::Memory::read(unsigned short virtualAddress, boo
     logicalAddress = physicalAddress;
     logicalPage = (physicalAddress & 0xF000) >> 12;
     physicalPage = sectorTable[logicalPage].physicalPage;
-    physicalAddress = ((0xf & physicalPage) << 12) | (physicalAddress & 0xfff);
+    physicalAddress = (((*is6600 ? 0x1f : 0xf) & physicalPage) << 12) | (physicalAddress & 0xfff);
     if (!sectorTable[logicalPage].accessEnable && *userMode && performChecks) {
       *accessViolation = true;
     } else {
@@ -102,7 +107,7 @@ void inline dp2200_cpu::Memory::write(unsigned short virtualAddress, unsigned ch
     printLog("TRACE", "%06o %03o LogicalBasedAddress=%06o BASE=%03o      DATA WRITE FROM %06o     \n", virtualAddress, data, physicalAddress, baseRegister, from); 
     logicalPage = (physicalAddress & 0xF000) >> 12;
     physicalPage = sectorTable[logicalPage].physicalPage;
-    physicalAddress = ((0xf & physicalPage) << 12) | (physicalAddress & 0xfff);
+    physicalAddress = (((*is6600 ? 0x1f : 0xf) & physicalPage) << 12) | (physicalAddress & 0xfff);
     if (!sectorTable[logicalPage].accessEnable && *userMode) {
       *accessViolation = true;
     } else {
@@ -124,13 +129,13 @@ void inline dp2200_cpu::Memory::write(unsigned short virtualAddress, unsigned ch
     running=false;
     return;
   }
-  if (*is5500 & ((physicalAddress & 0xf000) == 0xf000)) return; // This is ROM. We cannot change the ROM...  
+  if (*is5500 && physicalAddress>=0xf000 && physicalAddress<=0xffff) return; // This is ROM. We cannot change the ROM.
   physicalMemoryWrite(physicalAddress, data);
 }
 
-dp2200_cpu::Memory::Memory(bool * is, bool * av, bool * wv, bool * um) {
+dp2200_cpu::Memory::Memory(bool * is, bool * is66, bool * av, bool * wv, bool * um) {
   // clear the entire memoryWatch array
-  for (int address=0;address <=65535; address++) {
+  for (int address=0;address <131072; address++) {
     memoryWatch[address]=false;
   }
   baseRegister = 0;
@@ -145,6 +150,7 @@ dp2200_cpu::Memory::Memory(bool * is, bool * av, bool * wv, bool * um) {
   accessViolation = av;
   writeViolation = wv;
   is5500 = is;
+  is6600 = is66;
   userMode = um;
 }
 
@@ -363,6 +369,7 @@ void dp2200_cpu::setCPUtype2200() {
   pMask = 0x3fff;
   hMask = 0x3f;
   is5500 = false;
+  is6600 = false;
   is2200 = true;
 }
 
@@ -371,15 +378,23 @@ void dp2200_cpu::setCPUtype5500() {
   pMask = 0xffff;
   hMask = 0xff;
   is5500=true;
+  is6600=false;
   is2200=false;
 }
+
+void dp2200_cpu::setCPUtype6600() {
+  setCPUtype5500();
+  is6600=true;
+}
+
+bool dp2200_cpu::cpuIs6600() { return is6600; }
 
 bool dp2200_cpu::cpuIs2200 () {
   return is2200;
 }
 
 bool dp2200_cpu::cpuIs5500 () {
-  return is5500;
+  return is5500 && !is6600;
 }
 
 bool dp2200_cpu::isAutorestartEnabled() {
@@ -393,13 +408,13 @@ void dp2200_cpu::setAutorestart(bool value) {
 
 
 void dp2200_cpu::clear() {
-  for (int i=0; i<memory->size();i++ ) memory->write(i,0);
+  for (int i=0; i<memory->size();i++ ) memory->physicalMemoryWrite(i,0);
 }
 
 void dp2200_cpu::reset() {
     unsigned char i, j;
 
-    for (i = A; i <= L; i++)
+    for (i = A; i <= X; i++)
       for (j = 0; j < 2; j++)
         regSets[j].regs[i] = 0;
     for (i = 0; i < 16; i++)
@@ -417,6 +432,8 @@ void dp2200_cpu::reset() {
     privilegeViolation = false;
     inputParityFailure = false;
     userMode = false;
+    accessViolation = writeViolation = false;
+    memory->baseRegister = 0;
 }
 
 void dp2200_cpu::doSystemCall() {
@@ -466,24 +483,24 @@ int dp2200_cpu::execute() {
       P = previousP;  // Need to stack the instruction that caused the priv violation 
       inputParityFailure = false;
       doSystemCall();
-      P=0170003;
+      P=is6600 ? 0167406 : 0170003;
     } else if (accessViolation) {
       accessViolation=false;
       doSystemCall();
-      P=0170014;
+      P=is6600 ? 0167430 : 0170014;
     } else if (writeViolation) {
       writeViolation = false;
       doSystemCall();
-      P=0170011;
+      P=is6600 ? 0167422 : 0170011;
     } else if (privilegeViolation) {
       P = previousP;  // Need to stack the instruction that caused the priv violation - 
       privilegeViolation = false;
       doSystemCall();
-      P=0170017;
+      P=is6600 ? 0167436 : 0170017;
     } else if (interruptPending && is5500) {
       interruptPending = 0;
       doSystemCall();
-      P=0170022;
+      P=is6600 ? 0167444 : 0170022;
     } else if (interruptPending && is2200) {
       /* now bump stack to use new pc and save it */
       stack.stk[stackptr] = P;
@@ -552,7 +569,11 @@ int dp2200_cpu::execute() {
 
   /* call into four major instruction subgroups for decoding */
 
-  switch (inst >> 6) {
+  int extended = is6600 ? execute6600(inst) : -1;
+  if (extended<0 && is5500) extended=executeExtended(inst);
+  if (extended>=0) {
+    halted=extended;
+  } else switch (inst >> 6) {
   case 0:
     halted = immediateplus(inst);
     break;
@@ -768,39 +789,22 @@ int dp2200_cpu::stackStore() {
 }
 
 int dp2200_cpu::blockTransfer(bool reverse) {
-  unsigned int sourceAddress = ((unsigned int)(regSets[setSel].r.regH) << 8) + regSets[setSel].r.regL;
-  unsigned int destinationAddress = ((unsigned int)(regSets[setSel].r.regD << 8)) + regSets[setSel].r.regE;
-  unsigned int count = (regSets[setSel].r.regC == 0)?256:regSets[setSel].r.regC;
-  unsigned int i=0;
-  //printLog("INFO", "sourceAddress=%05o destinationAddress=%05o count=%03o i=%d\n", sourceAddress, destinationAddress, count, i);
-  while (i<count) {
-    //printLog("INFO", "LOOP : sourceAddress=%05o destinationAddress=%05o count=%03o i=%d A=%03o\n", sourceAddress, destinationAddress, count, i, regSets[setSel].r.regA);
-    memory->write(destinationAddress, memory->read(sourceAddress, true, false, previousP) + regSets[setSel].r.regA, previousP);
-    //printLog("INFO", "B=%03o stored into memory=%03o condition=%03o \n", regSets[setSel].r.regB, memory[destinationAddress], (memory[destinationAddress] + regSets[setSel].r.regB) & 0xff);
-    if (regSets[setSel].r.regB !=0 && (((memory->read(destinationAddress, true, false, previousP) + regSets[setSel].r.regB) & 0xff) == 0)) {
-      //printLog("INFO", "Leave loop.\n");
-      break;
-    }
-    if (reverse) {
-      sourceAddress = (sourceAddress-1) & 0xffff;
-      destinationAddress = (destinationAddress-1) & 0xffff;
-    } else {
-      sourceAddress = (sourceAddress+1) & 0xffff;
-      destinationAddress = (destinationAddress+1) & 0xffff;
-    }
-    i++;
+  auto & regs=regSets[setSel].r;
+  int source=(regs.regH<<8)|regs.regL;
+  int destination=(regs.regD<<8)|regs.regE;
+  int remaining=regs.regC ? regs.regC : 256;
+  while (remaining) {
+    unsigned char value=memory->read(source,true,false,previousP)+regs.regA;
+    memory->write(destination,value,previousP);
+    source=(source+(reverse ? -1 : 1))&pMask;
+    destination=(destination+(reverse ? -1 : 1))&pMask;
+    setflags(value+regs.regB,0);
+    if (regs.regB && ((value+regs.regB)&255)==0) break;
+    --remaining;
   }
-  //printLog("INFO", "sourceAddress=%05o destinationAddress=%05o count=%03o i=%d\n", sourceAddress, destinationAddress, count, i);
-  if (i==256) {
-    regSets[setSel].r.regC = 0; 
-  } else {
-    regSets[setSel].r.regC = (unsigned char)(i & 0xff);
-  }
-  regSets[setSel].r.regH = (sourceAddress >> 8) & 0xff;
-  regSets[setSel].r.regL = sourceAddress & 0xff;
-  regSets[setSel].r.regD = (destinationAddress >> 8) & 0xff;
-  regSets[setSel].r.regE = destinationAddress & 0xff;
-  //printLog("INFO", "C=%03o D=%03o E=%03o H=%03o L=%03o\n", regSets[setSel].r.regC, regSets[setSel].r.regD, regSets[setSel].r.regE, regSets[setSel].r.regH , regSets[setSel].r.regL);
+  regs.regC=remaining;
+  regs.regH=source>>8; regs.regL=source;
+  regs.regD=destination>>8; regs.regE=destination;
   return 0;
 }
 
@@ -824,8 +828,10 @@ void dp2200_cpu::incrementIndexShort (int direction, int highReg, int lowReg) {
   value |= (memory->read((address+1) & pMask, true, false, previousP) << 8);
   printLog("INFO", "Before DECI instruction disp=%03o indexLsb=%03o address=%05o value=%05o carry=%1d\n ", disp, indexLsb, address, value, flagCarry[setSel]);
   value += direction * disp;
-  memory->write(address, 0xff & value, previousP);
-  memory->write((address+1) & pMask, 0xff & (value >> 8), previousP);  
+  if (highReg == -1) {
+    memory->write(address, 0xff & value, previousP);
+    memory->write((address+1) & pMask, 0xff & (value >> 8), previousP);
+  }
   flagCarry[setSel] = (value >> 16) & 0x1;
   printLog("INFO", "After DECI instruction value=%05o carry=%1d \n", value,flagCarry[setSel] );
   if ((highReg != -1) && (lowReg != -1)) {
@@ -845,8 +851,10 @@ void dp2200_cpu::incrementIndexLong (int direction, int highReg, int lowReg) {
   int value = memory->read(address, true, false, previousP);
   value |= (memory->read((address+1) & pMask, true, false, previousP) << 8);
   value += direction * disp;
-  memory->write(address, 0xff & value, previousP);
-  memory->write((address+1) & pMask, 0xff & (value >> 8), previousP);
+  if (highReg == -1) {
+    memory->write(address, 0xff & value, previousP);
+    memory->write((address+1) & pMask, 0xff & (value >> 8), previousP);
+  }
   flagCarry[setSel] = (value >> 16) & 0x1;
   if ((highReg != -1) && (lowReg != -1)) {
     regSets[setSel].regs[lowReg] = value & 0xff;
@@ -1101,7 +1109,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       case 5:
         // BP (Breakpoint) instruction  
         doSystemCall();  // do all System call generic stuff.
-        P=0170030;
+        P=is6600 ? 0167460 : 0170030;
         break;
       case 7: // BRL
         if (is5500 && userMode) {
@@ -1508,7 +1516,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
       case 6: 
         // SC (System call) instruction
         doSystemCall();
-        P=0170025;
+        P=is6600 ? 0167452 : 0170025;
         break;
       case 7:
         // Sector table load
@@ -1516,7 +1524,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
           privilegeViolation = true;
           return 0;
         }         
-        count = regSets[setSel].r.regC;
+        count = regSets[setSel].r.regC & 0xf;
         address = ((regSets[setSel].r.regH << 8) & 0xff00) | (regSets[setSel].r.regL & 0xff);
         //printLog("INFO", "STL: count=%d address=%06o\n", count, address);
         for (i=0; i<count; i++) {
@@ -1704,7 +1712,7 @@ int dp2200_cpu::immediateplus(unsigned char inst) {
           privilegeViolation = true;
           return 0;
         }  
-        tmpIOValue = ioCtrl->input();
+        tmpIOValue = ioCtrl->input(true);
         if (is5500 && (tmpIOValue == -1)) {
           inputParityFailure = true;
           return 0;  
@@ -2228,5 +2236,97 @@ dp2200_cpu::dp2200_cpu() {
   is5500=false;
   is2200=true;
   ioCtrl = new IOController ();
-  memory = new Memory(&is5500, &accessViolation, &writeViolation, &userMode);
+  memory = new Memory(&is5500, &is6600, &accessViolation, &writeViolation, &userMode);
+}
+
+// 6600-only operations are decoded before the shared 5500 instruction groups.
+int dp2200_cpu::execute6600(unsigned char inst) {
+  if (implicit==0111 && inst==0010) {
+    regSets[setSel].r.regA=1;
+    regSets[setSel].r.regB=1;
+    return 0;
+  }
+  return -1;
+}
+
+int dp2200_cpu::executeExtended(unsigned char inst) {
+  auto & regs=regSets[setSel].r;
+  auto pair=[](unsigned char high, unsigned char low) { return (high<<8)|low; };
+  auto storePair=[](int value, unsigned char & high, unsigned char & low) { high=value>>8; low=value; };
+  int source=pair(regs.regH,regs.regL), destination=pair(regs.regD,regs.regE);
+  int width=(regs.regC & 15) ? (regs.regC & 15) : 16;
+  if (inst==0021 && (implicit==0 || implicit==0111)) return blockTransfer(implicit==0111);
+  if (inst==0021 && implicit==0062) { // BCV: translate DE through the table at HL.
+    int remaining=regs.regC ? regs.regC : 256;
+    while (remaining) {
+      regs.regA=memory->read(destination,true,false,previousP)+regs.regL;
+      int value=memory->read((regs.regH<<8)|regs.regA,true,false,previousP);
+      memory->write(destination,value,previousP);
+      destination=(destination+1)&pMask;
+      setflags(value+regs.regB,0);
+      if (flagCarry[setSel] && flagZero[setSel]) break;
+      --remaining;
+    }
+    regs.regC=remaining;
+    storePair(destination,regs.regD,regs.regE);
+    return 0;
+  }
+  if (inst==0041 && implicit==0) { // BCP
+    int remaining=regs.regC ? regs.regC : 256;
+    while (remaining) {
+      int value=memory->read(destination,true,false,previousP)-memory->read(source,true,false,previousP);
+      setflags(value,0);
+      source=(source+1)&pMask; destination=(destination+1)&pMask;
+      if ((value & 255)!=0) break;
+      --remaining;
+    }
+    regs.regC=remaining;
+    storePair(source,regs.regH,regs.regL); storePair(destination,regs.regD,regs.regE);
+    return 0;
+  }
+  bool binary=(implicit==0 && (inst==0011 || inst==0031));
+  bool decimal=(inst==0041 && (implicit==0111 || implicit==0062));
+  if (binary || decimal) {
+    bool subtract=(binary ? inst==0031 : implicit==0062);
+    for (int i=0; i<width; ++i) {
+      int left=memory->read(destination,true,false,previousP);
+      int right=memory->read(source,true,false,previousP);
+      if (decimal) { left &=15; right &=15; }
+      int value=subtract ? left-right-flagCarry[setSel] : left+right+flagCarry[setSel];
+      setflags(value,0);
+      if (decimal) {
+        flagCarry[setSel]=subtract ? value<0 : value>=10;
+        if (flagCarry[setSel]) value+=subtract ? 10 : -10;
+        value=(value&15)|(regs.regB&0xf0);
+      }
+      memory->write(destination,value,previousP);
+      source=(source-1)&pMask; destination=(destination-1)&pMask;
+    }
+    storePair(source,regs.regH,regs.regL); storePair(destination,regs.regD,regs.regE);
+    return 0;
+  }
+  if (inst==0075 && (implicit==0 || implicit==0111)) {
+    bool right=implicit==0111;
+    for (int i=0; i<width; ++i) {
+      int value=memory->read(source,true,false,previousP), carry=flagCarry[setSel];
+      if (right) { flagCarry[setSel]=value&1; value=(value>>1)|(carry<<7); }
+      else { flagCarry[setSel]=(value>>7)&1; value=(value<<1)|carry; }
+      memory->write(source,value,previousP);
+      source=(source+(right ? 1 : -1))&pMask;
+    }
+    storePair(source,regs.regH,regs.regL);
+    return 0;
+  }
+  if (implicit==0111 && (inst==0061 || inst==0071)) {
+    if (userMode) { privilegeViolation=true; return 0; }
+    for (int i=0; i<width; ++i) {
+      if (inst==0061) memory->write(source,ioCtrl->input(),previousP);
+      else ioCtrl->exWrite(memory->read(source,true,false,previousP));
+      source=(source+1)&pMask;
+      int value=regs.regC-1; regs.regC=value; setflags(value,0);
+    }
+    storePair(source,regs.regH,regs.regL);
+    return 0;
+  }
+  return -1;
 }

@@ -1,4 +1,7 @@
 #include "CommandWindow.h"
+#include "RegisterWindow.h"
+
+extern registerWindow * rw;
 #include <algorithm>
 
 extern bool running;
@@ -204,7 +207,7 @@ void commandWindow::doDetach(std::vector<Param> params) {
     cpu->ioCtrl->localPrinterDevice->closeFile(drive); 
   } else if (type == "9350") {
     cpu->ioCtrl->disk9350Device->closeFile(drive);
-  } else if (type == "9370") {
+  } else if (type == "9370" || type == "9374") {
     cpu->ioCtrl->disk9370Device->closeFile(drive);
   }else {
     wprintw(innerWin, "Unrecognized type %s\n", type.c_str());
@@ -277,9 +280,13 @@ void commandWindow::doAttach(std::vector<Param> params) {
     } else {
       wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);
     }
-  } else if (type == "9370") {
+  } else if (type == "9370" || type == "9374") {
+    if (!cpu->ioCtrl->disk9370Device->setModel(type=="9374" ? 9374 : 9370)) {
+      wprintw(innerWin, "Detach disk images before changing controller type\n");
+      return;
+    }
     if ((ret = cpu->ioCtrl->disk9370Device->openFile(drive, fileName, writeProtect))==0) {
-      wprintw(innerWin, "Attaching file %s to 9370 disk drive %d\n", fileName.c_str(), drive );
+      wprintw(innerWin, "Attaching file %s to %s disk unit %d\n", fileName.c_str(), type.c_str(), drive );
     } else {
       wprintw(innerWin, "Failed to open file %s code %d \n", fileName.c_str(), ret);
     }
@@ -516,96 +523,91 @@ void commandWindow::normalWindow() {
   activeWindow = false;
   // wrefresh(win);
 }
+// The curses cursor is a screen coordinate, not an index into commandLine.
+// Keep the edit position separately and scroll long commands horizontally.
+void commandWindow::redrawCommandLine() {
+  int rows, columns;
+  getmaxyx(innerWin, rows, columns);
+  const std::size_t visible = columns>2 ? columns-2 : 0;
+  editCursor = std::min(editCursor, commandLine.size());
+  viewOffset = std::min(viewOffset, commandLine.size());
+  if (editCursor<viewOffset) viewOffset=editCursor;
+  if (editCursor-viewOffset>visible) viewOffset=editCursor-visible;
+  cursorY = std::max(0,std::min(cursorY,rows-1));
+  wmove(innerWin,cursorY,0);
+  wclrtoeol(innerWin);
+  waddch(innerWin,'>');
+  if (visible) waddnstr(innerWin,commandLine.c_str()+viewOffset,visible);
+  cursorX = 1+static_cast<int>(editCursor-viewOffset);
+  wmove(innerWin,cursorY,cursorX);
+  wrefresh(innerWin);
+}
+
 void commandWindow::handleKey(int ch) {
-  int y, x;
   printLog("INFO", "Got %c %02X\n", ch, ch);
-  if (ch == '?') {
+  if (ch=='?') {
     processCommand(ch);
-  } else if ((ch >= 32) && (ch < 127)) {
-    getyx(innerWin, y, x);
-    //waddch(innerWin, ch);   
-    commandLine.insert(x-1, 1,ch);
-    mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
-    wmove(innerWin, y, ((unsigned long) x)==(commandLine.size()+1)?x:x+1);
-  } else  {
+    editCursor=commandLine.size();
+    getyx(innerWin,cursorY,cursorX);
+  } else if (ch>=32 && ch<127) {
+    commandLine.insert(editCursor,1,static_cast<char>(ch));
+    ++editCursor;
+  } else {
     switch (ch) {
       case 10:
-        getyx(innerWin, y, x);
-        wmove(innerWin, y, commandLine.size()+1);
-        waddch(innerWin, '\n');
-        if (commandLine != "") {
-          commandHistory.push_back(commandLine);
-        }
-        processCommand(ch);
+      case KEY_ENTER:
+        // Start command output on the next line, including at the bottom
+        // of the scrolling window. Never use the string length as a column.
+        wmove(innerWin,cursorY,getmaxx(innerWin)-1);
+        waddch(innerWin,'\n');
+        if (!commandLine.empty()) commandHistory.push_back(commandLine);
+        processCommand('\n');
         commandLine.clear();
-        waddch(innerWin, '>');
-        commandHistoryIndex = -1;
+        editCursor=0; viewOffset=0;
+        commandHistoryIndex=-1;
+        getyx(innerWin,cursorY,cursorX);
         break;
-      case 0x107:
-      case KEY_DC:
+      case KEY_BACKSPACE:
       case 127:
-        getyx(innerWin, y, x);
-        printLog("INFO", "Before y=%d x=%d commandLine=%s length=%d\n", y, x, commandLine.c_str(), commandLine.size());
-        wmove(innerWin, y, x > 1 ? x - 1 : x);
-        printLog("INFO", "Mid y=%d x=%d commandLine=%s length=%d\n", y, x, commandLine.c_str(), commandLine.size());
-        if (x>1) {
-          wdelch(innerWin);
-          commandLine.erase(x-2, 1);
-        }
-        printLog("INFO", "After y=%d x=%d commandLine=%s length=%d\n", y, x, commandLine.c_str(), commandLine.size());
+      case 8:
+        if (editCursor) commandLine.erase(--editCursor,1);
+        break;
+      case KEY_DC:
+        if (editCursor<commandLine.size()) commandLine.erase(editCursor,1);
         break;
       case KEY_LEFT:
-        getyx(innerWin, y, x);
-        wmove(innerWin, y, x==1?x:x-1);
+        if (editCursor) --editCursor;
         break;
       case KEY_RIGHT:
-        getyx(innerWin, y, x);
-        wmove(innerWin, y, ((unsigned long) x)==(commandLine.size()+1)?x:x+1);      
+        if (editCursor<commandLine.size()) ++editCursor;
         break;
       case KEY_UP:
-        getyx(innerWin, y, x);
-        if  (commandHistory.size()>0) {   
-          if (commandHistoryIndex== -1) {
-            commandHistoryIndex = commandHistory.size()-1;
-          } else {
-            commandHistoryIndex = commandHistoryIndex==0?0: commandHistoryIndex-1;
-          }
-          commandLine = commandHistory[commandHistoryIndex];
-          mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
-          wclrtoeol(innerWin);
+        if (!commandHistory.empty()) {
+          if (commandHistoryIndex==-1) commandHistoryIndex=commandHistory.size()-1;
+          else if (commandHistoryIndex>0) --commandHistoryIndex;
+          commandLine=commandHistory[commandHistoryIndex];
+          editCursor=commandLine.size(); viewOffset=0;
         }
         break;
       case KEY_DOWN:
-        getyx(innerWin, y, x);
-        if  (commandHistory.size()>0) {      
-          if (commandHistoryIndex!= -1) {
-            commandHistoryIndex++;
-            if (((unsigned long)commandHistoryIndex) >= commandHistory.size()) {
-              commandHistoryIndex = -1;
-            }
-          }
-          if (commandHistoryIndex == -1) {
-            commandLine = "";
-          } else {
-            commandLine = commandHistory[commandHistoryIndex];
-          }
-
-          mvwprintw(innerWin, y,1, "%s", commandLine.c_str());
-          wclrtoeol(innerWin);
+        if (commandHistoryIndex!=-1) {
+          if (++commandHistoryIndex>=static_cast<int>(commandHistory.size()))
+            commandHistoryIndex=-1;
+          commandLine=commandHistoryIndex==-1 ? "" : commandHistory[commandHistoryIndex];
+          editCursor=commandLine.size(); viewOffset=0;
         }
         break;
-      case 0x01: // cntrl-A - beginning of line.
-        wmove(innerWin, cursorY, 0);
+      case 0x01: // Ctrl-A.
+      case KEY_HOME:
+        editCursor=0;
         break;
-      case 0x05: // cntrl-E - end of line.
-        wmove(innerWin, cursorY, commandLine.size());
+      case 0x05: // Ctrl-E.
+      case KEY_END:
+        editCursor=commandLine.size();
         break;
-      case KEY_IC:
-        break;
-    } 
+    }
   }
-  wrefresh(innerWin);
-  getyx(innerWin, cursorY, cursorX);
+  redrawCommandLine();
 }
 void commandWindow::resetCursor() {
   if (activeWindow) {
@@ -625,5 +627,5 @@ void commandWindow::resize() {
   }
   wrefresh(win);
   redrawwin(innerWin);
-  wrefresh(innerWin);  
+  redrawCommandLine();
 }

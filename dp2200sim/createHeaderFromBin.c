@@ -1,11 +1,17 @@
 #include <stdio.h>
 
-int main () {
-  int i,j;
-  printf("unsigned char firmware[] = {\n");
-  for (j = 0; j < 240; j++) {
-    printf("             0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o,\n", getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar());
+int main(void) {
+  int byte;
+  unsigned int count = 0;
+  puts("const unsigned char firmware[] = {");
+  while ((byte = getchar()) != EOF) {
+    if (count % 16 == 0) printf("  ");
+    printf("0%03o,", byte);
+    ++count;
+    if (count % 16 == 0) putchar('\n');
+    else putchar(' ');
   }
-  printf("             0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o, 0%03o\n", getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar(), getchar());
-  printf("};\n");
+  if (count % 16 != 0) putchar('\n');
+  puts("};");
+  return ferror(stdin) || ferror(stdout) ? 1 : 0;
 }

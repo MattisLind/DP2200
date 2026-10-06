@@ -30,16 +30,16 @@ class FloppyDrive {
 
   FILE * file;
   std::string fileName;
-  bool status;
+  bool status = false;
   std::string iMDDescription; 
   struct sector diskImage [77][26];
   int validateTrack(int);
   int readSectorLowlevel(char * buffer, int track, int sector);
-  int selectedTrack;
-  int selectedSector;
-  bool imageTypeIsIMD;
-  bool writeProtect;
-  bool writeBack;
+  int selectedTrack = 0;
+  int selectedSector = 0;
+  bool imageTypeIsIMD = true;
+  bool writeProtect = true;
+  bool writeBack = false;
   public:
 
   FloppyDrive();

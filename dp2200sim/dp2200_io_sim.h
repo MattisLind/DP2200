@@ -5,7 +5,8 @@
 #include <vector>
 #include "cassetteTape.h"
 #include "FloppyDrive.h"
-#include "dp2200Window.h"
+#include "Console.h"
+#include <ctime>
 
 class callbackRecord * addToTimerQueue(std::function<int(class callbackRecord *)>, struct timespec);
 void timeoutInNanosecs (struct timespec *, long);
@@ -19,11 +20,13 @@ void removeTimerCallback(class callbackRecord * c);
 #define CASSETTE_STATUS_WRITE_READY (1 << 3)
 #define CASSETTE_STATUS_INTER_RECORD_GAP (1 << 4)
 #define CASSETTE_STATUS_CASSETTE_IN_PLACE (1 << 6)
+#define CASSETTE_STATUS_WRITE_PROTECTED (1 << 7)
 
 #define SCRNKBD_STATUS_CRT_READY (1 << 0)
 #define SCRNKBD_STATUS_KBD_READY (1 << 1)
 #define SCRNKBD_STATUS_KEYBOAD_BUTTON_PRESSED (1 << 2)
 #define SCRNKBD_STATUS_DISPLAY_BUTTON_PRESSED (1 << 3)
+#define SCRNKBD_STATUS_RAM_DISPLAY (1 << 4)
 
 #define SCRNKBD_COM1_ROLL_DOWN (1 << 0)
 #define SCRNKBD_COM1_ERASE_EOL (1 << 1)
@@ -62,13 +65,13 @@ void removeTimerCallback(class callbackRecord * c);
 #define DISK9370_STATUS_SECTOR_NOT_FOUND (1 << 6)
 #define DISK9370_STATUS_BUFFER_PARITY_ERROR (1 << 7)
 
-extern class dp2200Window * dpw;
+
 
 class IOController {
   class IODevice {
     protected:
-    unsigned char statusRegister, dataRegister;
-    int status;
+    unsigned char statusRegister = 0, dataRegister = 0;
+    int status = 1;
     public:
     virtual unsigned char input () = 0;
     void exStatus ();
@@ -92,6 +95,8 @@ class IOController {
   };
 
   class CassetteDevice : public virtual IODevice  {
+    bool writing = false;
+    std::vector<unsigned char> writeBuffer;
     bool tapeRunning; 
     int tapeDeckSelected;
     void updateTapGapFlag(bool);
@@ -128,9 +133,11 @@ class IOController {
     std::string getFileName (int);
     bool loadBoot (std::function<void(int address, unsigned char)> writeMem);
     CassetteDevice();
+    bool transportRunning() const { return writing || !outStandingCallbacks.empty(); }
   };
 
     class ScreenKeyboardDevice : public virtual IODevice  {
+    Console * console = nullptr;
     bool incrementXOnWrite;
     bool loadingFont;  
     public:
@@ -153,6 +160,8 @@ class IOController {
     int exTStop();
     ScreenKeyboardDevice();
     void updateKbd(int);
+    void setConsole(Console * value) { console = value; }
+    bool keyboardReady() const { return statusRegister & SCRNKBD_STATUS_KBD_READY; }
   };
 
 
@@ -201,7 +210,7 @@ class IOController {
   };  
 
   class LocalPrinterDevice : public virtual IODevice  {
-    FILE * file;
+    FILE * file = nullptr;
     public:
     unsigned char input ();
     int exWrite(unsigned char data); 
@@ -227,10 +236,10 @@ class IOController {
 
 
   class FloppyDevice : public virtual IODevice  {
-    int selectedDrive;
-    int selectedBufferPage;
-    char buffer[4][256];
-    int bufferAddress;
+    int selectedDrive = 0;
+    int selectedBufferPage = 0;
+    char buffer[4][256] = {};
+    int bufferAddress = 0;
     class FloppyDrive * floppyDrives[4];
     public:
     unsigned char input ();
@@ -306,27 +315,42 @@ class IOController {
   class Disk9370Device : public virtual IODevice  {
     class Disk9370Drive {
       std::string fileName;
-      FILE * file;
-      bool writeProtected;
+      FILE * file = nullptr;
+      bool writeProtected = true;
       //unsigned char diskBuffer [203*20*24*256];
       public:
-      int openFile (std::string fileName, bool writeProtected);
+      int openFile (std::string fileName, bool writeProtected, long imageBytes);
       void closeFile();
       int readSector(char * buffer, long address);
       int writeSector(char * buffer, long address);
       bool isWriteProtected();
       bool isOnline();       
+      void setWriteProtected(bool value) { writeProtected=value; }
     };
-    int tmp;
-    int selectedDrive;
-    int selectedBufferPage;
-    char buffer[16][256];
-    int bufferAddress;
-    int head;
-    int sector;
-    int cylinder;
-    class Disk9370Drive * drives[8];    
+    int tmp = 0;
+    int selectedDrive = 0;
+    int selectedBufferPage = 0;
+    char buffer[16][256] = {};
+    int bufferAddress = 0;
+    int head = 0;
+    int sector = 0;
+    int cylinder = 0;
+    int model = 9370;
+    unsigned long resetGeneration = 0;
+    int cylinderCount() const { return model==9374 ? 204 : 203; }
+    int headCount() const { return model==9374 ? 8 : 20; }
+    int driveCount() const { return model==9374 ? 16 : 8; }
+    bool validAddress() const;
+    int mediaDrive() const { return model==9374 ? selectedDrive*2+((head>>3)&1) : selectedDrive; }
+    class Disk9370Drive * drives[16];
     public:
+    struct Statistics {
+      unsigned long reads=0, writes=0, formats=0, seeks=0, errors=0;
+      int maxCylinder=0, maxHead=0, maxSector=0;
+    } statistics;
+    bool setModel(int value);
+    int getModel() const { return model; }
+    void setWriteProtected(int drive, bool value);
     int openFile(int drive, std::string fileName, bool wp);
     void closeFile (int drive);    
     unsigned char input ();
@@ -373,7 +397,7 @@ class IOController {
 
 
   class IODevice * dev[256];
-  int ioAddress; 
+  int ioAddress = -1;
   std::vector<unsigned char> supportedDevices;
   bool isDeviceSupported(unsigned char address);
   public:
@@ -387,7 +411,7 @@ class IOController {
   class Disk9370Device * disk9370Device;
   class Disk9390Device * disk9390Device;
   IOController ();
-  int input ();
+  int input (bool checkParity = false);
   int exAdr (unsigned char address);
   int exStatus ();
   int exData ();

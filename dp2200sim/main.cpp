@@ -301,16 +301,6 @@ std::function<int(class callbackRecord *)> interrupt = [](class callbackRecord *
 };
 
 
-std::function<int(class callbackRecord *)> updateScreen = [](class callbackRecord * c)->int {
-  struct timespec then;
-  //printLog("INFO", "60Hz redraw timer timer ENTRY\n");
-  dpw->updateScreen();
-  timeoutInNanosecs(&then, 16666666); // 16 ms
-  addToTimerQueue(updateScreen, then);
-  //printLog("INFO", "60Hz redraw timer  EXIT\n");
-  return 0;
-};
-
 int main(int argc, char *argv[]) {
   struct timespec now,before, after, diff, then;
   
@@ -334,6 +324,7 @@ int main(int argc, char *argv[]) {
   refresh();
   dpw = new dp2200Window(&cpu);
   r = rw = new registerWindow(&cpu);
+  cpu.ioCtrl->screenKeyboardDevice->setConsole(dpw);
   cw = new commandWindow(&cpu);
   windows[0] = cw;
   windows[1] = rw;
@@ -341,8 +332,10 @@ int main(int argc, char *argv[]) {
   windows[activeWindow]->hightlightWindow();
   timeoutInNanosecs(&then, 1000000);
   addToTimerQueue(interrupt, then);
-  timeoutInNanosecs(&then, 16666666);
-  addToTimerQueue(updateScreen, then);  
+#if DP2200_WITH_SDL
+  struct timespec nextScreenRefresh;
+  clock_gettime(CLOCK_MONOTONIC,&nextScreenRefresh);
+#endif
   //cpuRunner();
   while (1) { // event loop
     //cpu.interruptPending = 1;
@@ -379,6 +372,14 @@ int main(int argc, char *argv[]) {
       callBack(timerRecord);
     }
     pollKeyboard();
+#if DP2200_WITH_SDL
+    // Host window events must keep running when the emulated CPU is halted.
+    if (!nowIsLessThan(&nextScreenRefresh)) {
+      dpw->updateScreen();
+      clock_gettime(CLOCK_MONOTONIC,&now);
+      addTimeSpec(&nextScreenRefresh,&now,16666666);
+    }
+#endif
     addTimeSpec(&after, &before, 1000000); // 1 ms
 
     // calculate time between after and now 

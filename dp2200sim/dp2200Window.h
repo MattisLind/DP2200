@@ -2,10 +2,15 @@
 #define _DP2200WINDOW_
 
 #include "Window.h"
+#include "Console.h"
+#include "CharacterGenerator.h"
 #include <ncurses.h>
 #include <functional>
+#include <deque>
 #include "RegisterWindow.h"
+#if DP2200_WITH_SDL
 #include <SDL.h>
+#endif
 
 // Size of screen
 const int CHARS_W = 80;
@@ -25,43 +30,54 @@ const int WINDOW_H = CHARS_H * CELL_H + 2 * PADDING; // 108 + 20 = 128
 extern class registerWindow * rw;
 
 
-class dp2200Window : public virtual Window {
+class dp2200Window : public virtual Window, public Console {
   int cursorX, cursorY;
   bool cursorEnabled=false;
   WINDOW *win, *innerWin;
   bool activeWindow;
   class dp2200_cpu * cpu;
-  int lastCharGenChar;
-  unsigned char font5x7[128][5];
+  CharacterGenerator characterGenerator;
   char screen[80][12];
   bool screenDirty;
-  int charGenIndex;
+  bool cursorInBounds() const;
+  void redrawTextScreen();
+#if DP2200_WITH_SDL
   SDL_Window* sdlwin;
   SDL_Renderer* ren;
+  bool sdlCursorPhase=false;
+  std::deque<int> sdlKeys;
+#endif
 
 public:
   dp2200Window(class dp2200_cpu *);
   ~dp2200Window();
-  void hightlightWindow();
-  void normalWindow();
-  void handleKey(int key);
-  void resetCursor();
-  int eraseFromCursorToEndOfFrame ();
-  int eraseFromCursorToEndOfLine();
+  void hightlightWindow() override;
+  void normalWindow() override;
+  void handleKey(int key) override;
+  void resetCursor() override;
+  int eraseFromCursorToEndOfFrame () override;
+  int eraseFromCursorToEndOfLine() override;
   int rollScreenOneLine();
-  int showCursor(bool);
-  int setCursorX(int);
-  int setCursorY(int);
-  int writeCharacter(int);
+  int showCursor(bool) override;
+  int setCursorX(int) override;
+  int setCursorY(int) override;
+  int writeCharacter(int) override;
   void setHandleKeyCallback(std::function<void(unsigned char)>);
-  void resize();
-  int scrollUp();
-  int scrollDown();
-  void incrementXPos();
-  void setCharGenChar(int);
-  void updateCharGen(int);
+  void resize() override;
+  int setKeyboardLight(bool) override;
+  int setDisplayLight(bool) override;
+  bool getKeyboardButton() override;
+  bool getDisplayButton() override;
+  void soundBeep() override;
+  int scrollUp() override;
+  int scrollDown() override;
+  void incrementXPos() override;
+  void setCharGenChar(int) override;
+  void updateCharGen(int) override;
   void updateScreen();
+#if DP2200_WITH_SDL
   void drawChar(int, int, int);
+#endif
 };
 
 #endif

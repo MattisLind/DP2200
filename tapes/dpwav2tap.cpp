@@ -1,1681 +1,2116 @@
-// Prerelease version, 8/23/05
-// Author: Jim Battle
+// dpwav2tap-integrated-v11-score.cpp
+// Version: multi-region checksum recovery + pattern tie-break v4.1, 2026-08-31
+//
+// Datapoint 2200 cassette FSK WAV decoder.
+//
+// This program is derived from the time-domain decoder in dpwav2tap.cpp,
+// and integrates Datapoint block framing, validation and SIMH TAP output.
+// Optional framed bit and raw timing outputs are available for diagnostics.
+//
+// Output format:
+//   '0' and '1' are confidently decoded bits.
+//   '?' marks a transition which the timing decoder considered abnormal.
+//   Newlines are inserted only for readability and have no timing meaning.
+//
+// A CSV trace can optionally be generated.  It records the audio sample
+// position, decoded bit and current PLL period, which is useful when a bit
+// needs to be compared with the waveform and edited by hand.
 
-// Updated / changed to run on 64bit systems Jos Dreesen 2023
-
-// Bug in statemachine fixed by Mattis Lind 2023
-// Added a peak detector which is much better in handling magnetic media 
-// than a zero-crossing detector.
-
-// This program reads a .WAV file and attempts to decode the data stream
-// off that recording.  The audio format must be in RIFF WAV format,
-// non-compressed, one or two channels.  It allows for mono/stereo input,
-// any input sampling rate (lower sampling rates increase the decoding
-// error rate), and 8b or 16b samples.
-
-// The Datapoint 2200 records data bits using a FSK method, namely one
-// half cycle at frequency X means a one bit and one full cycle at
-// frequency 2X means a zero bit.  This is stated this way because
-// the samples processed here are off a tape recorder running at 1 7/8 ips
-// while the datapoint runs its tape at 7.5 ips, a factor of four times
-// faster.  To be specific, at this reduced speed, a one bit is a half cycle
-// of 481.25 Hz and a zero bit is a full cycle of 962.5 Hz.  The original
-// 7.5 ips frequencies are 1925 Hz and 3850 Hz.  The preamble while the
-// tape is coming up to speed is a train of 1 bits.
-//
-// The structure of the data on a tape is as follows:
-//
-//    (1) bytes are eight bits
-//
-//    (2) a sync pattern of 010 brackets each byte, so for example
-//        two bytes would be (sync)(byte0)(sync)(byte1)(sync).  thus
-//        the character rate is 350 cps at 7.5 ips.
-//
-//    (3) in the forward direction, bits of a byte are recorded
-//        msb first, lsb last.
-//
-//    (4) a record is a sequence of bytes with valid sync patterns
-//        followed by an all 1's byte and an invalid sync (of 111)
-//
-//    (5) the inter-record gap time is about 280 ms, or 98 character times
-//
-//    (6) trains of one bits are recorded before and after a record to
-//        allow a PLL to track the signal and to form the end of record
-//        marker at both sides of a byte of 1 bits and a sync of 111.
-
-// There isn't a whole lot of high-powered thinking going on here.
-// It is just a lot of guess work on my part as to what seems to work
-// and what doesn't.  Start simple and add complexity as required.
-//
-// The program is structured to operate on a rolling window through
-// the file, rather than doing the easier thing of sucking in the
-// whole file and then operating on it.  This is because the files
-// can last a few minutes, which would consume a prohibitive amount
-// of memory.
-
-#include <assert.h>
-#include <stdarg.h> // for varargs
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <vector>
+#include <algorithm>
+#include <cassert>
 #include <cmath>
+#include <cstdint>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <limits>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-// support dumping records as intel hex files
-#define SUPPORT_HEX 1
+using sample_t = int16_t;
 
-// at least this many "1" bits must be s seen before a sync pattern in order
-// to be taken seriously.  this is required because as the tape speed slows
-// at the end of a record, sometimes false syncs are detected.
-#define SYNC_THRESHOLD 32
+static int verbosity = 0;
 
-// ========================================================================
-// type definitions
+static void vprint(int level, const char *fmt, ...) {
+    if (level > verbosity) {
+        return;
+    }
 
-typedef unsigned long uint32;
-typedef long int32;
-typedef unsigned short uint16;
-typedef short int16;
-typedef unsigned char uint8;
-typedef char int8;
-
-#define true 1
-#define false 0
-
-typedef int16 sample_t;
-
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-#define ABS(a) (((a) < (0)) ? (-a) : (a))
-
-// ========================================================================
-// global variables
-
-// command line options
-int opt_v;     // verbosity level
-bool opt_x;    // explode mode
-int opt_x_num; // chunk number
-char *opt_ofn; // output filename
-char *opt_ifn; // input filename
-enum { OFMT_TAP = 0, OFMT_BIN, OFMT_HEX } opt_ofmt;
-
-// .wav file attributes
-bool inmono;             // input  file is mono (1) or stereo (0)
-int sample_bytes;        // number of bytes per sample
-uint32 expected_samples; // number of samples in file
-uint32 sample_rate;      // samples/second
-
-FILE *fIn; // input audio file handle
-
-// period of a zero bit, in Hz, at 1 7/8 ips
-//const float zero_freq = 1084.0f;
-const float zero_freq = 1037.64f;
-const float sampleRate = 44100.0f;
-// pll lock range = nominal +/- 25%
-const float lock_range = 0.25f;
-float min_samples_per_bit;
-float max_samples_per_bit;
-
-float samples_per_bit; // bit period, in samples
-float pll_period;      // current PLL estimate of bit period
-
-
-uint32 nSamp = 0;
-
-// ========================================================================
-// filtered reporting
-
-void tfprintf(int verbosity, FILE *fp, char *fmt, ...) {
-  char buff[1000];
-  va_list args;
-
-  if (verbosity <= opt_v) {
+    va_list args;
     va_start(args, fmt);
-    vsnprintf(buff, sizeof(buff), fmt, args);
+    vfprintf(stderr, fmt, args);
     va_end(args);
-    fputs(buff, fp);
-  }
 }
 
-void tprintf(int verbosity, const char *fmt, ...) {
-  char buff[1000];
-  va_list args;
-
-  if (verbosity <= opt_v) {
-    va_start(args, fmt);
-    vsnprintf(buff, sizeof(buff), fmt, args);
-    va_end(args);
-    fputs(buff, stdout);
-  }
+[[noreturn]] static void die(const char *msg) {
+    fprintf(stderr, "Error: %s\n", msg);
+    std::exit(1);
 }
 
-// ========================================================================
-// WAV file parsing
-
-// RIFF WAV file format
-//  __________________________
-// | RIFF WAVE Chunk          |
-// |   groupID  = 'RIFF'      |
-// |   riffType = 'WAVE'      |
-// |    __________________    |
-// |   | Format Chunk     |   |
-// |   |   ckID = 'fmt '  |   |
-// |   |__________________|   |
-// |    __________________    |
-// |   | Sound Data Chunk |   |
-// |   |   ckID = 'data'  |   |
-// |   |__________________|   |
-// |__________________________|
-//
-// although it is legal to have more than one data chunk, this
-// program assumes there is only one.
-
-const uint32 RiffID = ('R' << 0) | ('I' << 8) | ('F' << 16) | ('F' << 24);
-const uint32 WaveID = ('W' << 0) | ('A' << 8) | ('V' << 16) | ('E' << 24);
-const uint32 FmtID = ('f' << 0) | ('m' << 8) | ('t' << 16) | (' ' << 24);
-const uint32 DataID = ('d' << 0) | ('a' << 8) | ('t' << 16) | ('a' << 24);
-
-void errex(const char *msg) {
-  fprintf(stderr, "Error: %s\n", msg);
-  exit(-1);
-}
-
-// make sure the file just opened is a WAV file, and if so,
-// read some of the critical parameters
-void CheckHeader(void) {
-  uint32 groupID = 0, riffBytes = 0, riffType = 0, chunkID = 0;
-  int32 ChunkSize = 0;
-  int16 FormatTag = 0;  // 1=uncompressed
-  uint16 Channels = 0;  // number of audio channels
-  uint32 Frequency = 0; // sample frequency
-  uint32 AvgBPS;        // we'll ignore this
-  uint16 BlockAlign;    // we'll ignore this
-  uint16 BitsPerSample;
-
-  //  RIFF Header
-  if (fread(&groupID, 4, 1, fIn) != 1)
-    errex("Cant' read file");
-  if (groupID != RiffID)
-    errex("Error: input file not a RIFF file");
-  if (fread(&riffBytes, 4, 1, fIn) != 1)
-    errex("Cant' read file");
-  if (fread(&riffType, 4, 1, fIn) != 1)
-    errex("Cant' read file");
-  if (riffType != WaveID)
-    errex("input file not a WAV file");
-
-  // Format definition
-  if (fread(&chunkID, 4, 1, fIn) != 1)
-    errex("Cant' read file");
-  if (chunkID != FmtID)
-    errex("Missing format definition");
-  if (fread(&ChunkSize, 4, 1, fIn) != 1)
-    errex("Cant' read file");
-  if (fread(&FormatTag, 2, 1, fIn) != 1)
-    errex("Cant' read file");
-  if (FormatTag != 1)
-    errex("Error: can't deal with compressed data\n");
-  if (fread(&Channels, 2, 1, fIn) != 1)
-    errex("Cant' read file");
-  if (Channels != 1 && Channels != 2)
-    errex("Error: can't handle too many channels");
-  inmono = (Channels == 1);
-  if (fread(&Frequency, 4, 1, fIn) != 1)
-    errex("Cant' read file");
-  if (fread(&AvgBPS, 4, 1, fIn) != 1)
-    errex("Cant' read file");
-  if (fread(&BlockAlign, 2, 1, fIn) != 1)
-    errex("Cant' read file");
-  if (fread(&BitsPerSample, 2, 1, fIn) != 1)
-    errex("Cant' read file");
-
-  if (BitsPerSample == 8)
-    sample_bytes = 1;
-  else if (BitsPerSample == 16)
-    sample_bytes = 2;
-  else
-    errex("samples must be either 8b or 16b\n");
-
-  sample_rate = Frequency;
-  if (Frequency < 11000)
-    errex("Warning: the sample rate is low -- it might hurt conversion");
-
-  // Data section
-  if (fread(&chunkID, 4, 1, fIn) != 1)
-    errex("Cant' read file");
-  if (chunkID != DataID)
-    errex("file didn't contain a DATA header");
-  if (fread(&ChunkSize, 4, 1, fIn) != 1)
-    errex("Cant' read file");
-
-  // compute dependent parameters
-  expected_samples = ChunkSize / (sample_bytes * Channels);
-
-  // period, in samples
-  samples_per_bit = (float)sample_rate / zero_freq;
-
-  // pll lock range = nominal +/- 25%
-  pll_period = samples_per_bit; // start at nominal
-  min_samples_per_bit = samples_per_bit * (1.0f - lock_range);
-  max_samples_per_bit = samples_per_bit * (1.0f + lock_range);
-
-  float sec = (float)expected_samples / sample_rate;
-  tprintf(1, "File: '%s'\n", opt_ifn);
-  tprintf(1, "WAV format: %d samples/sec, %db %s\n", sample_rate,
-          8 * sample_bytes, inmono ? "mono" : "stereo");
-  tprintf(1, "Expected # of samples: %ld", expected_samples);
-  tprintf(1, " (%.2f seconds)\n", sec);
-}
-
-// return a mono sample from the input file.
-// if the input file is in stereo, it averages the two channels.
-// this routine reads blocks for efficiency, but doles out one sample
-// per request.
-sample_t GetMonoSample(void) {
-  sample_t newsamp;
-
-  if (inmono && (sample_bytes == 1)) {
-    // mono 8b
-    int8 b0 = (int8)fgetc(fIn) - 128;
-    newsamp = (sample_t)(b0 << 8);
-  } else if (inmono && (sample_bytes == 2)) {
-    uint8 b0 = (uint8)fgetc(fIn);
-    int8 b1 = (int8)fgetc(fIn);
-    newsamp = (sample_t)((b1 << 8) + b0);
-  } else if (!inmono && (sample_bytes == 1)) {
-    // 8b stereo
-    int8 b0 = fgetc(fIn) - 128;
-    int8 b1 = fgetc(fIn) - 128;
-    newsamp = (sample_t)((b0 + b1) << 7);
-  } else if (!inmono && (sample_bytes == 2)) {
-    // 16b stereo
-    uint8 b0 = (uint8)fgetc(fIn);
-    int8 b1 = (int8)fgetc(fIn);
-    uint8 b2 = (uint8)fgetc(fIn);
-    int8 b3 = (int8)fgetc(fIn);
-    sample_t left = (sample_t)((b1 << 8) + b0);
-    sample_t right = (sample_t)((b3 << 8) + b2);
-    newsamp = (left + right + 1) >> 1;
-  }
-
-  return newsamp;
-}
-
-// =========================================================================
-// we maintain in memory a WORKBUFSIZE window of samples.
-// the tricky part is that the start of the buffer might be anywhere
-// in the buffer, and all other addressing is modulo the buffer size.
-//
-// if any access is made to the last BUMP samples, we roll the window
-// over by QTRWORKBUF samples.
-
-// number of samples we are holding in memory
-#define WORKBUFSIZE 16384             // make this a power of two
-#define WORKBUFMASK (WORKBUFSIZE - 1) // for modulo wrapping
-#define HALFWORKBUF (WORKBUFSIZE / 2)
-#define QTRWORKBUF (WORKBUFSIZE / 4)
-#define BUMP 1024
-
-int32 windowstart;  // the oldest sample in the buffer
-int32 windowoffset; // where in the window the oldest sample lives
-
-// this holds the samples we are working on
-sample_t inbuf[WORKBUFSIZE];
-
-int sample_addr(int32 n) {
-#if 1
-  if (n < windowstart || n >= windowstart + WORKBUFSIZE) {
-    fprintf(stderr, "Error: sample %ld, workbuf[] access out of range\n", n);
-    exit(-1);
-  }
-#endif
-
-  // see if we are bumping into the end of the buffer
-  if (n >= windowstart + WORKBUFSIZE - BUMP) {
-    // move the input buffer window forward 'n' samples.
-    // we do this through modulo address arithmetic;
-    // we don't actually move the samples around.
-
-    // adjust pointers
-    windowstart += QTRWORKBUF;
-    windowoffset = (QTRWORKBUF + windowoffset) & WORKBUFMASK;
-
-    // fill up newly exposed portion of buffer
-    int off = (windowoffset + 3 * QTRWORKBUF) & WORKBUFMASK;
-    for (int32 t = off; t < off + QTRWORKBUF; t++)
-      inbuf[t] = GetMonoSample();
-  }
-
-  return (n - windowstart + windowoffset) & WORKBUFMASK;
-}
-
-#define GETIN(n) (inbuf[sample_addr(n)])
-
-// at time zero, we initialize the first half of the buffer
-// to whatever value the first sample has, then fill the rest
-// of the buffer from samples from the file.
-void FillInbuffer(void) {
-  sample_t s;
-  int t;
-
-  // at time zero, we put the first sample right in the middle
-  windowstart = -HALFWORKBUF;
-  windowoffset = 0;
-
-  // fill the first half of the buffer with the first file sample
-  s = GetMonoSample();
-  for (t = 0; t <= HALFWORKBUF; t++)
-    inbuf[t] = s;
-
-  // now fill up the rest
-  for (t = HALFWORKBUF + 1; t < WORKBUFSIZE; t++)
-    inbuf[t] = GetMonoSample();
-}
-#define OBUFFER_SIZE 16384
-uint8 obuff_buffer[OBUFFER_SIZE];
-int obuff_bytecnt; // put pointer into obuff_buffer[]
-
-int isFileHeader(unsigned char * buffer) {
-  if ((obuff_buffer[0]==0201) && (obuff_buffer[1]==0176)) {
-    return 1;
-  } 
-  return 0;
-}
-
-int isNumericRecord(unsigned char * buffer) {
-  if ((obuff_buffer[0]==0303) && (obuff_buffer[1]==0074)) {
-    return 1;
-  } 
-  return 0;
-}
-
-int isSymbolicRecord(unsigned char * buffer) {
-  if ((obuff_buffer[0]==0347) && (obuff_buffer[1]==0030)) {
-    return 1;
-  } 
-  return 0;
-}
-
-int isChecksumOK(unsigned char * buffer, int size) {
-  unsigned char xorChecksum;
-  unsigned char circulatedChecksum;
-  int i;
-  xorChecksum = obuff_buffer[2];
-  circulatedChecksum = obuff_buffer[3];
-  for (i=4;i<size;i++) {
-    int lowestBit;
-    xorChecksum ^= obuff_buffer[i];
-    circulatedChecksum ^=buffer[i];
-    lowestBit = 0x01 & circulatedChecksum;
-    circulatedChecksum >>= 1;
-    circulatedChecksum |= (0x80 & (lowestBit<<7));
-  }
-  //printf("xorChecksum: %02X circulatedChecksum: %02X .", xorChecksum, circulatedChecksum);
-  if ((xorChecksum == 0) && (circulatedChecksum == 0)) return 1;
-  return 0;
-}
-
-
-void parseDPFormat() {
-  int startingAddress;
-  if (isFileHeader(obuff_buffer)) {
-  tprintf(1, "This is a FileHeader. ");
-  if (obuff_bytecnt != 4) {
-    tprintf(1, "The size of this block is incorrect. It is %d bytes rather than 4 bytes. ", obuff_bytecnt);
-  }
-  tprintf(1, "The filenumber is %d. ", 0xff&obuff_buffer[2]);
-  if ((0xff&obuff_buffer[2])!=(0xff&(~obuff_buffer[3]))) {
-    tprintf(1, "The inverted filenumber is incorrect: %d should have been %d.", 0xff&obuff_buffer[3], 0xff&(~obuff_buffer[2]));
-  }
-  if (obuff_buffer[2]==127) {
-    tprintf(1,"This is the end of tape marker. Files beyond this point is probably damaged.");
-  }
-  tprintf(1,"\n");
-} else if (isNumericRecord(obuff_buffer)) {
-  tprintf(1,"This is a numeric record with %d bytes. ", obuff_bytecnt);
-  if (!isChecksumOK(obuff_buffer, obuff_bytecnt)) {
-    tprintf(1, "The checksum is NOT OK.");
-  }
-  startingAddress = (obuff_buffer[4] << 8) | obuff_buffer[5];
-  tprintf (1, "Load address for this block is %05o. ", startingAddress);
-  if ((obuff_buffer[4] != (0xFF&~obuff_buffer[6])) || (obuff_buffer[5] != (0xFF&~obuff_buffer[7]))) {
-    tprintf(1, "Loading address corrupted.");
-  }
-  tprintf(1, "\n");
-
-} else if (isSymbolicRecord(obuff_buffer)) {
-  tprintf(1, "This is a symbolic record with %d bytes. ", obuff_bytecnt);
-  tprintf(1, "\n");
-} else {
-  // something else - should be the first block which is the boot block - 
-  tprintf(1, "This is something else. Only the first boot block should be like this. ");
-  tprintf(1, "\n");
-}
-}
-
-
-// =========================================================================
-// file output routines
-//
-// these routines accept notification of
-//    (1) start of a block
-//    (2) next received byte
-//    (3) error
-//    (4) end of block
-// based on those events and the global option settings, they
-// emit one or more files in the specified format, which may be
-//    (a) .tap format
-//    (b) .bin format
-#if SUPPORT_HEX
-//    (c) .hex format
-#endif
-
-// i'm not sure what the maximum sized block might be.
-// from a small sample of tapes, the empirical maximum is 512 bytes.
-// this is much larger than that of course, and is the same size as
-// the maximum size memory in a 2200.
-
-
-
-FILE *obuff_fp = NULL;
-
-void StreamStart(void) { obuff_bytecnt = 0; }
-
-void StreamByte(uint8 byte) {
-  assert(obuff_bytecnt < OBUFFER_SIZE);
-  obuff_buffer[obuff_bytecnt++] = byte;
-}
-
-void StreamWriteBlkLen(uint32 v) {
-  fputc(((v >> 0) & 0xFF), obuff_fp);
-  fputc(((v >> 8) & 0xFF), obuff_fp);
-  fputc(((v >> 16) & 0xFF), obuff_fp);
-  fputc(((v >> 24) & 0xFF), obuff_fp);
-}
-
-void StreamEnd(void) {
-  int len = strlen(opt_ofn) + 3; // +3 for safety
-  char *ofn = (char *)malloc(len);
-  assert(ofn != NULL);
-  int n;
-
-  // when to open the file
-  bool open_it = opt_x ||                  // explode requested
-                 (opt_ofmt != OFMT_TAP) || // bin or hex
-                 (opt_x_num == 0);         // first
-
-  // when to close the file
-  bool close_it = opt_x ||                // explode requested
-                  (opt_ofmt != OFMT_TAP); // bin or hex
-
-  if (opt_x) {
-    snprintf(ofn, len, opt_ofn, opt_x_num); // serialize filename
-  } else {
-    strcpy(ofn, opt_ofn);
-  }
-  opt_x_num++;
-
-  if (open_it) {
-    // open a file
-    obuff_fp = fopen(ofn, "wb");
-    if (obuff_fp == NULL) {
-      fprintf(stderr, "Error: couldn't open file '%s'\n", ofn);
-      exit(-1);
+static uint16_t read_u16_le(FILE *fp) {
+    uint8_t b[2];
+    if (fread(b, 1, sizeof(b), fp) != sizeof(b)) {
+        die("unexpected end of WAV file");
     }
-  }
-  parseDPFormat();
-  switch (opt_ofmt) {
-
-  case OFMT_BIN: // binary
-    for (n = 0; n < obuff_bytecnt; n++) {
-      int r = fputc(obuff_buffer[n], obuff_fp);
-      assert(r != EOF);
-    }
-    break;
-
-  case OFMT_TAP: // simh format
-    // from somewhere on the web:
-    //   In this format each tape record is preceded and followed by
-    //   a 4-byte count of the number of bytes in the record. Thus,
-    //   between two records there will be the count for the previous
-    //   record and the count for the next record.
-    // another source confirms this, but with the caveat that zero
-    // length blocks don't repeat the length twice.
-    StreamWriteBlkLen(obuff_bytecnt);
-    for (n = 0; n < obuff_bytecnt; n++) {
-      int r = fputc(obuff_buffer[n], obuff_fp);
-      assert(r != EOF);
-    }
-    if (obuff_bytecnt != 0)
-      StreamWriteBlkLen(obuff_bytecnt);
-    break;
-
-#if SUPPORT_HEX
-  case OFMT_HEX: // intel hex format
-    for (n = 0; n < obuff_bytecnt; n += 16) {
-      int bytesleft = MIN(16, obuff_bytecnt - n);
-      int cksum;
-      fprintf(obuff_fp, ":%02X%04X%02X", bytesleft, n, 0x00);
-      cksum = bytesleft + (n >> 0) + (n >> 8) + (n >> 16) + (n >> 24) + 0x00;
-      for (int nn = 0; nn < bytesleft; nn++) {
-        uint8 b = obuff_buffer[n + nn];
-        fprintf(obuff_fp, "%02X", b);
-        cksum += b;
-      }
-      fprintf(obuff_fp, "%02X\n", (256 - cksum) & 0xFF);
-    }
-    fprintf(obuff_fp, ":00000001FF\n");
-    break;
-#endif
-
-  default:
-    assert(0);
-  }
-
-  if (close_it) {
-    fclose(obuff_fp);
-    obuff_fp = NULL;
-  }
-
-  free(ofn);
+    return static_cast<uint16_t>(b[0]) |
+           (static_cast<uint16_t>(b[1]) << 8);
 }
 
-void StreamError(int code) {
-  // we sometimes get erroneous syncs as the tape speed slows down if we
-  // don't see at least one valid byte after the sync, don't save the block
-  if (obuff_bytecnt > 0)
-    StreamEnd();
+static uint32_t read_u32_le(FILE *fp) {
+    uint8_t b[4];
+    if (fread(b, 1, sizeof(b), fp) != sizeof(b)) {
+        die("unexpected end of WAV file");
+    }
+    return static_cast<uint32_t>(b[0]) |
+           (static_cast<uint32_t>(b[1]) << 8) |
+           (static_cast<uint32_t>(b[2]) << 16) |
+           (static_cast<uint32_t>(b[3]) << 24);
 }
 
-void StreamDone(void) {
-  if (obuff_fp != NULL)
-    fclose(obuff_fp);
-}
-
-// =========================================================================
-// bitstream decoder
-
-#define BH_SIZE (128) // size of bithistory buffer
-#define BH_MASK (BH_SIZE - 1)
-
-enum {
-  BS_LOST = 0,
-  BS_PREAMBLE,    // in a train of 1 bits
-  BS_PREAMBLE_0,  // train of 1s followed by 0
-  BS_PREAMBLE_01, // train of 1s followed by 0,1
-  BS_BYTE,        // decoding byte stream
-  BS_GAP
+struct WavData {
+    uint32_t sample_rate = 0;
+    std::vector<sample_t> samples;
 };
 
-const char *stateStrings[] = {"BS_LOST",        "BS_PREAMBLE", "BS_PREAMBLE_0",
-                              "BS_PREAMBLE_01", "BS_BYTE",     "BS_GAP"};
-
-int BSstate = BS_LOST;
-int BSbyteCount;
-
-void Bit(uint32 time, int bit) {
-  static int count;
-  static int bits;
-
-  static int bithistory[BH_SIZE];
-  static int bh_put = 0;
-  static int bh_get = 0;
-  static int bh_vld = 0;
-
-  tprintf(3, "Bit: BSstate = %s sample %d: decoded bit %d  count=%d (%d) \n", stateStrings[BSstate], time, bit, count, SYNC_THRESHOLD);
-
-  bithistory[bh_put] = bit;
-  bh_put = (bh_put + 1) & BH_MASK;
-  bh_vld = MIN(bh_vld + 1, BH_SIZE);
-
-  switch (BSstate) {
-
-  case BS_LOST:
-    if (bit == 1) {
-      BSstate = BS_PREAMBLE;
-      count = 1;
+static WavData read_wav(const char *filename) {
+    FILE *fp = fopen(filename, "rb");
+    if (!fp) {
+        perror(filename);
+        std::exit(1);
     }
-    break;
 
-  case BS_PREAMBLE:
-    if (bit == 1) {
-      count++;
-    } else if ((bit == 0) && (count > SYNC_THRESHOLD))
-      BSstate = BS_PREAMBLE_0;
-    else {
-      pll_period = samples_per_bit;
-      BSstate = BS_LOST;
+    char id[4];
+    if (fread(id, 1, 4, fp) != 4 || memcmp(id, "RIFF", 4) != 0) {
+        die("input is not a RIFF file");
     }
- 
-    break;
-
-  case BS_PREAMBLE_0:
-    if (bit == 1) {
-      BSstate = BS_PREAMBLE_01;
-    } else {
-      tprintf(2, "sample %d: preamble lost after %d bits\n", time, count + 2);
-      pll_period = samples_per_bit;
-      BSstate = BS_LOST;
+    (void)read_u32_le(fp); // RIFF size; not needed for decoding.
+    if (fread(id, 1, 4, fp) != 4 || memcmp(id, "WAVE", 4) != 0) {
+        die("input is not a WAVE file");
     }
-    break;
 
-  case BS_PREAMBLE_01:
-    if (bit == 0) {
-      tprintf(1, "sample %d: preamble and sync after %d bits\n", time,
-              count + 3);
-      BSstate = BS_BYTE;
-      count = 0;
-      BSbyteCount = 0;
-      bits = 0x00;
-      StreamStart();
-    } else {
-      tprintf(2, "sample %d: preamble lost after %d bit %d\n", time, count + 3);
-      BSstate = BS_PREAMBLE;
-      count = 2;
-    }
-    break;
+    bool have_fmt = false;
+    bool have_data = false;
+    uint16_t format = 0;
+    uint16_t channels = 0;
+    uint16_t bits_per_sample = 0;
+    uint32_t sample_rate = 0;
+    std::vector<uint8_t> raw_data;
 
-  case BS_BYTE:
-    bits = (bits << 1) | (bit > 0);
-    count++;
-    if (count == 11) {
-      bits &= 0x7FF;
-      if ((bits & 7) == 2) { // ... 010 sync code
-        bits = (bits >> 3) & 0xFF;
-        // in fwd direction, data comes off the tape lsb first
-        bits = ((bits & 0x01) << 7) | ((bits & 0x02) << 5) |
-               ((bits & 0x04) << 3) | ((bits & 0x08) << 1) |
-               ((bits & 0x10) >> 1) | ((bits & 0x20) >> 3) |
-               ((bits & 0x40) >> 5) | ((bits & 0x80) >> 7);
-        tprintf(2, "sample %d: byte 0x%02X (%03o)\n", time, bits, bits);
-        StreamByte(bits);
-        count = 0;
-        BSbyteCount++;
-      } else if (bits == 0x7FF) {
-        tprintf(1, "sample %d: hit valid gap after %d bytes, PLL period=%f @%ld\n",
-                time, BSbyteCount, pll_period, nSamp);
-        if (obuff_bytecnt > 0) StreamEnd();
-        count = 0;
-        BSstate = BS_GAP;
-      } else {
-        if (BSbyteCount == 0) {
-          tprintf(1,
-                  "sample %d: bad sync code %03X; apparently it was not a "
-                  "valid sync @%ld\n",
-                  time, bits & 7, nSamp);
-        } else {
-          tprintf(1, "sample %d: bad sync code %03X\n @%ld", time, bits & 7, nSamp);
+    // WAV files can contain ancillary chunks.  Unlike the old program,
+    // search for the fmt and data chunks rather than assuming adjacency.
+    while (!have_data) {
+        if (fread(id, 1, 4, fp) != 4) {
+            break;
         }
-        tprintf(1, "Bad block @%ld\n", nSamp);
-        StreamError(0);
-        pll_period = samples_per_bit;
-        BSstate = BS_LOST;
-      }
-    }
-    break;
+        uint32_t chunk_size = read_u32_le(fp);
+        long chunk_start = ftell(fp);
 
-  case BS_GAP:
-    count++;
-    if (bit == 2) {
-      tprintf(2, "sample %d: skipped %d bits to mid-gap\n", time, count);
-      pll_period = samples_per_bit;
-      BSstate = BS_LOST;
-    }
-    if (bit == 1) {
-      BSstate = BS_PREAMBLE;
-      count = 1;
-    }
-    break;
-
-  default:
-    assert(0);
-    break;
-  }
-}
-
-// =========================================================================
-// bit decoder
-
-// sequentially the stream of transitions and turn them into a stream of
-// bits.  of course, this routine must guard against illegal transitions
-// that are bound to come up.
-
-int ClassifyTransition(uint32 time, uint32 duration) {
-  tprintf(3, "ClassifyTransition: pll_period=%f duration=%d Threshold short%2.3f Long Threshold=%2.3f \n", pll_period, duration, 0.75f * pll_period, 1.50f * pll_period);
-  if (duration < 0.25f * pll_period)
-    return -1; // too short
-
-  if (duration < 0.75f * pll_period)
-    return 0; // a half "zero" bit
-
-  if (duration < 1.50f * pll_period)
-    return 1; // a "one" bit
-
-  return 2; // too long
-}
-
-// update the phase lock loop
-
-// we want the phase detector to lock in on the right phase without
-// being too responsive nor too slow.  this is just a guess.
-// it is the amount the pll phase is adjusted at each bit cell time
-// as a fraction of the error between expected and actual.
-const float pll_bump = 0.15f;
-
-void PLL(int duration) {
-  const float phaseDiff = duration - pll_period;
-
-  pll_period += phaseDiff * pll_bump;
-  pll_period = MAX(min_samples_per_bit, pll_period);
-  pll_period = MIN(max_samples_per_bit, pll_period);
-
-  tprintf(4, "pll period = %f\n", pll_period);
-}
-
-void DecodeBits(uint32 time) {
-  //if (time== 1076874) time=1076876;
-  //if (time==1018014) time=1018002;
-  //if (time==908698)time=908691;
-  //if (time==908820) time=908821;
-  //if (time==908852) time=908854;
-  enum XXX { DB_INIT = 0, DB_HALF_BIT, DB_READY };
-  const char * stateStr[] = {"DB_INIT", "DB_HALF_BIT", "DB_READY"};
-  static enum XXX DBstate = DB_INIT;
-  static int prevTime = 0; // end of previous bit
-  static int halfTime = 0; // end of half bit
-  int type;
-  tprintf(3, "DecodeBits %lu DBstate = %s prevTime=%d halfTime=%d\n", time, stateStr[DBstate], prevTime, halfTime);
-  switch (DBstate) {
-
-  case DB_INIT:
-    prevTime = time;
-    DBstate = DB_READY;
-    break;
-
-  case DB_HALF_BIT:
-    type = ClassifyTransition(time, time - halfTime);
-    tprintf(3, "DB_HALF_BIT DecodeBits: time=%lu (time-halfTime)=%lu ClassifyTransition returned %d\n", time,time - halfTime, type);
-    switch (type) {
-
-    case -1:
-      if ((BSstate == BS_BYTE) && (BSbyteCount > 0))
-        tprintf(1, "sample %d: Warning: runt pulse when short pulse expected\n",
-                time);
-      Bit(time, -1);        // completed second short period
-      PLL(time - prevTime); // correct for phase error
-      DBstate = DB_READY;
-      break;
-
-    case 0:
-      Bit(time, 0);         // completed second short period
-      PLL(time - prevTime); // correct for phase error
-      DBstate = DB_READY;
-      break;
-
-    case 2:
-      if ((BSstate == BS_BYTE) && (BSbyteCount > 0))
-        tprintf(1, "sample %d: Warning: really long pulse\n", time);
-      Bit(time, 2);
-      PLL(time - prevTime); // correct for phase error
-      prevTime = time;
-      DBstate = DB_READY;
-      break;
-
-    case 1:
-      if ((BSstate == BS_BYTE) && (BSbyteCount > 0))
-        tprintf(1, "sample %d: long pulse when short pulse expected\n", time);
-      Bit(time, 1);
-      PLL(time - prevTime); // correct for phase error
-      prevTime = time;
-      DBstate = DB_READY;
-      break;
-
-    default:
-      assert(0);
-      break;
-    }
-    prevTime = time;
-    break;
-
-  case DB_READY:
-    type = ClassifyTransition(time, time - prevTime);
-    tprintf(3, "DB_READY DecodeBits: time=%lu (time-prevTime)=%lu ClassifyTransition returned %d\n", time,time - prevTime, type);
-    switch (type) {
-
-    case -1:
-      if ((BSstate == BS_BYTE) && (BSbyteCount > 0))
-        tprintf(1, "sample %d: Warning: runt pulse\n", time);
-      Bit(time, -1);
-      halfTime = time;
-      DBstate = DB_READY;
-      break;
-
-    case 0:
-      halfTime = time;
-      DBstate = DB_HALF_BIT;
-      break;
-
-    case 2:
-      if (BSstate == BS_BYTE)
-        tprintf(1, "sample %d: Warning: long pulse\n", time);
-      Bit(time, 2);
-      PLL(time - prevTime); // correct for phase error
-      prevTime = time;
-      break;
-
-    case 1:
-      Bit(time, 1);
-      PLL(time - prevTime); // correct for phase error
-      prevTime = time;
-      break;
-
-    default:
-      assert(0);
-      break;
-    }
-    break;
-
-  default:
-    assert(0);
-    break;
-  }
-}
-
-// =========================================================================
-// find the duration of each flux zone
-
-#if 0
-// detect zero crossings directly
-void
-FindTransitions()
-{
-    bool     bFirst = true;	// first transition seen
-    sample_t prevSamp;		// previous sample
-
-    prevSamp = GETIN(0);
-    for(uint32 nSamp=1; nSamp<expected_samples; nSamp++) {
-	sample_t samp = GETIN(nSamp);
-	if ((samp < 0) ^ (prevSamp < 0)) {
-	    // a sign transition has occurred
-	    if (!bFirst)
-		DecodeBits(nSamp);
-	    else
-		bFirst = false;
-	    prevSamp = samp;
-	}
-    }
-
-    StreamDone();
-}
-#else
-#if 0
-void FindTransitions() {
-  int state = 0;
-  sample_t lastSample = GETIN(0), sample;
-  sample_t diff;
-  for (uint32 nSamp = 1; nSamp < expected_samples; nSamp++) {
-    sample = GETIN(nSamp);
-    diff = sample - lastSample;
-    lastSample = sample;   
-    tprintf(3, "sample=%lu DIFF=%d\n", nSamp, abs(diff)); 
-    if ((state == 0) && (abs(diff) < 1000)) {
-      state = 1;      
-      DecodeBits(nSamp);
-    }
-    if ((state == 1) && (abs(diff) > 1500)) {
-      state = 0;
-    }
-  }
-}
-#endif
-#if 0
-
-
-bool withinWindow(int * windowState, int lastTrans, int currentTrans) {
-  tprintf(3, "windowState=%d length=%d\n", *windowState,currentTrans-lastTrans);
-  if (*windowState==0) {
-    if (((currentTrans-lastTrans)>16) && ((currentTrans-lastTrans)<65)) {
-      *windowState = 1;
-    }
-    return true;
-  } else {
-    if ((currentTrans-lastTrans)<=16) {
-      return false;
-    } else if (((currentTrans-lastTrans)>16) && ((currentTrans-lastTrans)<65)) {
-      return true;
-    } else {
-      *windowState = 0;
-      return true;
-    }
-  }
-}
-
-/*bool diffCompare (sample_t previousDiff, sample_t diff) {
-  if ((previousDiff > 0) && (diff <= 0)) {
-    return true;
-  }
-  if ((previousDiff > 0) && (diff <= 0)) {
-    return true;
-  }
-}*/
-void FindTransitions() {
-  int state = 0; // 0 Waiting for high 1 Waiting for low
-  int windowState = 0;
-  int lastTransition=0;
-  sample_t sample_nminus3 = GETIN(0);
-  sample_t sample_nminus2 = GETIN(1);
-  sample_t sample_nminus1 = GETIN(2);
-  sample_t sample_n = GETIN(3);
-  sample_t filteredSample= sample_nminus2/3 + sample_nminus1/3 + sample_n/3;
-  sample_t filteredPreviousSample = sample_nminus3/3 + sample_nminus2/3 + sample_nminus1/3;
-  sample_t diff = filteredSample-filteredPreviousSample;
-  sample_t previousDiff, lowest, highest, diff2;
-  double distance;
-  int highIndex, lowIndex, indexDistance;
-  std::vector<sample_t> buffer;
-  buffer.push_back(sample_nminus3);
-  buffer.push_back(sample_nminus2);
-  buffer.push_back(sample_nminus1);
-  buffer.push_back(sample_n);
-  uint32 nSamp;
-  for (nSamp = 4; nSamp < expected_samples; nSamp++) {
-    sample_nminus2 = sample_nminus1;
-    sample_nminus1 = sample_n;
-    sample_n=GETIN(nSamp);
-    buffer.push_back(sample_n);
-    if (buffer.size()>50) {
-      buffer.erase(buffer.begin());      
-    }
-    previousDiff = diff;
-    filteredPreviousSample=filteredSample;
-    filteredSample=sample_nminus2/3 + sample_nminus1/3 + sample_n/3;
-    diff = filteredSample-filteredPreviousSample;
-    tprintf(3, "sampleIndex=%lu filteredPreviousSample=%d filteredSample=%d previousDiff=%d diff=%d windowState=%d state=%d\n", nSamp, filteredPreviousSample, filteredSample, previousDiff, diff, windowState, state);
-    if ((state == 0) || ( (windowState == 0) &&  filteredSample>0 )) {
-      // Trying to find the high peak
-      if (((previousDiff > 0) && (diff <= 0)) && withinWindow(&windowState,lastTransition, nSamp)) {
-        // Got a high
-        int i;
-        state = 1;
-        lastTransition = nSamp-1;
-        highest=filteredPreviousSample;
-        highIndex = nSamp-1;
-        
-        distance = (double) (highest-lowest);
-        indexDistance = highIndex-lowIndex;
-        for (i=buffer.size()-1; i>0; i-- ) {
-          double d = (double) (abs(buffer[i]-buffer[i-1]));
-          double relDiff = d/distance;
-          tprintf(3, "Searching for knee: i=%d d=%f relDiff=%f distance=%f\n", i ,d, relDiff, distance);
-          if (relDiff > 0.0125f) break;
+        if (memcmp(id, "fmt ", 4) == 0) {
+            if (chunk_size < 16) {
+                die("WAV fmt chunk is too short");
+            }
+            format = read_u16_le(fp);
+            channels = read_u16_le(fp);
+            sample_rate = read_u32_le(fp);
+            (void)read_u32_le(fp); // byte rate
+            (void)read_u16_le(fp); // block align
+            bits_per_sample = read_u16_le(fp);
+            have_fmt = true;
+        } else if (memcmp(id, "data", 4) == 0) {
+            raw_data.resize(chunk_size);
+            if (chunk_size != 0 && fread(raw_data.data(), 1, chunk_size, fp) != chunk_size) {
+                die("truncated WAV data chunk");
+            }
+            have_data = true;
         }
-        DecodeBits(nSamp+i-buffer.size());  
-        tprintf(3, "Find High: sampleIndex=%lu highIndex=%lu lowIndex=%lu distance=%f lowest=%d highest=%d width=%d report to decodebits=%d\n", nSamp, highIndex, lowIndex, distance, lowest, highest, indexDistance, nSamp-(i - buffer.size()));
-      } 
-    } 
-    if ((state == 1) || ( (windowState == 0) && (filteredSample < 0)) ){
-      // Trying to find bottom low.
-      if (((previousDiff < 0) && (diff >= 0)) && withinWindow(&windowState,lastTransition, nSamp)) {
-        // Got a low 
-        int i;
-        state = 0;
-        lastTransition = nSamp-1;
-        lowest=filteredPreviousSample;
-        lowIndex = nSamp-1;   
-        distance = (double) (highest-lowest);  
-        indexDistance = lowIndex-highIndex; 
-        for (i=buffer.size()-1; i>0; i-- ) {
-          double d = (double) (abs(buffer[i]-buffer[i-1]));
-          double relDiff = d/distance;
-          if (relDiff > 0.025f) break;
+
+        if (!have_data) {
+            // Chunks are padded to an even byte boundary.
+            long next = chunk_start + static_cast<long>(chunk_size) + (chunk_size & 1U);
+            if (fseek(fp, next, SEEK_SET) != 0) {
+                die("cannot seek over WAV chunk");
+            }
         }
-        DecodeBits(nSamp+i-buffer.size());         
-        tprintf(3, "Find Low: sampleIndex=%lu highIndex=%lu lowIndex=%lu distance=%f lowest=%d highest=%d width=%d report to decodebits=%d\n", nSamp, highIndex, lowIndex, distance, lowest, highest, indexDistance, nSamp-(i - buffer.size()));
-      } 
-    }    
-  }
-
-}
-#endif
-
-#if 1
-
-// New decoder
-// Two type of decoding. 
-// - If BS_LOST we search a 80 samples window for two peaks that has approximatelt 40 samples inbewteen.
-//   Given by zero_freq / 44100 .
-//   Peaks shall be of different type. I.e. one high peak and one low peak.
-// - IF !BS_LOST we search a window from current peak and around 50 samples forward.
-//   Use 1.25 * zero_freq / 44100 / 2. So 25 % longer than a long pulse.
-//   Find all peaks during this interval. Give score to how close to nominal pulse they are. The closer the higher score.
-//   Give higher score for peak that is longer distance from curent peak aplitude-wise
-//   There are two nominal position to score. Closest to the short pulse peak or shortest to the high pulse peak.
-//   Find the peak that gives the best score.
-//
-//   Find the absolute high and abolute low in the interval.
-//   Use this absoulte scale to create a relative scale of the signal
-//   Search for the knee on the front-porch of the signal where the slope is sufficently low. 
-//   Compare this derivative with in relative scale to a fixed value
-
-
-struct S {
-  sample_t s;
-  double scaled;
-  uint32 index;
-  bool highest;
-  bool lowest;
-  double distance;
-  bool peak;
-  bool highPeak;
-};
-
-typedef struct S Sample;
-
-typedef std::vector<Sample> SampleBuffer;
-
-struct HL {
-  sample_t highValue;
-  sample_t lowValue;
-  uint32 highIndex;
-  uint32 lowIndex;
-  uint32 highBufferIndex;
-  uint32 lowBufferIndex;
-};
-
-typedef struct HL HiLo;
-
-HiLo findHighestLowest (SampleBuffer * sb) {
-  HiLo hilo;
-  hilo.highValue = (*sb)[0].s;
-  hilo.lowValue = (*sb)[0].s;;
-  hilo.highIndex = (*sb)[0].index;
-  hilo.lowIndex = (*sb)[0].index; 
-  hilo.highBufferIndex = 0;
-  hilo.lowBufferIndex = 0; 
-  uint32 currentBufferIndex;
-  for (uint32 i=1; i< sb->size(); i++) {
-    if ((*sb)[i].s > hilo.highValue) {
-      hilo.highValue = (*sb)[i].s;
-      hilo.highIndex = (*sb)[i].index;
-      hilo.highBufferIndex = i;
     }
-    if ((*sb)[i].s < hilo.lowValue) {
-      hilo.lowValue = (*sb)[i].s;
-      hilo.lowIndex = (*sb)[i].index;
-      hilo.lowBufferIndex = i;
-    }    
-  } 
-  tprintf(3, "Highest in buffer is %d at %ld and Lowest is %d at %ld\n", hilo.highValue, hilo.highIndex, hilo.lowValue, hilo.lowIndex);
-  return hilo;
+
+    fclose(fp);
+
+    if (!have_fmt || !have_data) {
+        die("WAV file lacks fmt or data chunk");
+    }
+    if (format != 1) {
+        die("only uncompressed PCM WAV input is supported");
+    }
+    if (channels != 1 && channels != 2) {
+        die("only mono or stereo WAV input is supported");
+    }
+    if (bits_per_sample != 8 && bits_per_sample != 16) {
+        die("only 8-bit or 16-bit PCM WAV input is supported");
+    }
+
+    const size_t bytes_per_sample = bits_per_sample / 8;
+    const size_t frame_bytes = bytes_per_sample * channels;
+    if (frame_bytes == 0 || raw_data.size() % frame_bytes != 0) {
+        die("invalid WAV data length");
+    }
+
+    WavData wav;
+    wav.sample_rate = sample_rate;
+    const size_t frames = raw_data.size() / frame_bytes;
+    wav.samples.reserve(frames);
+
+    size_t p = 0;
+    for (size_t i = 0; i < frames; ++i) {
+        int32_t sum = 0;
+        for (uint16_t ch = 0; ch < channels; ++ch) {
+            int32_t s;
+            if (bits_per_sample == 8) {
+                // 8-bit PCM WAV samples are unsigned.
+                s = (static_cast<int32_t>(raw_data[p++]) - 128) << 8;
+            } else {
+                uint16_t u = static_cast<uint16_t>(raw_data[p]) |
+                             (static_cast<uint16_t>(raw_data[p + 1]) << 8);
+                p += 2;
+                s = static_cast<int16_t>(u);
+            }
+            sum += s;
+        }
+        wav.samples.push_back(static_cast<sample_t>(sum / channels));
+    }
+
+    return wav;
 }
 
-struct P {
-  sample_t value;
-  bool hiPeak;
-  uint32 bufferIndex;
-  uint32 index;
-  double scaled;
+
+// Remove slow DC/baseline wander before peak detection.  Datapoint carrier
+// transitions are around 0.5-1.0 kHz at this tape speed, while cassette
+// head/coupling/tape defects can add much slower baseline motion.  A symmetric
+// configurable moving average follows that slow component.  Subtracting it
+// makes local extrema and knee timing less sensitive to a drifting DC level.
+// Longer windows are gentler (lower effective high-pass cutoff); shorter windows
+// remove faster baseline variations but can alter the wanted waveform more.
+static void remove_slow_baseline(WavData &wav, double window_ms) {
+    if (wav.samples.empty() || wav.sample_rate == 0) return;
+
+    uint32_t window = static_cast<uint32_t>(
+        std::lround(static_cast<double>(wav.sample_rate) * window_ms / 1000.0));
+    if (window < 5) window = 5;
+    if ((window & 1U) == 0) ++window;
+    const uint32_t half = window / 2;
+
+    std::vector<int64_t> prefix(wav.samples.size() + 1, 0);
+    for (size_t i = 0; i < wav.samples.size(); ++i) {
+        prefix[i + 1] = prefix[i] + wav.samples[i];
+    }
+
+    std::vector<sample_t> corrected(wav.samples.size());
+    for (size_t i = 0; i < wav.samples.size(); ++i) {
+        const size_t lo = (i > half) ? i - half : 0;
+        const size_t hi = std::min(wav.samples.size(), i + half + 1);
+        const double baseline = static_cast<double>(prefix[hi] - prefix[lo]) /
+                                static_cast<double>(hi - lo);
+        double v = static_cast<double>(wav.samples[i]) - baseline;
+        v = std::max(-32768.0, std::min(32767.0, v));
+        corrected[i] = static_cast<sample_t>(std::lround(v));
+    }
+
+    wav.samples.swap(corrected);
+}
+
+struct Sample {
+    sample_t s = 0;
+    double scaled = 0.0;
+    uint32_t index = 0;
+    bool peak = false;
+    bool high_peak = false;
 };
 
-typedef std::vector<struct P> Peaks;
+using SampleBuffer = std::vector<Sample>;
 
-void savePeak(SampleBuffer * sb, Peaks * ps, bool highPeak, uint32 i) {
-  struct P p;
-  (*sb)[i+1].peak = true;
-  (*sb)[i+1].highPeak = highPeak;
-  p.value = (*sb)[i+1].s;
-  p.hiPeak = highPeak;
-  p.index = (*sb)[i+1].index;
-  p.scaled = (*sb)[i+1].scaled;
-  p.bufferIndex = i+1;
-  ps->push_back(p);
-  tprintf(3, "%s peak found at %ld unscaled=%d scaled=%f\n", p.hiPeak?"High":"Low", p.index, p.value, p.scaled);
+struct Peak {
+    sample_t value = 0;
+    bool high = false;
+    uint32_t buffer_index = 0;
+    uint32_t index = 0;
+    double scaled = 0.0;
+};
+
+using Peaks = std::vector<Peak>;
+
+struct HiLo {
+    sample_t high_value = 0;
+    sample_t low_value = 0;
+};
+
+static HiLo find_highest_lowest(const SampleBuffer &sb) {
+    HiLo h;
+    h.high_value = sb.front().s;
+    h.low_value = sb.front().s;
+
+    for (const Sample &s : sb) {
+        h.high_value = std::max(h.high_value, s.s);
+        h.low_value = std::min(h.low_value, s.s);
+    }
+    return h;
 }
 
-Peaks findPeaks (SampleBuffer * sb) {
-  Peaks ps;
-  
-  sample_t diff1, diff2;
-  
-  for (uint32 i=1; i< sb->size()-2; i++) {
-    diff1 = (*sb)[i+1].s - (*sb)[i].s;
-    diff2 = (*sb)[i+2].s - (*sb)[i+1].s;
-    if (diff1<0 && diff2>=0) { // Low local maxima
-      savePeak(sb, &ps, false, i);
-    } else if (diff1>0 && diff2 <=0) { // high local maxima
-      savePeak(sb, &ps, true, i);  
-    } else {
-      (*sb)[i+1].peak = false;  
-    }     
-  } 
-  return ps;
+static void scale_buffer(SampleBuffer &sb, sample_t low, sample_t high) {
+    const double range = static_cast<double>(high) - static_cast<double>(low);
+
+    // A completely flat window contains no useful transition information.
+    if (std::fabs(range) < 1.0) {
+        for (Sample &s : sb) {
+            s.scaled = 0.5;
+        }
+        return;
+    }
+
+    for (Sample &s : sb) {
+        s.scaled = (static_cast<double>(s.s) - static_cast<double>(low)) / range;
+    }
 }
 
-void fillSampleBuffer (uint32 * nSamp, SampleBuffer * sb, int count) {
-  // First remove old samples
-  sb->clear();
-  for (int i = 0; i < count && *nSamp < expected_samples; i++, (*nSamp)++) {
-    Sample t;
-    t.scaled = 0.0;
-    t.index = *nSamp;
-    t.highest = false;
-    t.lowest = false;
-    t.distance = 0.0;
-    t.peak = false;
-    t.highPeak = false;
-    sample_t s=GETIN(*nSamp);
-    t.s = s;
-    tprintf(3, "Getting nSamp=%ld sample=%d\n", *nSamp, s); 
-    sb->push_back(t);
-  }  
-}
+static Peaks find_peaks(SampleBuffer &sb) {
+    Peaks peaks;
+    if (sb.size() < 4) {
+        return peaks;
+    }
 
-void fillSampleBuffer (uint32 * nSamp, SampleBuffer * sb, int count, uint32 startIndex) {
-  // First remove old samples
-  tprintf(3, "Clearing sampleBuffer from %d to %d\n", (sb->begin())->index, startIndex);
-  while ((sb->begin())->index < startIndex) {
-    sb->erase(sb->begin()); 
-  }
-  count -= sb->size();
-  for (int i = 0; i < count && *nSamp < expected_samples; i++, (*nSamp)++) {
-    sample_t s=GETIN(*nSamp);
-    Sample t;
-    t.s = s;
-    t.scaled = 0.0;
-    t.index = *nSamp;
-    t.highest = false;
-    t.lowest = false;
-    t.distance = 0.0;
-    t.peak = false;
-    t.highPeak = false;
-    tprintf(3, "Getting nSamp=%ld sample=%d\n", *nSamp, s); 
-    sb->push_back(t);
-  }  
-}
+    // This is the same local derivative test used by the newer decoder in
+    // dpwav2tap.cpp: a sign change in the first difference marks a peak.
+    for (size_t i = 1; i + 2 < sb.size(); ++i) {
+        int32_t diff1 = static_cast<int32_t>(sb[i + 1].s) - sb[i].s;
+        int32_t diff2 = static_cast<int32_t>(sb[i + 2].s) - sb[i + 1].s;
 
-void scaleBuffer (SampleBuffer * sb, double scalingValue, sample_t lowest) {
-  for (int i=0; i<sb->size(); i++) {
-    (*sb)[i].scaled = (( ((double)((*sb)[i].s))-((double)lowest)))/  scalingValue;
-    tprintf(3, "Scale buffer value %d (%ld) with scalingValue %f/%d to %f\n",(*sb)[i].s, (*sb)[i].index, scalingValue, lowest, (*sb)[i].scaled );
-  } 
+        bool is_peak = false;
+        bool high = false;
+        if (diff1 < 0 && diff2 >= 0) {
+            is_peak = true;
+            high = false;
+        } else if (diff1 > 0 && diff2 <= 0) {
+            is_peak = true;
+            high = true;
+        }
+
+        if (is_peak) {
+            sb[i + 1].peak = true;
+            sb[i + 1].high_peak = high;
+            Peak p;
+            p.value = sb[i + 1].s;
+            p.high = high;
+            p.buffer_index = static_cast<uint32_t>(i + 1);
+            p.index = sb[i + 1].index;
+            p.scaled = sb[i + 1].scaled;
+            peaks.push_back(p);
+        }
+    }
+    return peaks;
 }
 
 struct PeakScore {
-  sample_t timeDistance;
-  double amplitudeDistance;
-  uint32 firstBufferIndex;
-  uint32 lastBufferIndex;
-  uint32 firstIndex;
-  uint32 lastIndex;
-  double score;
+    uint32_t first_buffer_index = 0;
+    uint32_t last_buffer_index = 0;
+    uint32_t first_index = 0;
+    uint32_t last_index = 0;
+    double score = std::numeric_limits<double>::infinity();
 };
 
+static std::vector<PeakScore> score_acquisition_pairs(const Peaks &peaks,
+                                                       double samples_per_bit) {
+    std::vector<PeakScore> scores;
 
-bool compareSort (struct PeakScore a,struct PeakScore b) { return (a.score<b.score); }
+    for (size_t i = 0; i < peaks.size(); ++i) {
+        for (size_t j = i + 1; j < peaks.size(); ++j) {
+            // Consecutive useful extrema must have opposite polarity.
+            if (peaks[i].high == peaks[j].high) {
+                continue;
+            }
 
-typedef std::vector<struct PeakScore> PeakScores;
+            const double time_distance = static_cast<double>(peaks[j].index - peaks[i].index);
+            const double amplitude_distance = std::fabs(peaks[i].scaled - peaks[j].scaled);
+            const double time_score = std::pow((time_distance - samples_per_bit) / samples_per_bit, 2.0);
+            const double amplitude_score = std::pow(amplitude_distance - 1.0, 2.0);
 
-
-PeakScores calculateScores (Peaks * ps) {
-  PeakScores scores;
-  struct PeakScore s;
-  for (int i = 0; i < ps->size() - 1; i++)
-  {
-    for (int j = i + 1; j < ps->size(); j++)
-    {
-      bool firstHiPeak = (*ps)[i].hiPeak;
-      bool lastHiPeak = (*ps)[j].hiPeak;
-      tprintf(3, "Processing peaks %d,%d firstHiPeak=%s lastHiPeak=%s",(*ps)[i].index, (*ps)[j].index, firstHiPeak?"TRUE":"FALSE", lastHiPeak?"TRUE":"FALSE" );
-      if ((firstHiPeak && !lastHiPeak) || (!firstHiPeak && lastHiPeak)) {
-        s.amplitudeDistance = fabs((*ps)[i].scaled - (*ps)[j].scaled);
-        s.timeDistance = abs(((int)(*ps)[i].index) - ((int)(*ps)[j].index));
-        s.firstBufferIndex = (*ps)[i].bufferIndex;
-        s.lastBufferIndex = (*ps)[j].bufferIndex;
-        s.firstIndex = (*ps)[i].index;
-        s.lastIndex = (*ps)[j].index;
-        scores.push_back(s);
-        tprintf(3, " - amplitudeDistanced=%f timeDistance=%d firstBufferIndex=%ld lastBufferIndex=%ld firstIndex=%ld lastIndex=%ld\n",s.amplitudeDistance, s.timeDistance, s.firstBufferIndex, s.lastBufferIndex,s.firstIndex, s.lastIndex );
-      } else {
-        tprintf (3, " - not a transistion\n");
-      }
-    }
-  }
-  for (int i = 0; i < scores.size(); i++) { 
-    double samplesPerPeriod = sampleRate / zero_freq;
-    double timeScore = pow((((double)scores[i].timeDistance) - samplesPerPeriod)/samplesPerPeriod, 2);
-    double amplitudeScore = pow((scores[i].amplitudeDistance - 1.0f), 2);
-    scores[i].score = timeScore + amplitudeScore;
-    tprintf(3, "amplitudeScore=%f timeScore=%f at %ld, %ld\n", amplitudeScore, timeScore, scores[i].firstIndex, scores[i].lastIndex);
-  }
-  std::sort(scores.begin(), scores.end(), compareSort);
-  for (int i = 0; i < scores.size(); i++) {
-    tprintf(3, "Sorted: score=%f at %ld, %ld\n", scores[i].score, scores[i].firstIndex,scores[i].lastIndex );
-  }
-  return scores;
-}
-
-
-
-
-PeakScores calculateScoresSingle (Peaks * ps, bool lastPeakIsHigh,double lastPeakAmplitude) {
-  struct PeakScore s;
-  PeakScores scores;
-  for (int i=0; i < ps->size(); i++) {
-    tprintf(3, "Processing peaks %d lastPeakIsHigh=%s currentPeakIsHigh=%s scaled=%f lastPeakAmplitude=%f", (*ps)[i].index, lastPeakIsHigh?"TRUE":"FALSE", (*ps)[i].hiPeak?"TRUE":"FALSE", (*ps)[i].scaled, lastPeakAmplitude);
-    if ((lastPeakIsHigh && (!((*ps)[i].hiPeak))) ||((!lastPeakIsHigh) && ((*ps)[i].hiPeak))) { 
-      double totalScore;
-      double longPeriod = sampleRate / zero_freq;
-      double shortPeriod = sampleRate / (2.0f *zero_freq);
-      double longScore =  pow((fabs(((double) (*ps)[i].bufferIndex) - longPeriod)/longPeriod), 3);
-      double shortScore = pow((fabs(((double) (*ps)[i].bufferIndex) - shortPeriod)/shortPeriod),3); 
-      double amplitudeDistance = fabs((*ps)[i].scaled - lastPeakAmplitude);
-      double amplitudeScore = 1/amplitudeDistance;
-      if (longScore<shortScore) {
-        totalScore = 8*longScore+0.10*amplitudeScore;
-      } else {
-        totalScore = 8*shortScore+0.10*amplitudeScore;
-      }  
-      s.firstBufferIndex = (*ps)[i].bufferIndex;
-      s.firstIndex = (*ps)[i].index;
-      s.score = totalScore;
-      scores.push_back(s);
-      tprintf(3, " - longScore=%f shortScore=%f amplitudeDistance=%f amplitudeScore=%f totalScore=%f\n",longScore, shortScore, amplitudeDistance, amplitudeScore, totalScore );
-    } else {
-      tprintf (3, " - not a transistion\n");
-    }
-  }
-  std::sort(scores.begin(), scores.end(), compareSort);
-  for (int i = 0; i < scores.size(); i++) {
-    tprintf(3, "Sorted: score=%f at %ld\n", scores[i].score, scores[i].firstIndex );
-  }  
-  return scores;
-}
-
-uint32 findKnee(SampleBuffer * s, uint32 peakBufferIndex) {
-  double peak = (*s)[peakBufferIndex].scaled;
-  double previousPeak = (*s)[0].scaled;
-  double distance = fabs(peak-previousPeak);
-  bool isHighPeak = (*s)[peakBufferIndex].highPeak;
-  uint32 i;
-  for (i=peakBufferIndex; i > 0; i--) {
-    tprintf(3, "findKnee: searching. i=%ld highPeak=%s scaled=%f distance=%f scaled/distance=%f\n", i, (*s)[i].highPeak?"TRUE":"FALSE",(*s)[i].scaled, distance, (*s)[i].scaled/distance );
-    if ((fabs(((*s)[i].scaled)-previousPeak)/distance)<0.925f) break; 
-  }
-  tprintf(3, "findKnee: peak=%f previousPeak=%d distance=%f foundKnee=%f at %d (%d) \n", peak, previousPeak, distance, (*s)[i].scaled, (*s)[i].index, i); 
-  return (*s)[i].index;  
-}
-
-void FindTransitions() {
-  SampleBuffer sampleBuffer;
-  sample_t low=32767, high=-32768, sample;
-  long lastPeak=0;
-  bool lastPeakIsHigh;
-  int lowestIndex, highestIndex;
-
-  HiLo hilo;
-  while (nSamp < expected_samples) { 
-    if (BSstate == BS_LOST) {
-      Peaks ps;
-      PeakScores scores;
-      fillSampleBuffer(&nSamp, &sampleBuffer, 80);
-      hilo = findHighestLowest(&sampleBuffer);
-      scaleBuffer(&sampleBuffer, fabs(((double) hilo.highValue)-((double) hilo.lowValue)), hilo.lowValue);
-      ps = findPeaks(&sampleBuffer);
-      scores = calculateScores(&ps);
-      // Take the first one which has lowest score. Lower score is better..
-      if (scores.size()>0) {
-        uint32 lastBufferIndex = scores[0].lastBufferIndex;
-        lastPeakIsHigh = sampleBuffer[lastBufferIndex].highPeak;
-        DecodeBits(scores[0].firstIndex);
-        DecodeBits(scores[0].lastIndex);
-        tprintf(3, "firstBufferIndex=%ld lastBufferIndex=%ld lastPeakIsHigh=%s\n",  scores[0].firstBufferIndex, scores[0].lastBufferIndex, lastPeakIsHigh?"TRUE":"FALSE");
-        lastPeak =  scores[0].lastIndex;
-      } else {
-        tprintf(3, "Didn't find any peaks. Scores is empty.\n");
-      }
-    } else {
-      Peaks ps;
-      PeakScores scores;
-      fillSampleBuffer(&nSamp, &sampleBuffer, 67, lastPeak);
-      hilo = findHighestLowest(&sampleBuffer);
-      scaleBuffer(&sampleBuffer, fabs(((double) hilo.highValue)-((double) hilo.lowValue)), hilo.lowValue);
-      ps = findPeaks(&sampleBuffer);
-      scores = calculateScoresSingle(&ps, lastPeakIsHigh, sampleBuffer[0].scaled); 
-      if (scores.size()>0) {
-        uint32 firstBufferIndex = scores[0].firstBufferIndex;
-        uint32 kneeIndex = findKnee(&sampleBuffer, firstBufferIndex);
-        lastPeakIsHigh = sampleBuffer[firstBufferIndex].highPeak;
-        lastPeak =  scores[0].firstIndex;
-        tprintf(3, "kneeIndex=%ld\n", kneeIndex);
-        DecodeBits(kneeIndex);
-      } else {
-        DecodeBits(sampleBuffer[sampleBuffer.size()].index);
-        tprintf(3, "Didn't find any peaks. Scores is empty.\n");
-      }
-    }
-  }
-
-}
-
-
-#endif
-
-
-#if 0
-void FindTransitions() {
-  int state = 0;
-  sample_t low=32767, high=-32768, sample, previousHigh, previousLow;
-  int lowestIndex, highestIndex, previousHighestIndex, previousLowestIndex, lastProcessedSampleIndex;
-  lowestIndex = highestIndex = 0;
-  previousLowestIndex = previousHighestIndex= low = high = GETIN(0);
-  for (uint32 nSamp = 1; nSamp < expected_samples; nSamp++) {
-    sample = GETIN(nSamp);
-    if (low > sample) {
-      lowestIndex = nSamp;
-      low = sample;
-    }
-    if (high < sample) {
-      highestIndex = nSamp;
-      high = sample;
-    }
-    if (highestIndex > lowestIndex) {
-      previousLowestIndex = lowestIndex;
-      previousLow = low;
-      //low = 32767;
-    } else {
-      previousHighestIndex = highestIndex;
-      previousHigh = high;
-      //high = -32768;
-    }
-    if ((previousHighestIndex > previousLowestIndex) && (previousLowestIndex == lastProcessedSampleIndex)) {
-      double absDistance = (double) abs(previousHigh - previousLow);
-      // Find leading edge on the pulse where the slope is approaching zero.
-      for (int i=previousHighestIndex; i>(previousLowestIndex+1); i--) {
-        // going backwards to find it.
-        sample_t s = GETIN(i);
-        sample_t t = GETIN(i-1);
-        double diff = abs(s-t);
-        double scaledDiff = diff/absDistance;
-        if (diff > 0.0625f) {
-          break;
+            PeakScore s;
+            s.first_buffer_index = peaks[i].buffer_index;
+            s.last_buffer_index = peaks[j].buffer_index;
+            s.first_index = peaks[i].index;
+            s.last_index = peaks[j].index;
+            s.score = time_score + amplitude_score;
+            scores.push_back(s);
         }
-      }
-      lastProcessedSampleIndex = previousHighestIndex;
-    } 
-    if ((previousLowestIndex > previousHighestIndex) && (previousHighestIndex == lastProcessedSampleIndex)) {
-      double absDistance = (double) abs(previousHigh - previousLow);
-      // Find leading edge on the pulse where the slope is approaching zero.
-      for (int i=previousLowestIndex; i>(previousHighestIndex+1); i--) {
-        // going backwards to find it.
-        sample_t s = GETIN(i);
-        sample_t t = GETIN(i-1);
-        double diff = abs(s-t);
-        double scaledDiff = diff/absDistance;
-        if (diff > 0.0625f) {
-          break;
-        }
-      }
-      lastProcessedSampleIndex = previousLowestIndex;
-    } 
-    tprintf(3, "sample=%lu DIFF=%d\n", nSamp, abs(diff)); 
-  }
-}
-#endif 
-
-
-#if 0
-void FindTransitions() {
-  int highestIndex, lastHighestIndex = 0;
-  int lowestIndex, lastLowestIndex = 0;
-  std::vector<sample_t> sampleBuffer;
-  for (int i = 0; i < 64; i++) {
-    sampleBuffer.push_back(GETIN(i));
-  }
-  for (uint32 nSamp = 64; nSamp < expected_samples; nSamp++) {
-
-    sample_t high = sampleBuffer.front();
-    sample_t low = sampleBuffer.front();
-    for (int i = 0; i < 64; i++) {
-      if (high < sampleBuffer[i]) {
-        high = sampleBuffer[i];
-        highestIndex = i;
-      }
-      if (low > sampleBuffer[i]) {
-        low = sampleBuffer[i];
-        lowestIndex = i;
-      }
     }
 
-    sampleBuffer.push_back(GETIN(nSamp));
-    sampleBuffer.erase(sampleBuffer.begin());
-  }
+    std::sort(scores.begin(), scores.end(),
+              [](const PeakScore &a, const PeakScore &b) { return a.score < b.score; });
+    return scores;
 }
-#endif
 
-// find the alternating local minima and maxima and estimate the zero
-// crossing to be midway between them.
+static uint32_t find_knee(const SampleBuffer &sb, uint32_t peak_buffer_index) {
+    const double peak = sb[peak_buffer_index].scaled;
+    const double previous_peak = sb.front().scaled;
+    const double distance = std::fabs(peak - previous_peak);
 
-/* this needs a lot more sophistication -- eg, look for a bit time or three
-around the current point to get an estimate of the envelope of the wave
-and use that when looking for peaks -- a deviation must be at least some
-percentage of the min/max envelope spread.*/
+    if (distance < 1.0e-9) {
+        return sb[peak_buffer_index].index;
+    }
 
-/*void
-FindTransitions()
-{
-    bool     bFirst = true;	// first transition seen
-    bool     bUp    = false;
-    sample_t prevSamp;		// previous sample
-    sample_t prev_min   =  32000;
-    uint32   prev_min_t = 0;		// time the min occurred
-    sample_t prev_max   = -32000;
-    uint32   prev_max_t = 0;		// time the max occurred
-    float    prevIntercept = 0.0f;	// previous zero intercept
+    uint32_t i = peak_buffer_index;
+    while (i > 0) {
+        // Keep the original 0.925 threshold.  Walking backwards from the
+        // extremum finds the front-porch "knee" used as transition time.
+        if ((std::fabs(sb[i].scaled - previous_peak) / distance) < 0.925) {
+            break;
+        }
+        --i;
+    }
+    return sb[i].index;
+}
 
-    prevSamp = GETIN(0);
-    for(uint32 nSamp=1; nSamp<expected_samples; nSamp++) {
-        sample_t samp = GETIN(nSamp);
-        if (samp > prev_max) {
-            prev_max   = samp;
-            prev_max_t = nSamp;
-            bUp = true;
-        } else if (samp < prev_min) {
-            prev_min   = samp;
-            prev_min_t = nSamp;
-            bUp = false;
+static SampleBuffer make_buffer(const std::vector<sample_t> &samples,
+                                uint32_t start,
+                                uint32_t count) {
+    SampleBuffer sb;
+    if (start >= samples.size()) {
+        return sb;
+    }
+
+    const uint32_t end = static_cast<uint32_t>(
+        std::min<size_t>(samples.size(), static_cast<size_t>(start) + count));
+    sb.reserve(end - start);
+
+    for (uint32_t i = start; i < end; ++i) {
+        Sample s;
+        s.s = samples[i];
+        s.index = i;
+        sb.push_back(s);
+    }
+    return sb;
+}
+
+struct BitEvent {
+    uint32_t sample_index = 0;
+    char bit = '0';
+    std::string classification;
+    double pll_period = 0.0;
+};
+
+class BitWriter {
+public:
+    BitWriter(FILE *bits_fp, FILE *trace_fp)
+        : bits_fp_(bits_fp), trace_fp_(trace_fp) {
+        if (trace_fp_) {
+            fprintf(trace_fp_, "bit_index,sample_index,bit,classification,pll_period\n");
+        }
+    }
+
+    void put(uint32_t sample_index, char bit, const char *classification,
+             double pll_period) {
+        BitEvent e;
+        e.sample_index = sample_index;
+        e.bit = bit;
+        e.classification = classification;
+        e.pll_period = pll_period;
+        events_.push_back(e);
+
+        if (trace_fp_) {
+            fprintf(trace_fp_, "%llu,%u,%c,%s,%.6f\n",
+                    static_cast<unsigned long long>(events_.size() - 1),
+                    sample_index, bit, classification, pll_period);
+        }
+    }
+
+    void finish() {
+        if (bits_fp_) {
+            format_framed_output();
+        }
+    }
+
+    uint64_t bit_count() const { return events_.size(); }
+    const std::vector<BitEvent> &events() const { return events_; }
+
+private:
+    static constexpr unsigned SYNC_THRESHOLD = 32;
+
+    void write_char(char c) {
+        if (bits_fp_) {
+            fputc(c, bits_fp_);
+        }
+    }
+
+    void write_range(size_t first, size_t last) {
+        for (size_t i = first; i < last; ++i) {
+            write_char(events_[i].bit);
+        }
+    }
+
+    std::string bits_string(size_t first, size_t count) const {
+        std::string s;
+        s.reserve(count);
+        for (size_t i = 0; i < count && first + i < events_.size(); ++i) {
+            s.push_back(events_[first + i].bit);
+        }
+        return s;
+    }
+
+    void framing_error(size_t bit_index, const char *reason) const {
+        // The integrated TAP/block processor owns error reporting. The optional
+        // .bits formatter only marks questionable regions with '<'.
+        (void)bit_index;
+        (void)reason;
+    }
+
+    void format_framed_output() {
+        size_t i = 0;
+        bool have_output = false;
+
+        while (i < events_.size()) {
+            // Find a credible block start: a leader of more than 32 one bits
+            // immediately followed by the initial 010 sync.
+            const size_t leader_start = i;
+            size_t p = i;
+            while (p < events_.size() && events_[p].bit == '1') {
+                ++p;
+            }
+            const size_t ones = p - i;
+
+            if (ones > SYNC_THRESHOLD && p + 2 < events_.size() &&
+                events_[p].bit == '0' && events_[p + 1].bit == '1' &&
+                events_[p + 2].bit == '0') {
+                // Leader/trailer runs are not wrapped. A single newline is
+                // inserted at the boundary so every framed byte begins at
+                // column zero.
+                write_range(leader_start, p);
+                if (have_output || p > leader_start) {
+                    write_char('\n');
+                }
+                have_output = true;
+
+                size_t prefix = p;
+                for (;;) {
+                    // Physical layout is:
+                    //   sync0 data0 sync1 data1 ... syncN gap(11 ones)
+                    // For inspection we display each byte as sync + data.
+                    // Therefore the sync at 'prefix' belongs to the following
+                    // eight data bits.
+                    if (prefix + 14 <= events_.size()) {
+                        bool gap = true;
+                        for (size_t k = prefix + 3; k < prefix + 14; ++k) {
+                            if (events_[k].bit != '1') {
+                                gap = false;
+                                break;
+                            }
+                        }
+                        if (gap) {
+                            // This is the final trailing sync followed by the
+                            // 11-one end-of-record marker. Keep both unwrapped.
+                            write_range(prefix, prefix + 14);
+                            i = prefix + 14;
+                            have_output = true;
+                            break;
+                        }
+                    }
+
+                    if (prefix + 11 > events_.size()) {
+                        framing_error(prefix, "end of input inside framed byte");
+                        write_range(prefix, events_.size());
+                        i = events_.size();
+                        have_output = true;
+                        break;
+                    }
+
+                    bool mark_line = false;
+
+                    const bool sync_valid =
+                        events_[prefix].bit == '0' &&
+                        events_[prefix + 1].bit == '1' &&
+                        events_[prefix + 2].bit == '0';
+
+                    if (!sync_valid) {
+                        const std::string sync = bits_string(prefix, 3);
+
+                        // A single missing/extra decoded bit would otherwise
+                        // make every following line appear to have bad framing.
+                        // Search forward for a strong resynchronization point:
+                        // four 010 syncs at the normal 11-bit byte spacing.
+                        size_t resync = events_.size();
+                        const size_t search_end =
+                            std::min(events_.size(), prefix + 256);
+                        for (size_t q = prefix + 1; q + 36 <= search_end; ++q) {
+                            bool strong = true;
+                            for (size_t n = 0; n < 4; ++n) {
+                                const size_t r = q + 11 * n;
+                                if (events_[r].bit != '0' ||
+                                    events_[r + 1].bit != '1' ||
+                                    events_[r + 2].bit != '0') {
+                                    strong = false;
+                                    break;
+                                }
+                            }
+                            if (strong) {
+                                resync = q;
+                                break;
+                            }
+                        }
+
+                        if (resync != events_.size()) {
+
+                            // Preserve the questionable decoded region exactly
+                            // as recovered so it can be compared with the WAV
+                            // and hand-edited. Prefix it with '<' so it stands
+                            // out immediately in the editable .bits file.
+                            write_char('<');
+                            write_range(prefix, resync);
+                            write_char('\n');
+                            prefix = resync;
+                            continue;
+                        }
+
+                        char msg[160];
+                        snprintf(msg, sizeof(msg),
+                                 "expected byte sync 010, got %s; unable to "
+                                 "resynchronize within 256 bits",
+                                 sync.c_str());
+                        framing_error(prefix, msg);
+                        mark_line = true;
+                    }
+
+                    bool data_valid = true;
+                    for (size_t k = prefix + 3; k < prefix + 11; ++k) {
+                        if (events_[k].bit != '0' && events_[k].bit != '1') {
+                            data_valid = false;
+                            break;
+                        }
+                    }
+                    if (!data_valid) {
+                        framing_error(prefix + 3,
+                                      "undecidable waveform bit inside data byte");
+                        mark_line = true;
+                    }
+
+                    // Always show the actual three framing bits followed by
+                    // the eight recorded data bits. Thus a damaged sync is
+                    // visible directly in the .bits file (for example 011...),
+                    // while valid lines are exactly 010XXXXXXXX. Prefix a
+                    // problematic line with '<' for easy manual inspection.
+                    if (mark_line) {
+                        write_char('<');
+                    }
+                    write_range(prefix, prefix + 11);
+                    write_char('\n');
+                    have_output = true;
+
+                    // The next physical sync begins immediately after these
+                    // eight data bits.
+                    prefix += 11;
+                }
+                continue;
+            }
+
+            // No block start here. Preserve the unframed bits verbatim and
+            // continue searching. This covers leaders, trailers and unrelated
+            // signal without adding wrapping.
+            write_range(leader_start, p);
+            have_output = have_output || (p > leader_start);
+            if (p < events_.size()) {
+                write_char(events_[p].bit);
+                have_output = true;
+                i = p + 1;
+            } else {
+                i = p;
+            }
+        }
+    }
+
+    FILE *bits_fp_ = nullptr;
+    FILE *trace_fp_ = nullptr;
+    std::vector<BitEvent> events_;
+};
+
+class TransitionDecoder {
+public:
+    TransitionDecoder(double nominal_period, BitWriter &writer)
+        : nominal_period_(nominal_period), pll_period_(nominal_period),
+          min_period_(nominal_period * 0.75), max_period_(nominal_period * 1.25),
+          writer_(writer) {}
+
+    void reset() {
+        state_ = INIT;
+        pll_period_ = nominal_period_;
+        prev_time_ = 0;
+        half_time_ = 0;
+    }
+
+    void transition(uint32_t time) {
+        switch (state_) {
+        case INIT:
+            prev_time_ = time;
+            state_ = READY;
+            return;
+
+        case HALF_BIT: {
+            int type = classify(time - half_time_);
+            if (type == 0) {
+                // Two short half-periods form a zero bit.
+                emit(time, '0', "zero");
+            } else if (type == -1) {
+                emit(time, '?', "runt_second_half");
+            } else if (type == 1) {
+                // We already saw a credible short first half-period. On old
+                // cassette recordings the opposite excursion can be flattened
+                // or stretched by a local dropout, causing the second half to
+                // look like a full-period interval. This is still most likely
+                // a zero bit. Use twice the shorter half for the PLL update so
+                // the damaged excursion cannot pull the PLL far off frequency.
+                emit(time, '0', "zero_stretched_second_half");
+            } else {
+                emit(time, '?', "too_long_second_half");
+            }
+
+            if (type == 1) {
+                const uint32_t first_half = half_time_ - prev_time_;
+                const uint32_t second_half = time - half_time_;
+                pll(2U * std::min(first_half, second_half));
+            } else {
+                pll(time - prev_time_);
+            }
+            prev_time_ = time;
+            state_ = READY;
+            return;
+        }
+
+        case READY: {
+            int type = classify(time - prev_time_);
+            if (type == 0) {
+                // First short half-period; wait for its partner.
+                half_time_ = time;
+                state_ = HALF_BIT;
+            } else if (type == 1) {
+                // One full-period transition interval is a one bit.
+                emit(time, '1', "one");
+                pll(time - prev_time_);
+                prev_time_ = time;
+            } else if (type == -1) {
+                emit(time, '?', "runt");
+                half_time_ = time;
+            } else {
+                emit(time, '?', "too_long");
+                pll(time - prev_time_);
+                prev_time_ = time;
+            }
+            return;
+        }
+        }
+    }
+
+    // Score a prospective transition using its knee position and the
+    // current PLL state. This is more reliable than measuring extremum-to-
+    // extremum distance when a damaged waveform creates extra/weak peaks.
+    double candidate_timing_score(uint32_t time) const {
+        uint32_t reference = (state_ == HALF_BIT) ? half_time_ : prev_time_;
+        if (time <= reference) {
+            return std::numeric_limits<double>::infinity();
+        }
+
+        const double duration = static_cast<double>(time - reference);
+        const double short_period = pll_period_ / 2.0;
+        const double long_period = pll_period_;
+
+        if (state_ == HALF_BIT) {
+            // Once the first half of a zero has been accepted, strongly
+            // prefer another short half-period.
+            return std::pow(std::fabs(duration - short_period) / short_period, 3.0);
+        }
+
+        // In READY state either a short first half of zero or one complete
+        // one-bit period is legitimate.
+        const double short_score =
+            std::pow(std::fabs(duration - short_period) / short_period, 3.0);
+        const double long_score =
+            std::pow(std::fabs(duration - long_period) / long_period, 3.0);
+        return std::min(short_score, long_score);
+    }
+
+    double pll_period() const { return pll_period_; }
+
+private:
+    enum State { INIT, HALF_BIT, READY };
+
+    int classify(uint32_t duration) const {
+        if (duration < 0.25 * pll_period_) {
+            return -1;
+        }
+        if (duration < 0.75 * pll_period_) {
+            return 0;
+        }
+        if (duration < 1.50 * pll_period_) {
+            return 1;
+        }
+        return 2;
+    }
+
+    void pll(uint32_t duration) {
+        // Same first-order PLL correction as dpwav2tap.cpp.
+        constexpr double pll_bump = 0.15;
+        const double phase_diff = static_cast<double>(duration) - pll_period_;
+        pll_period_ += phase_diff * pll_bump;
+        pll_period_ = std::max(min_period_, std::min(max_period_, pll_period_));
+    }
+
+    void emit(uint32_t time, char bit, const char *why) {
+        writer_.put(time, bit, why, pll_period_);
+        vprint(3, "sample %u: bit %c (%s), pll %.3f\n", time, bit, why, pll_period_);
+    }
+
+    State state_ = INIT;
+    double nominal_period_ = 0.0;
+    double pll_period_ = 0.0;
+    double min_period_ = 0.0;
+    double max_period_ = 0.0;
+    uint32_t prev_time_ = 0;
+    uint32_t half_time_ = 0;
+    BitWriter &writer_;
+};
+
+struct Options {
+    const char *input = nullptr;
+    std::string tap_output;
+    std::string bits_output;
+    std::string trace;
+    std::string log;
+    double dc_filter_ms = 0.0;
+    bool dc_filter_auto = false;
+};
+
+static std::string replace_suffix(const std::string &input, const char *suffix) {
+    std::string out = input;
+    const size_t slash = out.find_last_of("/\\");
+    const size_t dot = out.find_last_of('.');
+    if (dot != std::string::npos && (slash == std::string::npos || dot > slash)) {
+        out.resize(dot);
+    }
+    out += suffix;
+    return out;
+}
+
+static void usage(const char *prog) {
+    fprintf(stderr,
+            "Usage: %s [-v N] [-o output.tap] [-b output.bits] [-t trace.csv] [-l log.txt] [--dc-filter MS|auto] input.wav\n"
+            "\n"
+            "  -o FILE   output SIMH TAP file (default: input.tap)\n"
+            "  -b FILE   optional editable framed bit output\n"
+            "  -t FILE   optional raw bit timing/PLL CSV trace\n"
+            "  -l FILE   block/framing log (default: stderr)\n"
+            "  -v N      waveform diagnostic verbosity, 0..3\n"
+            "  --dc-filter MS    subtract a centered MS-millisecond moving average before peak detection\n"
+            "  --dc-filter auto  decode unfiltered first, then use alternate windows only to fill failed block gaps\n"
+            "\n"
+            "Only complete framing-valid blocks are considered for TAP output.\n"
+            "Numeric records must also pass their Datapoint checksum.\n",
+            prog);
+    std::exit(1);
+}
+
+static Options parse_args(int argc, char **argv) {
+    Options o;
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "-v") == 0 && i + 1 < argc) {
+            verbosity = std::atoi(argv[++i]);
+        } else if (strcmp(argv[i], "-o") == 0 && i + 1 < argc) {
+            o.tap_output = argv[++i];
+        } else if (strcmp(argv[i], "-b") == 0 && i + 1 < argc) {
+            o.bits_output = argv[++i];
+        } else if (strcmp(argv[i], "-t") == 0 && i + 1 < argc) {
+            o.trace = argv[++i];
+        } else if (strcmp(argv[i], "-l") == 0 && i + 1 < argc) {
+            o.log = argv[++i];
+        } else if (strcmp(argv[i], "--dc-filter") == 0 && i + 1 < argc) {
+            const char *arg = argv[++i];
+            if (strcmp(arg, "auto") == 0) {
+                o.dc_filter_auto = true;
+                o.dc_filter_ms = 0.0;
+            } else {
+                char *end = nullptr;
+                const double ms = std::strtod(arg, &end);
+                if (!end || *end != '\0' || !std::isfinite(ms) || ms <= 0.0) {
+                    fprintf(stderr, "Invalid --dc-filter window '%s'; expected a positive number of milliseconds or 'auto'\n", arg);
+                    usage(argv[0]);
+                }
+                o.dc_filter_ms = ms;
+            }
+        } else if (argv[i][0] == '-') {
+            usage(argv[0]);
+        } else if (!o.input) {
+            o.input = argv[i];
         } else {
-            // look ahead a few samples to see if we just found the local
-min/max bool atpeak = true; for(int n=1; n<5; n++) { sample_t s = GETIN(nSamp +
-n); if ((s > prev_max) || (s < prev_min)) { atpeak = false; break;
+            usage(argv[0]);
+        }
+    }
+    if (!o.input) usage(argv[0]);
+    if (o.tap_output.empty()) o.tap_output = replace_suffix(o.input, ".tap");
+    return o;
+}
+
+static uint8_t reverse_byte(uint8_t value) {
+    value = static_cast<uint8_t>(((value & 0x55U) << 1) | ((value & 0xAAU) >> 1));
+    value = static_cast<uint8_t>(((value & 0x33U) << 2) | ((value & 0xCCU) >> 2));
+    return static_cast<uint8_t>((value << 4) | (value >> 4));
+}
+
+static bool write_u32_le(FILE *fp, uint32_t value) {
+    const uint8_t b[4] = {
+        static_cast<uint8_t>(value), static_cast<uint8_t>(value >> 8),
+        static_cast<uint8_t>(value >> 16), static_cast<uint8_t>(value >> 24)
+    };
+    return fwrite(b, 1, sizeof(b), fp) == sizeof(b);
+}
+
+static bool write_tap_record(FILE *fp, const std::vector<uint8_t> &data) {
+    if (data.empty() || data.size() > UINT32_MAX) return false;
+    const uint32_t len = static_cast<uint32_t>(data.size());
+    return write_u32_le(fp, len) &&
+           fwrite(data.data(), 1, data.size(), fp) == data.size() &&
+           write_u32_le(fp, len);
+}
+
+static bool is_file_header(const std::vector<uint8_t> &b) {
+    return b.size() >= 2 && b[0] == 0201 && b[1] == 0176;
+}
+static bool is_numeric_record(const std::vector<uint8_t> &b) {
+    return b.size() >= 2 && b[0] == 0303 && b[1] == 0074;
+}
+static bool is_symbolic_record(const std::vector<uint8_t> &b) {
+    return b.size() >= 2 && b[0] == 0347 && b[1] == 0030;
+}
+
+static bool datapoint_checksum_ok(const std::vector<uint8_t> &b) {
+    if (b.size() < 4) return false;
+    uint8_t xor_checksum = b[2];
+    uint8_t circulated_checksum = b[3];
+    for (size_t i = 4; i < b.size(); ++i) {
+        xor_checksum ^= b[i];
+        circulated_checksum ^= b[i];
+        const uint8_t lowest = circulated_checksum & 1U;
+        circulated_checksum >>= 1;
+        circulated_checksum |= static_cast<uint8_t>(lowest << 7);
+    }
+    return xor_checksum == 0 && circulated_checksum == 0;
+}
+
+struct BlockStats {
+    // synced_blocks counts every leader + initial 010 acquisition.  Some of
+    // these are write-splice/noise false acquisitions and never become a
+    // confirmed block.  Keep separate counters so the summary is auditable.
+    uint64_t synced_blocks = 0;
+    uint64_t completed_blocks = 0;
+    uint64_t empty_blocks = 0;
+    uint64_t false_first_byte_acquisitions = 0;
+    uint64_t framing_bad = 0;
+    uint64_t content_bad = 0;
+    uint64_t written = 0;
+    uint64_t bytes_written = 0;
+};
+
+struct BlockCandidate {
+    uint32_t start_sample = 0;
+    uint32_t end_sample = 0;
+    std::vector<uint8_t> data;
+    double filter_ms = 0.0;
+    bool numeric = false;
+    bool file_header = false;
+    bool symbolic = false;
+};
+
+struct FailedBlock {
+    enum class Kind { FRAMING, CONTENT };
+    Kind kind = Kind::FRAMING;
+    uint64_t block_number = 0;
+    uint32_t start_sample = 0;
+    uint32_t end_sample = 0;
+    size_t decoded_bytes = 0;
+};
+
+class BlockProcessor {
+public:
+    BlockProcessor(FILE *tap, FILE *log, BlockStats &stats,
+                   std::vector<BlockCandidate> *candidates = nullptr,
+                   double filter_ms = 0.0,
+                   std::vector<FailedBlock> *failures = nullptr)
+        : tap_(tap), log_(log), stats_(stats), candidates_(candidates),
+          filter_ms_(filter_ms), failures_(failures) {}
+
+    bool process(const std::vector<BitEvent> &events) {
+        events_ = &events;
+        for (size_t i = 0; i < events.size(); ++i) {
+            const BitEvent &e = events[i];
+            const int bit = (e.bit == '1') ? 1 : (e.bit == '0' ? 0 : -1);
+
+            // Ignore physical-decoder errors until block synchronization has
+            // been acquired. Write splices and inter-record gaps are expected
+            // to look ugly and are not useful diagnostics.
+            if (bit < 0) {
+                if (state_ == State::BLOCK) {
+                    if (!try_erasure_recovery(i, i, "undecidable waveform bit", i)) {
+                        fprintf(log_,
+                                "Block %llu lost sync: undecidable bit %zu at WAV sample %u (%s); "
+                                "discarding %zu decoded byte%s\n",
+                                static_cast<unsigned long long>(block_number_), i,
+                                e.sample_index, e.classification.c_str(), block_.size(),
+                                block_.size() == 1 ? "" : "s");
+                        ++stats_.framing_bad;
+                        record_failure(FailedBlock::Kind::FRAMING, e.sample_index, block_.size());
+                        lose_sync();
+                    } else {
+                        i = skip_to_bit_ - 1;
+                    }
+                }
+                continue;
+            }
+
+            switch (state_) {
+            case State::SEARCH:
+                if (bit) ++ones_;
+                else if (ones_ > SYNC_THRESHOLD) state_ = State::PREAMBLE_0;
+                else ones_ = 0;
+                break;
+
+            case State::PREAMBLE_0:
+                if (bit) state_ = State::PREAMBLE_01;
+                else { state_ = State::SEARCH; ones_ = 0; }
+                break;
+
+            case State::PREAMBLE_01:
+                if (!bit) {
+                    ++block_number_;
+                    ++stats_.synced_blocks;
+                    block_start_bit_ = i >= 2 ? i - 2 : 0;
+                    block_start_sample_ = events[block_start_bit_].sample_index;
+                    block_.clear();
+                    erasures_.clear();
+                    frame_bits_ = 0;
+                    frame_count_ = 0;
+                    state_ = State::BLOCK;
+                    fprintf(log_, "Block %llu sync at bit %zu, WAV sample %u\n",
+                            static_cast<unsigned long long>(block_number_),
+                            block_start_bit_, block_start_sample_);
+                } else {
+                    state_ = State::SEARCH;
+                    ones_ = 2;
+                }
+                break;
+
+            case State::BLOCK:
+                if (!feed_block_bit(bit, i, e.sample_index, i)) return false;
+                break;
+            }
+        }
+
+        if (state_ == State::BLOCK) {
+            fprintf(log_,
+                    "Block %llu lost sync: end of WAV after %zu decoded byte%s; block discarded\n",
+                    static_cast<unsigned long long>(block_number_), block_.size(),
+                    block_.size() == 1 ? "" : "s");
+            ++stats_.framing_bad;
+            if (!block_.empty() && !events.empty()) {
+                record_failure(FailedBlock::Kind::FRAMING, events.back().sample_index, block_.size());
+            }
+        }
+        return true;
+    }
+
+private:
+    enum class State { SEARCH, PREAMBLE_0, PREAMBLE_01, BLOCK };
+    static constexpr size_t SYNC_THRESHOLD = 32;
+
+    struct Erasure {
+        size_t first_byte = 0;
+        size_t count = 0;
+        size_t start_bit = 0;
+        size_t resync_bit = 0;
+        uint32_t start_sample = 0;
+        std::string observed_bits;
+        bool starts_with_sync = true;
+    };
+
+    State state_ = State::SEARCH;
+    FILE *tap_ = nullptr;
+    FILE *log_ = nullptr;
+    BlockStats &stats_;
+    std::vector<BlockCandidate> *candidates_ = nullptr;
+    double filter_ms_ = 0.0;
+    std::vector<FailedBlock> *failures_ = nullptr;
+    const std::vector<BitEvent> *events_ = nullptr;
+    size_t ones_ = 0;
+    uint64_t block_number_ = 0;
+    size_t block_start_bit_ = 0;
+    uint32_t block_start_sample_ = 0;
+    uint16_t frame_bits_ = 0;
+    unsigned frame_count_ = 0;
+    std::vector<uint8_t> block_;
+    std::vector<Erasure> erasures_;
+    size_t skip_to_bit_ = 0;
+
+    void record_failure(FailedBlock::Kind kind, uint32_t end_sample, size_t decoded_bytes) {
+        if (!failures_) return;
+        FailedBlock f;
+        f.kind = kind;
+        f.block_number = block_number_;
+        f.start_sample = block_start_sample_;
+        f.end_sample = end_sample;
+        f.decoded_bytes = decoded_bytes;
+        failures_->push_back(f);
+    }
+
+    void lose_sync() {
+        state_ = State::SEARCH;
+        ones_ = 0;
+        frame_bits_ = 0;
+        frame_count_ = 0;
+        block_.clear();
+        erasures_.clear();
+    }
+
+    static bool sync010(const std::vector<BitEvent> &events, size_t p) {
+        return p + 2 < events.size() &&
+               events[p].bit == '0' && events[p + 1].bit == '1' &&
+               events[p + 2].bit == '0';
+    }
+
+    static bool strong_resync(const std::vector<BitEvent> &events, size_t p) {
+        // Four consecutive byte syncs at 11-bit spacing are unlikely to be
+        // accidental and provide a reliable phase reference after a dropout.
+        for (size_t n = 0; n < 4; ++n) {
+            if (!sync010(events, p + 11 * n)) return false;
+        }
+        return true;
+    }
+
+    bool try_erasure_recovery(size_t frame_start, size_t search_from,
+                              const char *reason, size_t &loop_index,
+                              bool starts_with_sync = true) {
+        if (!events_ || block_.empty()) return false;
+        const std::vector<BitEvent> &events = *events_;
+
+        const size_t search_end = std::min(events.size(), frame_start + 256);
+        size_t resync = events.size();
+        for (size_t q = std::max(frame_start + 1, search_from + 1);
+             q + 36 <= search_end; ++q) {
+            if (strong_resync(events, q)) {
+                resync = q;
+                break;
+            }
+        }
+        if (resync == events.size()) return false;
+
+        const size_t decoded_span = resync - frame_start;
+        const size_t missing_bytes = std::max<size_t>(1, (decoded_span + 5) / 11);
+
+        // Keep recovery deliberately bounded. One or two erased bytes can be
+        // solved cheaply and reliably from the 16-bit block checksum. Larger
+        // damaged spans should remain manual-recovery cases.
+        if (missing_bytes > 2) return false;
+
+        Erasure er;
+        er.first_byte = block_.size();
+        er.count = missing_bytes;
+        er.start_bit = frame_start;
+        er.resync_bit = resync;
+        er.start_sample = events[frame_start].sample_index;
+        er.starts_with_sync = starts_with_sync;
+        er.observed_bits.reserve(decoded_span);
+        for (size_t k = frame_start; k < resync; ++k) {
+            er.observed_bits.push_back(events[k].bit);
+        }
+        erasures_.push_back(er);
+
+        // Placeholder bytes keep all subsequent byte positions correct. They
+        // are filled only if checksum-guided recovery is unique/best later.
+        block_.insert(block_.end(), missing_bytes, 0);
+        frame_bits_ = 0;
+        frame_count_ = 0;
+        skip_to_bit_ = resync;
+        loop_index = resync - 1;
+
+        fprintf(log_,
+                "Block %llu sync anomaly at bit %zu, WAV sample %u (%s); "
+                "strong byte framing returns at bit %zu, WAV sample %u. "
+                "Treating span as %zu erased byte%s for checksum recovery.\n",
+                static_cast<unsigned long long>(block_number_), frame_start,
+                events[frame_start].sample_index, reason, resync,
+                events[resync].sample_index, missing_bytes,
+                missing_bytes == 1 ? "" : "s");
+        return true;
+    }
+
+    bool preceding_byte_timing_suspicious(size_t data_start) const {
+        if (!events_ || data_start + 7 >= events_->size()) return false;
+        const auto &events = *events_;
+
+        // Establish a local PLL baseline from the preceding 16 decoded bits.
+        // A real dropout often starts before the framing bits themselves and
+        // pulls the PLL appreciably during the data byte. In that case the
+        // apparently valid byte immediately before the bad sync should also
+        // be treated as an erasure rather than trusted blindly.
+        const size_t begin = data_start > 16 ? data_start - 16 : 0;
+        std::vector<double> periods;
+        periods.reserve(data_start - begin);
+        for (size_t i = begin; i < data_start; ++i) {
+            periods.push_back(events[i].pll_period);
+        }
+        if (periods.empty()) return false;
+        std::sort(periods.begin(), periods.end());
+        const double baseline = periods[periods.size() / 2];
+        if (baseline <= 0.0) return false;
+
+        double worst_relative = 0.0;
+        for (size_t i = data_start; i < data_start + 8; ++i) {
+            const double rel = std::fabs(events[i].pll_period - baseline) / baseline;
+            worst_relative = std::max(worst_relative, rel);
+            if (events[i].classification != "zero" &&
+                events[i].classification != "one") {
+                return true;
+            }
+        }
+
+        // The known good case preceding a damaged sync varies by ~1%, while
+        // the corrupted preceding byte in T44S144K exceeds 8%. Five percent
+        // leaves substantial margin while still requiring a clear disturbance.
+        return worst_relative > 0.05;
+    }
+
+    bool feed_block_bit(int bit, size_t bit_index, uint32_t sample_index,
+                        size_t &loop_index) {
+        frame_bits_ = static_cast<uint16_t>((frame_bits_ << 1) | unsigned(bit));
+        ++frame_count_;
+        if (frame_count_ < 11) return true;
+        frame_bits_ &= 0x07ffU;
+
+        if (frame_bits_ == 0x07ffU) {
+            if (block_.empty()) {
+                fprintf(log_, "Block %llu invalid: empty block ended at bit %zu, WAV sample %u\n",
+                        static_cast<unsigned long long>(block_number_), bit_index, sample_index);
+                ++stats_.empty_blocks;
+                ++stats_.framing_bad;
+            } else {
+                if (!finish_block(bit_index, sample_index)) return false;
+            }
+            state_ = State::SEARCH;
+            ones_ = 11;
+            frame_bits_ = 0;
+            frame_count_ = 0;
+            block_.clear();
+            erasures_.clear();
+            return true;
+        }
+
+        if ((frame_bits_ & 7U) == 2U) {
+            uint8_t value = static_cast<uint8_t>((frame_bits_ >> 3) & 0xffU);
+            block_.push_back(reverse_byte(value));
+            frame_bits_ = 0;
+            frame_count_ = 0;
+            return true;
+        }
+
+        // False acquisition due to a write splice: still suppress it when no
+        // complete byte has yet been received.
+        if (block_.empty()) {
+            // A leader + initial 010 was seen, but the first complete byte did
+            // not validate.  This is normally a write splice/noise acquisition
+            // and is intentionally not counted as a framing error.
+            ++stats_.false_first_byte_acquisitions;
+            lose_sync();
+            return true;
+        }
+
+        // The first eight bits of this 11-bit group are the data byte and
+        // the last three are the sync. If only the sync is bad, preserve the
+        // data byte: the damaged/recovery span starts at the first bad sync
+        // bit, not eight bits earlier at the beginning of this byte.
+        const uint8_t pending_value =
+            reverse_byte(static_cast<uint8_t>((frame_bits_ >> 3) & 0xffU));
+        const size_t sync_start = bit_index - 2;
+        char reason[96];
+        snprintf(reason, sizeof(reason), "expected sync 010, got %u%u%u",
+                 unsigned((frame_bits_ >> 2) & 1U),
+                 unsigned((frame_bits_ >> 1) & 1U),
+                 unsigned(frame_bits_ & 1U));
+
+        const size_t data_start = bit_index - 10;
+        const bool pending_suspicious = preceding_byte_timing_suspicious(data_start);
+
+        if (pending_suspicious) {
+            // Distortion was already visible while decoding the eight data
+            // bits before the failed sync. Do not preserve that byte; include
+            // it in the erasure span and let the block checksum plus waveform
+            // similarity recover it together with the following lost byte(s).
+            if (try_erasure_recovery(data_start, bit_index, reason, loop_index,
+                                     false)) {
+                fprintf(log_,
+                        "Block %llu: timing was already unstable in the byte before "
+                        "the bad sync; including that byte in checksum recovery.\n",
+                        static_cast<unsigned long long>(block_number_));
+                skip_to_bit_ += 3;
+                loop_index = skip_to_bit_ - 1;
+                return true;
+            }
+        } else {
+            block_.push_back(pending_value);
+            if (try_erasure_recovery(sync_start, bit_index, reason, loop_index,
+                                     true)) {
+                // Resynchronization points at the next 010 prefix. Consume that
+                // sync and resume with the following eight data bits.
+                skip_to_bit_ += 3;
+                loop_index = skip_to_bit_ - 1;
+                return true;
+            }
+            block_.pop_back();
+        }
+
+        fprintf(log_,
+                "Block %llu lost sync at bit %zu, WAV sample %u: expected byte sync 010, got %u%u%u "
+                "after %zu valid byte%s; block discarded\n",
+                static_cast<unsigned long long>(block_number_), bit_index, sample_index,
+                unsigned((frame_bits_ >> 2) & 1U), unsigned((frame_bits_ >> 1) & 1U),
+                unsigned(frame_bits_ & 1U), block_.size(), block_.size() == 1 ? "" : "s");
+        ++stats_.framing_bad;
+        record_failure(FailedBlock::Kind::FRAMING, sample_index, block_.size());
+        lose_sync();
+        return true;
+    }
+
+    static std::string tape_data_bits(uint8_t v) {
+        std::string s;
+        s.reserve(8);
+        for (unsigned bit = 0; bit < 8; ++bit) {
+            s.push_back((v & (1U << bit)) ? '1' : '0');
+        }
+        return s;
+    }
+
+    static std::string expected_erasure_bits(const std::vector<uint8_t> &bytes,
+                                              const Erasure &er) {
+        std::string s;
+        if (er.count == 0) return s;
+
+        if (er.starts_with_sync) {
+            for (size_t n = 0; n < er.count; ++n) {
+                s += "010";
+                s += tape_data_bits(bytes[er.first_byte + n]);
+            }
+        } else {
+            // The damaged span begins at the data bits of the preceding byte,
+            // not at its leading sync. The resynchronization point is the
+            // leading sync of the first known-good byte after the erasure.
+            s += tape_data_bits(bytes[er.first_byte]);
+            for (size_t n = 1; n < er.count; ++n) {
+                s += "010";
+                s += tape_data_bits(bytes[er.first_byte + n]);
+            }
+        }
+        return s;
+    }
+
+    static unsigned edit_distance(const std::string &a, const std::string &b) {
+        // Small Levenshtein distance implementation. Erasure regions are tiny,
+        // so a simple dynamic-programming row is sufficient.
+        std::vector<unsigned> prev(b.size() + 1), cur(b.size() + 1);
+        for (size_t j = 0; j <= b.size(); ++j) prev[j] = static_cast<unsigned>(j);
+        for (size_t i = 1; i <= a.size(); ++i) {
+            cur[0] = static_cast<unsigned>(i);
+            for (size_t j = 1; j <= b.size(); ++j) {
+                const unsigned sub = prev[j - 1] + (a[i - 1] == b[j - 1] ? 0U : 1U);
+                cur[j] = std::min({prev[j] + 1U, cur[j - 1] + 1U, sub});
+            }
+            prev.swap(cur);
+        }
+        return prev[b.size()];
+    }
+
+    static uint16_t checksum_residue(const std::vector<uint8_t> &b) {
+        if (b.size() < 4) return 0xffffU;
+        uint8_t x = b[2];
+        uint8_t c = b[3];
+        for (size_t i = 4; i < b.size(); ++i) {
+            x ^= b[i];
+            c ^= b[i];
+            const uint8_t lowest = c & 1U;
+            c >>= 1;
+            c |= static_cast<uint8_t>(lowest << 7);
+        }
+        return static_cast<uint16_t>((uint16_t(x) << 8) | c);
+    }
+
+    unsigned recovery_waveform_score(const std::vector<uint8_t> &candidate) const {
+        unsigned score = 0;
+        for (const Erasure &er : erasures_) {
+            score += edit_distance(expected_erasure_bits(candidate, er), er.observed_bits);
+        }
+        return score;
+    }
+
+    unsigned recovery_context_score(const std::vector<uint8_t> &candidate,
+                                    const std::vector<size_t> &unknown_positions) const {
+        // Tertiary tie-breaker only. Old program tapes often contain long runs
+        // of padding spaces or repeated structured bytes. Compare each erased
+        // byte with nearby *known* bytes; a candidate matching the local pattern
+        // receives a lower score. This never overrides checksum validity or a
+        // better waveform edit score.
+        std::vector<bool> unknown(candidate.size(), false);
+        for (size_t p : unknown_positions) {
+            if (p < unknown.size()) unknown[p] = true;
+        }
+
+        unsigned score = 0;
+        constexpr size_t radius = 8;
+        for (size_t p : unknown_positions) {
+            const size_t first = p > radius ? p - radius : 0;
+            const size_t last = std::min(candidate.size(), p + radius + 1);
+            for (size_t q = first; q < last; ++q) {
+                if (q == p || unknown[q]) continue;
+                const unsigned distance = static_cast<unsigned>(p > q ? p - q : q - p);
+                const unsigned xorv = static_cast<unsigned>(candidate[p] ^ candidate[q]);
+#if defined(__GNUC__) || defined(__clang__)
+                const unsigned bitdiff = static_cast<unsigned>(__builtin_popcount(xorv));
+#else
+                unsigned t = xorv, bitdiff = 0;
+                while (t) { bitdiff += t & 1U; t >>= 1; }
+#endif
+                // Nearby bytes matter a little more than distant ones.
+                score += bitdiff * (radius + 1 - distance);
+            }
+        }
+        return score;
+    }
+
+    bool recover_erasures_from_checksum() {
+        if (erasures_.empty()) return datapoint_checksum_ok(block_);
+
+        std::vector<size_t> positions;
+        for (const Erasure &er : erasures_) {
+            if (er.count == 0 || er.first_byte + er.count > block_.size()) return false;
+            for (size_t n = 0; n < er.count; ++n) {
+                positions.push_back(er.first_byte + n);
+            }
+        }
+        std::sort(positions.begin(), positions.end());
+        positions.erase(std::unique(positions.begin(), positions.end()), positions.end());
+
+        // Three unknown bytes still leave only ~256 checksum-valid solutions
+        // because the checksum supplies 16 constraints. More than three is
+        // intentionally left for manual recovery for now.
+        if (positions.empty() || positions.size() > 3) {
+            fprintf(log_, "Checksum recovery supports at most 3 erased bytes; got %zu. ",
+                    positions.size());
+            return false;
+        }
+
+        std::vector<uint8_t> base = block_;
+        for (size_t p : positions) base[p] = 0;
+        const uint16_t base_residue = checksum_residue(base);
+
+        std::vector<std::vector<uint16_t>> effect(positions.size(),
+                                                  std::vector<uint16_t>(256));
+        for (size_t n = 0; n < positions.size(); ++n) {
+            std::vector<uint8_t> tmp = base;
+            for (unsigned v = 0; v < 256; ++v) {
+                tmp[positions[n]] = static_cast<uint8_t>(v);
+                effect[n][v] = static_cast<uint16_t>(base_residue ^ checksum_residue(tmp));
+            }
+        }
+
+        bool found = false;
+        bool tied = false;
+        unsigned best_score = std::numeric_limits<unsigned>::max();
+        unsigned best_context = std::numeric_limits<unsigned>::max();
+        std::vector<uint8_t> best_values(positions.size(), 0);
+        size_t solutions = 0;
+
+        auto consider = [&](const std::vector<uint8_t> &values) {
+            std::vector<uint8_t> candidate = base;
+            for (size_t n = 0; n < positions.size(); ++n) {
+                candidate[positions[n]] = values[n];
+            }
+            ++solutions;
+            const unsigned score = recovery_waveform_score(candidate);
+            const unsigned context = recovery_context_score(candidate, positions);
+            if (!found || score < best_score ||
+                (score == best_score && context < best_context)) {
+                found = true;
+                tied = false;
+                best_score = score;
+                best_context = context;
+                best_values = values;
+            } else if (score == best_score && context == best_context &&
+                       values != best_values) {
+                tied = true;
+            }
+        };
+
+        if (positions.size() == 1) {
+            for (unsigned a = 0; a < 256; ++a) {
+                if ((base_residue ^ effect[0][a]) == 0) {
+                    consider({static_cast<uint8_t>(a)});
                 }
             }
-            if (atpeak && (prev_max - prev_min > 2000)) {
-                uint32 intercept = (prev_max_t + prev_min_t + 1) >> 1;
-                if (bUp) {
-printf("sample %lu: detected max peak at %d\n", nSamp, prev_max);
-                    prev_min = prev_max;
-                } else {
-printf("sample %lu: detected min peak at %d\n", nSamp, prev_min);
-                    prev_max = prev_min;
+        } else if (positions.size() == 2) {
+            std::unordered_multimap<uint16_t, uint16_t> right;
+            right.reserve(512);
+            for (unsigned b = 0; b < 256; ++b) {
+                right.emplace(effect[1][b], static_cast<uint16_t>(b));
+            }
+            for (unsigned a = 0; a < 256; ++a) {
+                const uint16_t want = static_cast<uint16_t>(base_residue ^ effect[0][a]);
+                auto range = right.equal_range(want);
+                for (auto it = range.first; it != range.second; ++it) {
+                    consider({static_cast<uint8_t>(a), static_cast<uint8_t>(it->second)});
                 }
-                DecodeBits(intercept);
+            }
+        } else {
+            // Meet in the middle: index the combined effects of the last two
+            // bytes, then try each value of the first byte. This avoids a
+            // 16-million full-block brute-force scan.
+            std::unordered_multimap<uint16_t, uint16_t> pair_effects;
+            pair_effects.reserve(70000);
+            for (unsigned b = 0; b < 256; ++b) {
+                for (unsigned c = 0; c < 256; ++c) {
+                    const uint16_t key = static_cast<uint16_t>(effect[1][b] ^ effect[2][c]);
+                    pair_effects.emplace(key, static_cast<uint16_t>((b << 8) | c));
+                }
+            }
+            for (unsigned a = 0; a < 256; ++a) {
+                const uint16_t want = static_cast<uint16_t>(base_residue ^ effect[0][a]);
+                auto range = pair_effects.equal_range(want);
+                for (auto it = range.first; it != range.second; ++it) {
+                    const unsigned b = (it->second >> 8) & 0xffU;
+                    const unsigned c = it->second & 0xffU;
+                    consider({static_cast<uint8_t>(a), static_cast<uint8_t>(b),
+                              static_cast<uint8_t>(c)});
+                }
+            }
+        }
+
+        if (!found || tied) {
+            fprintf(log_,
+                    "Checksum recovery failed/ambiguous for %zu erased bytes "
+                    "(%zu checksum solution%s, best waveform score %u, context score %u). ",
+                    positions.size(), solutions, solutions == 1 ? "" : "s",
+                    found ? best_score : 0U, found ? best_context : 0U);
+            return false;
+        }
+
+        for (size_t n = 0; n < positions.size(); ++n) {
+            block_[positions[n]] = best_values[n];
+        }
+
+        fprintf(log_, "Recovered %zu erased bytes from checksum/waveform:", positions.size());
+        for (size_t n = 0; n < positions.size(); ++n) {
+            fprintf(log_, " byte %zu=%02X", positions[n], unsigned(best_values[n]));
+        }
+        fprintf(log_, ". Waveform edit score %u, context score %u; "
+                      "%zu checksum solution%s considered. ",
+                best_score, best_context, solutions, solutions == 1 ? "" : "s");
+        return datapoint_checksum_ok(block_);
+    }
+
+    bool finish_block(size_t end_bit, uint32_t end_sample) {
+        ++stats_.completed_blocks;
+
+        // Write policy:
+        //   * Numeric records have a defined checksum and are written whenever
+        //     that checksum is valid.  Structural/metadata problems (for
+        //     example a record too short to contain a load address) are logged
+        //     as warnings but do not suppress a checksum-valid record.
+        //   * File headers, symbolic records and unknown/boot records have no
+        //     checksum rule in the supplied Datapoint checker.  Preserve them
+        //     in the TAP output and report any structural problems as warnings.
+        bool content_ok = true;
+        fprintf(log_, "Block %llu complete: bits %zu..%zu, WAV samples %u..%u, %zu bytes. ",
+                static_cast<unsigned long long>(block_number_), block_start_bit_, end_bit,
+                block_start_sample_, end_sample, block_.size());
+
+        if (is_file_header(block_)) {
+            fprintf(log_, "FileHeader. ");
+            if (!erasures_.empty()) {
+                fprintf(log_, "WARNING: contains erased byte(s); no checksum is defined for this block type. ");
+            }
+            if (block_.size() != 4) {
+                fprintf(log_, "WARNING: BAD size (expected 4). ");
+            }
+            if (block_.size() >= 4) {
+                fprintf(log_, "File number %u. ", unsigned(block_[2]));
+                if (block_[2] != static_cast<uint8_t>(~block_[3])) {
+                    fprintf(log_, "WARNING: BAD inverted file number. ");
+                }
+                if (block_[2] == 127) fprintf(log_, "End-of-tape marker. ");
+            }
+            fprintf(log_, "No checksum defined by supplied checker. ");
+        } else if (is_numeric_record(block_)) {
+            fprintf(log_, "Numeric record. ");
+            bool checksum_ok = datapoint_checksum_ok(block_);
+            if (!checksum_ok && !erasures_.empty()) {
+                checksum_ok = recover_erasures_from_checksum();
+            }
+            fprintf(log_, "Checksum %s. ", checksum_ok ? "OK" : "BAD");
+            if (!checksum_ok) content_ok = false;
+            if (block_.size() >= 8) {
+                const unsigned addr = (unsigned(block_[4]) << 8) | block_[5];
+                fprintf(log_, "Load address %05o. ", addr);
+                if (block_[4] != static_cast<uint8_t>(~block_[6]) ||
+                    block_[5] != static_cast<uint8_t>(~block_[7])) {
+                    fprintf(log_, "WARNING: bad load-address complement. ");
+                }
+            } else {
+                fprintf(log_, "WARNING: BAD size for load-address fields. ");
+            }
+        } else if (is_symbolic_record(block_)) {
+            fprintf(log_, "Symbolic record. ");
+            if (!erasures_.empty()) {
+                fprintf(log_, "WARNING: contains erased byte(s); no checksum recovery is defined. ");
+            }
+        } else {
+            fprintf(log_, "Unknown/boot block. ");
+            if (!erasures_.empty()) {
+                fprintf(log_, "WARNING: contains erased byte(s); no checksum recovery is defined. ");
+            }
+        }
+
+        if (!content_ok) {
+            fprintf(log_, "NOT written to TAP.\n");
+            ++stats_.content_bad;
+            record_failure(FailedBlock::Kind::CONTENT, end_sample, block_.size());
+            return true;
+        }
+
+        if (candidates_) {
+            BlockCandidate c;
+            c.start_sample = block_start_sample_;
+            c.end_sample = end_sample;
+            c.data = block_;
+            c.filter_ms = filter_ms_;
+            c.numeric = is_numeric_record(block_);
+            c.file_header = is_file_header(block_);
+            c.symbolic = is_symbolic_record(block_);
+            candidates_->push_back(std::move(c));
+        }
+
+        if (tap_) {
+            if (!write_tap_record(tap_, block_)) {
+                fprintf(log_, "TAP write FAILED.\n");
+                return false;
+            }
+            fprintf(log_, "Written to TAP.\n");
+        } else {
+            fprintf(log_, "Accepted as block candidate.\n");
+        }
+        ++stats_.written;
+        stats_.bytes_written += block_.size();
+        return true;
+    }
+};
+
+static void decode(const WavData &wav, BitWriter &writer) {
+    // The existing program uses 969.94 Hz for the long transition interval
+    // on recordings played at 1 7/8 ips.  Scale it by the actual WAV rate.
+    constexpr double zero_freq = 969.94;
+    const double nominal_period = static_cast<double>(wav.sample_rate) / zero_freq;
+
+    TransitionDecoder decoder(nominal_period, writer);
+
+    bool locked = false;
+    bool last_peak_high = false;
+    uint32_t last_peak = 0;
+    uint32_t scan = 0;
+
+    const uint32_t acquisition_window = 80;
+    const uint32_t tracking_window = 67;
+
+    while (scan < wav.samples.size()) {
+        if (!locked) {
+            SampleBuffer sb = make_buffer(wav.samples, scan, acquisition_window);
+            if (sb.size() < 4) {
+                break;
+            }
+
+            HiLo hl = find_highest_lowest(sb);
+            scale_buffer(sb, hl.low_value, hl.high_value);
+            Peaks peaks = find_peaks(sb);
+            auto scores = score_acquisition_pairs(peaks, nominal_period);
+
+            if (scores.empty()) {
+                // Move forward by half a window so weak/dropout regions do not
+                // cause us to get stuck while still retaining overlap.
+                scan += acquisition_window / 2;
+                continue;
+            }
+
+            const PeakScore &best = scores.front();
+
+            // Reject extremely implausible acquisition pairs.  The original
+            // code always took the best score; this loose limit merely avoids
+            // locking to an almost-flat noise window.
+            if (best.score > 1.5) {
+                scan += acquisition_window / 2;
+                continue;
+            }
+
+            decoder.reset();
+            decoder.transition(best.first_index);
+            decoder.transition(best.last_index);
+
+            last_peak = best.last_index;
+            last_peak_high = sb[best.last_buffer_index].high_peak;
+            locked = true;
+            scan = last_peak;
+
+            vprint(2, "lock at samples %u..%u, score %.4f\n",
+                   best.first_index, best.last_index, best.score);
+            continue;
+        }
+
+        SampleBuffer sb = make_buffer(wav.samples, last_peak, tracking_window);
+        if (sb.size() < 4) {
+            break;
+        }
+
+        HiLo hl = find_highest_lowest(sb);
+        const double range = static_cast<double>(hl.high_value) - hl.low_value;
+        if (std::fabs(range) < 8.0) {
+            // Near-silence/dropout: explicitly mark loss and reacquire later.
+            writer.put(last_peak, '?', "dropout", decoder.pll_period());
+            locked = false;
+            scan = last_peak + tracking_window / 2;
+            vprint(2, "signal dropout near sample %u\n", last_peak);
+            continue;
+        }
+
+        scale_buffer(sb, hl.low_value, hl.high_value);
+        Peaks peaks = find_peaks(sb);
+
+        // Score each opposite-polarity peak by the timing of its front-edge
+        // knee relative to the decoder's live PLL state.  The previous code
+        // used the extremum's buffer offset, which can skip a real half-bit
+        // when a damaged waveform produces two nearly equal candidates.
+        std::vector<PeakScore> scores;
+        for (const Peak &p : peaks) {
+            if (p.high == last_peak_high) {
+                continue;
+            }
+
+            const uint32_t knee = find_knee(sb, p.buffer_index);
+            const double timing_score = decoder.candidate_timing_score(knee);
+            const double amplitude_distance =
+                std::fabs(p.scaled - sb.front().scaled);
+            const double amplitude_score =
+                1.0 / std::max(amplitude_distance, 1.0e-9);
+
+            PeakScore ps;
+            ps.first_buffer_index = p.buffer_index;
+            ps.first_index = p.index;
+            ps.score = 8.0 * timing_score + 0.10 * amplitude_score;
+            scores.push_back(ps);
+        }
+
+        std::sort(scores.begin(), scores.end(),
+                  [](const PeakScore &a, const PeakScore &b) {
+                      return a.score < b.score;
+                  });
+
+        if (scores.empty() || scores.front().score > 8.0) {
+            // Do not create a bogus bit merely because the WAV ends in the
+            // middle of the final carrier cycle.
+            if (last_peak + tracking_window >= wav.samples.size()) {
+                break;
+            }
+
+            // Away from EOF, preserve a diagnostic marker for now.
+            writer.put(last_peak, '?', "lost_peak", decoder.pll_period());
+            locked = false;
+            scan = last_peak + tracking_window / 2;
+            vprint(2, "lost peak tracking near sample %u\n", last_peak);
+            continue;
+        }
+
+        const PeakScore &best = scores.front();
+        const uint32_t peak_buffer_index = best.first_buffer_index;
+        const uint32_t knee = find_knee(sb, peak_buffer_index);
+
+        last_peak_high = sb[peak_buffer_index].high_peak;
+        last_peak = best.first_index;
+        decoder.transition(knee);
+        scan = last_peak;
+    }
+
+    writer.finish();
+}
+
+struct AttemptResult {
+    double filter_ms = 0.0;
+    BlockStats stats;
+    uint64_t bit_count = 0;
+    bool ok = true;
+    std::vector<BlockCandidate> candidates;
+    std::vector<FailedBlock> failures;
+};
+
+static AttemptResult evaluate_attempt(const WavData &original, double filter_ms) {
+    WavData wav = original;
+    if (filter_ms > 0.0) remove_slow_baseline(wav, filter_ms);
+
+    BitWriter writer(nullptr, nullptr);
+    decode(wav, writer);
+
+    FILE *log = tmpfile();
+    if (!log) die("cannot create temporary file for automatic DC-filter trial");
+
+    AttemptResult r;
+    r.filter_ms = filter_ms;
+    r.bit_count = writer.bit_count();
+    BlockProcessor processor(nullptr, log, r.stats, &r.candidates, filter_ms, &r.failures);
+    r.ok = processor.process(writer.events());
+    fclose(log);
+    return r;
+}
+
+static bool intervals_overlap(const BlockCandidate &a, const BlockCandidate &b) {
+    const uint32_t lo = std::max(a.start_sample, b.start_sample);
+    const uint32_t hi = std::min(a.end_sample, b.end_sample);
+    if (hi > lo) return true;
+
+    // Start positions for the same physical block normally differ by only a few
+    // samples between filter passes.  This tolerance also catches a candidate
+    // whose end marker shifted just enough that the intervals no longer overlap.
+    const uint32_t d = a.start_sample > b.start_sample
+        ? a.start_sample - b.start_sample : b.start_sample - a.start_sample;
+    return d <= 2000;
+}
+
+static bool candidate_preferred(const BlockCandidate &a, const BlockCandidate &b);
+
+static bool failure_overlaps_candidate(const FailedBlock &f, const BlockCandidate &c) {
+    const uint32_t lo = std::max(f.start_sample, c.start_sample);
+    const uint32_t hi = std::min(f.end_sample, c.end_sample);
+    if (hi > lo) return true;
+    const uint32_t d = f.start_sample > c.start_sample
+        ? f.start_sample - c.start_sample : c.start_sample - f.start_sample;
+    return d <= 2000;
+}
+
+static const BlockCandidate *find_recovery_for_failure(
+        const FailedBlock &f, const std::vector<BlockCandidate> &selected) {
+    const BlockCandidate *best = nullptr;
+    for (const BlockCandidate &c : selected) {
+        if (!failure_overlaps_candidate(f, c)) continue;
+        if (!best || candidate_preferred(c, *best)) best = &c;
+    }
+    return best;
+}
+
+static bool candidate_overlaps_any_failure(
+        const BlockCandidate &c, const std::vector<FailedBlock> &failures) {
+    for (const FailedBlock &f : failures) {
+        if (failure_overlaps_candidate(f, c)) return true;
+    }
+    return false;
+}
+
+static bool candidate_preferred(const BlockCandidate &a, const BlockCandidate &b) {
+    // A checksum-valid numeric block is stronger evidence than a non-checksummed
+    // block.  All candidates reaching here already passed the normal write policy.
+    if (a.numeric != b.numeric) return a.numeric;
+
+    // For the same physical block, keep the unfiltered result whenever it was
+    // already valid.  Alternate filters are recovery tools, not replacements.
+    if ((a.filter_ms == 0.0) != (b.filter_ms == 0.0)) return a.filter_ms == 0.0;
+
+    // Otherwise prefer the larger complete payload.  For equal payloads use
+    // the trial order rather than simply choosing the numerically smallest
+    // window: 1 ms has proven the most useful local-baseline correction, with
+    // 0.5 ms as the next fallback.
+    if (a.data.size() != b.data.size()) return a.data.size() > b.data.size();
+    auto filter_rank = [](double ms) {
+        const double order[] = {0.0, 1.0, 0.5, 2.0, 4.0, 8.0, 12.0, 20.0, 50.0};
+        for (size_t i = 0; i < sizeof(order) / sizeof(order[0]); ++i) {
+            if (std::fabs(ms - order[i]) < 1.0e-9) return i;
+        }
+        return sizeof(order) / sizeof(order[0]);
+    };
+    return filter_rank(a.filter_ms) < filter_rank(b.filter_ms);
+}
+
+static std::vector<BlockCandidate> merge_block_candidates(
+        const std::vector<AttemptResult> &attempts) {
+    std::vector<BlockCandidate> selected;
+
+    // Seed with the unfiltered pass.  It is the reference decoding and every
+    // block accepted there remains untouched.
+    if (!attempts.empty()) selected = attempts.front().candidates;
+
+    // Later passes may only add a block where the current selection has no
+    // overlapping valid block.  If two alternate passes fill the same gap, keep
+    // the stronger candidate according to candidate_preferred().
+    for (size_t ai = 1; ai < attempts.size(); ++ai) {
+        for (const BlockCandidate &c : attempts[ai].candidates) {
+            size_t overlap = selected.size();
+            for (size_t i = 0; i < selected.size(); ++i) {
+                if (intervals_overlap(c, selected[i])) {
+                    overlap = i;
+                    break;
+                }
+            }
+            if (overlap == selected.size()) {
+                selected.push_back(c);
+            } else if (selected[overlap].filter_ms != 0.0 &&
+                       candidate_preferred(c, selected[overlap])) {
+                // Never replace an unfiltered valid block.  Only arbitrate
+                // between alternate-filter candidates that fill the same gap.
+                selected[overlap] = c;
             }
         }
     }
 
-    StreamDone();
-}*/
-#endif
-
-// =========================================================================
-// main
-
-void usage(int code) {
-  FILE *f = (code == 0) ? stdout : stderr;
-
-  fprintf(f,
-          "Usage: dpwav2tap [-v [#]] [-x] [-o <outname>.tag] <inname>.wav\n");
-  fprintf(f, "-v is report verbosity level\n");
-  fprintf(f, "   with no -v, reporting is at a minimum;\n");
-  fprintf(f, "   with no # specified, 1 is assumed;\n");
-  fprintf(f, "   -v 2 through -v 4 provide increasing detail.\n");
-  fprintf(f, "-o specifies a specific output filename;\n");
-  fprintf(f, "   by default it is <inname>.tap\n");
-  fprintf(f, "-x says to \"explode\" each record into a separate file,\n");
-  fprintf(f, "   which are <outname>-###.tap\n");
-  fprintf(f, "Version: August 24, 2005\n");
-  exit(code);
-
-#if 0
-    // detailed -v information
-    0 = just produce the output file and errors
-    1 = errors, warnings, length of each decoded block
-    2 = and each byte decoded
-    3 = and each bit decoded
-    4 = and PLL value
-#endif
-}
-
-// parse the command line arguments
-void ParseArgs(int argc, char **argv) {
-  // set command line defaults
-  opt_v = 0;
-  opt_x = false;
-  opt_x_num = 0;
-  opt_ofn = NULL;
-  opt_ofmt = OFMT_TAP;
-
-#if 1
-  if (argc < 2) // we need at least one parameter
-    usage(-1);
-#endif
-
-  for (int i = 1; i < argc - 1; i++) {
-
-    if (strcmp(argv[i], "-v") == 0) {
-      // verbose reporting
-      opt_v = 1; // at least
-      if (i + 1 < argc - 1) {
-        // check for optional number
-        opt_v = atol(argv[i + 1]);
-        if (opt_v == 0) {
-          // if next arg wasn't a number, atol returns 0
-          // however, if the user did "-v 0", we mess up in this assumption
-          opt_v = 1;
-        } else
-          i++; // skip numeric argument
-      }
-    }
-
-    else if (strcmp(argv[i], "-x") == 0) {
-      opt_x = true;
-    }
-
-    else if (strcmp(argv[i], "-o") == 0) {
-      if (i + 1 < argc - 1) {
-        int len = strlen(argv[i + 1]);
-        opt_ofn = strdup(argv[i + 1]);
-        i++;
-      } else {
-        fprintf(stderr, "Error: final argument is input filename, not part of "
-                        "-o specification\n");
-        usage(-1);
-      }
-    }
-
-    else {
-      fprintf(stderr, "Error: unrecognized option '%s'\n", argv[i]);
-      usage(-1);
-    }
-  }
-
-#if 1
-  // one last parameter -- it must be the original wav file
-  opt_ifn = strdup(argv[argc - 1]);
-#else
-  opt_v = 4;
-  opt_ifn = "c:\\jim\\datapoint\\dpwav2tap\\wav\\tstdis1.1_3-75.wav";
-#endif
-
-  // if -o wasn't specified, derive the output filename from the input filename
-  if (opt_ofn == NULL) {
-    // we just change the suffix of the input filename
-    int len = strlen(opt_ifn);
-    opt_ofn = (char *)malloc(len + 4); // +4 for appending optional .tap suffix
-    assert(opt_ofn != NULL);
-    strcpy(opt_ofn, opt_ifn);
-    if ((len >= 4) && (strcmp(&opt_ifn[len - 4], ".wav") == 0)) {
-      // input filename ends in ".wav"; replace it with .tap
-      strcpy(&opt_ofn[len - 3], "tap");
-    } else {
-      // input filename doesn't end like we'd expect
-      opt_ofn = strcat(opt_ifn, ".tap");
-    }
-  }
-
-  // if -x is in effect, insert "-%03d" just before .tap
-  // in order to generate serialized filenames.
-  if (opt_x) {
-    int len = strlen(opt_ofn);
-    char *tmp = (char *)malloc(len + 5);
-    assert(tmp != NULL);
-    strcpy(tmp, opt_ofn);
-    if (strcmp(&opt_ofn[len - 4], ".tap") == 0)
-      strcpy(&tmp[len - 4], "-%03d.tap");
-    else if (strcmp(&opt_ofn[len - 4], ".bin") == 0)
-      strcpy(&tmp[len - 4], "-%03d.bin");
-#if SUPPORT_HEX
-    else if (strcmp(&opt_ofn[len - 4], ".hex") == 0)
-      strcpy(&tmp[len - 4], "-%03d.hex");
-#endif
-    else
-      strcpy(&tmp[len], "-%03d");
-    free(opt_ofn);
-    opt_ofn = tmp;
-  }
-
-  {
-    int len = strlen(opt_ofn);
-    opt_ofmt = (strcmp(&opt_ofn[len - 4], ".bin") == 0) ? OFMT_BIN
-#if SUPPORT_HEX
-               : (strcmp(&opt_ofn[len - 4], ".hex") == 0) ? OFMT_HEX
-#endif
-                                                          : OFMT_TAP;
-  }
-
-#if 0
-    // report how command line was parsed
-    printf("opt_v   = %d\n", opt_v);
-    printf("opt_x   = %d\n", (int)opt_x);
-    printf("opt_ofn = '%s'\n", opt_ofn);
-    printf("opt_ifn = '%s'\n", opt_ifn);
-    exit(0);
-#endif
+    std::sort(selected.begin(), selected.end(),
+              [](const BlockCandidate &a, const BlockCandidate &b) {
+                  if (a.start_sample != b.start_sample) return a.start_sample < b.start_sample;
+                  return a.end_sample < b.end_sample;
+              });
+    return selected;
 }
 
 int main(int argc, char **argv) {
-  // parse command line arguments
-  ParseArgs(argc, argv);
+    Options opt = parse_args(argc, argv);
+    const WavData original_wav = read_wav(opt.input);
 
-  fIn = fopen(opt_ifn, "rb");
-  if (fIn == NULL) {
-    fprintf(stderr, "Error: couldn't open file '%s'\n", opt_ifn);
-    exit(-1);
-  }
+    double selected_filter_ms = opt.dc_filter_ms;
+    std::vector<AttemptResult> auto_attempts;
+    std::vector<BlockCandidate> auto_selected;
 
-  // make sure the wav file is OK
-  CheckHeader();
+    if (opt.dc_filter_auto) {
+        // Block-level auto mode: the unfiltered pass is the backbone.  Alternate
+        // filters are decoded as independent passes and may only fill gaps where
+        // the backbone did not yield a valid block.
+        const double candidates[] = {0.0, 1.0, 0.5, 2.0, 4.0, 8.0, 12.0, 20.0, 50.0};
+        for (double f : candidates) {
+            AttemptResult r = evaluate_attempt(original_wav, f);
+            fprintf(stderr,
+                    "Auto block trial: %s -> %llu valid block%s, %llu bytes, %llu framing-invalid, %llu content-invalid, %llu false-first-byte acquisitions\n",
+                    f == 0.0 ? "unfiltered" : (std::to_string(f) + " ms").c_str(),
+                    static_cast<unsigned long long>(r.stats.written), r.stats.written == 1 ? "" : "s",
+                    static_cast<unsigned long long>(r.stats.bytes_written),
+                    static_cast<unsigned long long>(r.stats.framing_bad),
+                    static_cast<unsigned long long>(r.stats.content_bad),
+                    static_cast<unsigned long long>(r.stats.false_first_byte_acquisitions));
+            auto_attempts.push_back(std::move(r));
+        }
+        auto_selected = merge_block_candidates(auto_attempts);
+        selected_filter_ms = 0.0; // diagnostic bits/trace remain unfiltered in auto mode
+        fprintf(stderr, "Auto block merge selected %zu physical blocks\n", auto_selected.size());
+    }
 
-  // initialize our work buffer
-  // NB: the whole inbuffer complication is plumbing for a more
-  //     sophisticated version of this program that looks forward
-  //     and back in the sample stream.
-  FillInbuffer();
+    WavData wav = original_wav;
+    if (selected_filter_ms > 0.0) {
+        remove_slow_baseline(wav, selected_filter_ms);
+    }
 
-  // process the file
-  FindTransitions();
+    FILE *log_fp = stderr;
+    if (!opt.log.empty()) {
+        log_fp = fopen(opt.log.c_str(), "wb");
+        if (!log_fp) { perror(opt.log.c_str()); return 1; }
+    }
 
-  fclose(fIn);
+    fprintf(log_fp, "dpwav2tap-integrated-v11-score: knee/PLL decoder + configurable/block-level automatic local-baseline retry + multi-region checksum/pattern recovery\n");
+    fprintf(log_fp, "Input: %s\n", opt.input);
+    fprintf(log_fp, "WAV: %u Hz, %zu mono samples (%.2f s)\n",
+            wav.sample_rate, wav.samples.size(),
+            wav.samples.empty() ? 0.0 : static_cast<double>(wav.samples.size()) / wav.sample_rate);
+    if (selected_filter_ms > 0.0) {
+        fprintf(log_fp, "DC filter: %.3f ms centered moving-average subtraction\n", selected_filter_ms);
+    } else if (opt.dc_filter_auto) {
+        fprintf(log_fp, "DC filter auto: block-level merge; diagnostic bits/trace use unfiltered waveform\n");
+    }
 
-  return 0;
+    FILE *bits_fp = nullptr;
+    if (!opt.bits_output.empty()) {
+        bits_fp = fopen(opt.bits_output.c_str(), "wb");
+        if (!bits_fp) { perror(opt.bits_output.c_str()); if (log_fp != stderr) fclose(log_fp); return 1; }
+    }
+
+    FILE *trace_fp = nullptr;
+    if (!opt.trace.empty()) {
+        trace_fp = fopen(opt.trace.c_str(), "wb");
+        if (!trace_fp) {
+            perror(opt.trace.c_str());
+            if (bits_fp) fclose(bits_fp);
+            if (log_fp != stderr) fclose(log_fp);
+            return 1;
+        }
+    }
+
+    BitWriter writer(bits_fp, trace_fp);
+    decode(wav, writer);
+
+    if (bits_fp) fclose(bits_fp);
+    if (trace_fp) fclose(trace_fp);
+
+    FILE *tap_fp = fopen(opt.tap_output.c_str(), "wb");
+    if (!tap_fp) {
+        perror(opt.tap_output.c_str());
+        if (log_fp != stderr) fclose(log_fp);
+        return 1;
+    }
+
+    BlockStats stats;
+    bool ok = true;
+    if (opt.dc_filter_auto) {
+        for (const BlockCandidate &c : auto_selected) {
+            if (!write_tap_record(tap_fp, c.data)) {
+                fprintf(log_fp, "TAP write FAILED while writing merged block at WAV sample %u.\n",
+                        c.start_sample);
+                ok = false;
+                break;
+            }
+            ++stats.written;
+            stats.bytes_written += c.data.size();
+            fprintf(log_fp,
+                    "Merged block: WAV samples %u..%u, %zu bytes, source %s%s. Written to TAP.\n",
+                    c.start_sample, c.end_sample, c.data.size(),
+                    c.filter_ms == 0.0 ? "unfiltered" : "dc-filter ",
+                    c.filter_ms == 0.0 ? "" : (std::to_string(c.filter_ms) + " ms").c_str());
+        }
+        // Report aggregate failures from the unfiltered backbone only; alternate
+        // pass failures are expected during recovery trials and are not final errors.
+        if (!auto_attempts.empty()) {
+            stats.synced_blocks = auto_attempts[0].stats.synced_blocks;
+            stats.completed_blocks = auto_attempts[0].stats.completed_blocks;
+            stats.empty_blocks = auto_attempts[0].stats.empty_blocks;
+            stats.false_first_byte_acquisitions =
+                auto_attempts[0].stats.false_first_byte_acquisitions;
+            stats.framing_bad = auto_attempts[0].stats.framing_bad;
+            stats.content_bad = auto_attempts[0].stats.content_bad;
+        }
+    } else {
+        BlockProcessor processor(tap_fp, log_fp, stats);
+        ok = processor.process(writer.events());
+    }
+    if (fclose(tap_fp) != 0) {
+        perror(opt.tap_output.c_str());
+        if (log_fp != stderr) fclose(log_fp);
+        return 1;
+    }
+
+    if (opt.dc_filter_auto && !auto_attempts.empty()) {
+        const BlockStats &backbone = auto_attempts[0].stats;
+        const uint64_t auto_added = stats.written >= backbone.written
+            ? stats.written - backbone.written : 0;
+
+        const std::vector<FailedBlock> &known_failures = auto_attempts[0].failures;
+        size_t recovered_failures = 0;
+        size_t unresolved_failures = 0;
+        fprintf(log_fp, "\nKnown-block recovery report:\n");
+        for (const FailedBlock &f : known_failures) {
+            const BlockCandidate *r = find_recovery_for_failure(f, auto_selected);
+            const char *kind = f.kind == FailedBlock::Kind::CONTENT ? "content/checksum" : "framing";
+            if (r && r->filter_ms != 0.0) {
+                ++recovered_failures;
+                fprintf(log_fp,
+                        "  RECOVERED: unfiltered block %llu %s failure at WAV %u..%u "
+                        "(%zu bytes decoded) -> %zu-byte valid block using %.3f ms filter.\n",
+                        static_cast<unsigned long long>(f.block_number), kind,
+                        f.start_sample, f.end_sample, f.decoded_bytes, r->data.size(), r->filter_ms);
+            } else if (r) {
+                // Normally impossible for a failure from the unfiltered pass, but
+                // keep the accounting robust if candidate collection changes later.
+                ++recovered_failures;
+                fprintf(log_fp,
+                        "  RECOVERED: unfiltered block %llu %s failure at WAV %u..%u "
+                        "is covered by an accepted unfiltered block.\n",
+                        static_cast<unsigned long long>(f.block_number), kind,
+                        f.start_sample, f.end_sample);
+            } else {
+                ++unresolved_failures;
+                fprintf(log_fp,
+                        "  UNRESOLVED: unfiltered block %llu %s failure at WAV %u..%u "
+                        "after %zu decoded byte%s; no valid block found by any filter.\n",
+                        static_cast<unsigned long long>(f.block_number), kind,
+                        f.start_sample, f.end_sample, f.decoded_bytes,
+                        f.decoded_bytes == 1 ? "" : "s");
+            }
+        }
+
+        size_t missed_then_found = 0;
+        for (const BlockCandidate &c : auto_selected) {
+            if (c.filter_ms == 0.0) continue;
+            if (candidate_overlaps_any_failure(c, known_failures)) continue;
+            ++missed_then_found;
+            fprintf(log_fp,
+                    "  RECOVERED MISSED BLOCK: WAV %u..%u, %zu bytes, found only with %.3f ms filter.\n",
+                    c.start_sample, c.end_sample, c.data.size(), c.filter_ms);
+        }
+
+        const size_t plausible_blocks = auto_selected.size() + unresolved_failures;
+        const double extraction_score = plausible_blocks == 0 ? 100.0 :
+            100.0 * static_cast<double>(auto_selected.size()) / static_cast<double>(plausible_blocks);
+        fprintf(log_fp,
+                "Extraction score: %.2f / 100 (known-block coverage). "
+                "%zu accepted physical blocks, %zu recovered known failure%s, "
+                "%zu recovered block%s missed by unfiltered decoding, %zu unresolved plausible block%s.\n",
+                extraction_score, auto_selected.size(), recovered_failures,
+                recovered_failures == 1 ? "" : "s", missed_then_found,
+                missed_then_found == 1 ? "" : "s", unresolved_failures,
+                unresolved_failures == 1 ? "" : "s");
+        if (unresolved_failures == 0) {
+            fprintf(log_fp,
+                    "Status: COMPLETE WITH RESPECT TO ALL KNOWN BLOCK FAILURES - no discarded/NOT WRITTEN "
+                    "plausible block remains unrecovered.\n");
+        } else {
+            fprintf(log_fp,
+                    "Status: ATTENTION NEEDED - %zu plausible block%s still failed in every decoding pass.\n",
+                    unresolved_failures, unresolved_failures == 1 ? "" : "s");
+        }
+        fprintf(log_fp,
+                "Note: a score of 100 means no *known* plausible block failure remains; it cannot prove "
+                "that a block missed by every sync detector does not exist.\n\n");
+
+        fprintf(log_fp,
+                "Summary: %llu decoded bits (unfiltered diagnostic pass).\n"
+                "Unfiltered backbone: %llu sync acquisitions, %llu completed blocks, "
+                "%llu empty-block false acquisitions, %llu silent first-byte false acquisitions, "
+                "%llu framing-invalid, %llu content-invalid, %llu valid blocks.\n"
+                "Auto merge: %llu TAP records (%llu unfiltered + %llu recovered from alternate filters), "
+                "%llu bytes written to %s.\n",
+                static_cast<unsigned long long>(writer.bit_count()),
+                static_cast<unsigned long long>(backbone.synced_blocks),
+                static_cast<unsigned long long>(backbone.completed_blocks),
+                static_cast<unsigned long long>(backbone.empty_blocks),
+                static_cast<unsigned long long>(backbone.false_first_byte_acquisitions),
+                static_cast<unsigned long long>(backbone.framing_bad),
+                static_cast<unsigned long long>(backbone.content_bad),
+                static_cast<unsigned long long>(backbone.written),
+                static_cast<unsigned long long>(stats.written),
+                static_cast<unsigned long long>(backbone.written),
+                static_cast<unsigned long long>(auto_added),
+                static_cast<unsigned long long>(stats.bytes_written),
+                opt.tap_output.c_str());
+    } else {
+        fprintf(log_fp,
+                "Summary: %llu decoded bits, %llu sync acquisitions, %llu completed blocks, "
+                "%llu empty-block false acquisitions, %llu silent first-byte false acquisitions, "
+                "%llu framing-invalid, %llu content-invalid, %llu TAP records, %llu bytes written to %s\n",
+                static_cast<unsigned long long>(writer.bit_count()),
+                static_cast<unsigned long long>(stats.synced_blocks),
+                static_cast<unsigned long long>(stats.completed_blocks),
+                static_cast<unsigned long long>(stats.empty_blocks),
+                static_cast<unsigned long long>(stats.false_first_byte_acquisitions),
+                static_cast<unsigned long long>(stats.framing_bad),
+                static_cast<unsigned long long>(stats.content_bad),
+                static_cast<unsigned long long>(stats.written),
+                static_cast<unsigned long long>(stats.bytes_written),
+                opt.tap_output.c_str());
+    }
+    if (!opt.bits_output.empty()) fprintf(log_fp, "Bits written to %s\n", opt.bits_output.c_str());
+    if (!opt.trace.empty()) fprintf(log_fp, "Raw bit trace written to %s\n", opt.trace.c_str());
+
+    if (log_fp != stderr) fclose(log_fp);
+    return ok ? 0 : 1;
 }

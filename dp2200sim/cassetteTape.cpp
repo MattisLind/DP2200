@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstdint>
 #include <stdlib.h>
 #include "cassetteTape.h"
 
@@ -20,6 +21,25 @@ bool CassetteTape::openFile(std::string fileName) {
   }
   file = fopen(fileName.c_str(), "r");
   return file != NULL;
+}
+
+bool CassetteTape::createFile(std::string name) {
+  FILE *created=fopen(name.c_str(), "w+bx");
+  if (!created) return false;
+  if (file) fclose(file);
+  file=created; fileName=name; writeProtect=false; state=TAPE_GAP;
+  return true;
+}
+
+bool CassetteTape::writeBlock(const std::vector<unsigned char> &data) {
+  if (!file || writeProtect || data.empty() || data.size()>65536) return false;
+  const uint32_t count=static_cast<uint32_t>(data.size());
+  unsigned char size[4]={static_cast<unsigned char>(count),static_cast<unsigned char>(count>>8),
+                         static_cast<unsigned char>(count>>16),static_cast<unsigned char>(count>>24)};
+  const bool ok=fwrite(size,1,4,file)==4 && fwrite(data.data(),1,count,file)==count
+    && fwrite(size,1,4,file)==4 && fflush(file)==0;
+  state=TAPE_GAP;
+  return ok;
 }
 
 void CassetteTape::closeFile() { 
@@ -153,6 +173,7 @@ int CassetteTape::readByte(bool forward, unsigned char * data) {
       printLog("INFO", "readByte direction=%s next block is %d bytes long. state is now=%s\n", forward?"forward":"backwards", currentBlockSize, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");
       state = TAPE_DATA;
       fread(data, 1, 1, file);  
+      printLog("TAPE", "FORWARD size=%d first=%03o position=%ld error=%d\n",currentBlockSize,*data,ftell(file),ferror(file));
       readBytes=1;
       printLog("INFO", "readByte(forward) %02X # bytes read= %d state is now=%s\n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA");  
     } else {
@@ -178,6 +199,7 @@ int CassetteTape::readByte(bool forward, unsigned char * data) {
       state = TAPE_DATA;
       fseek(file, -1, SEEK_CUR);
       fread(data, 1, 1, file);
+      printLog("TAPE", "BLOCK size=%d first=%03o position=%ld error=%d\n",currentBlockSize,*data,ftell(file),ferror(file));
       fseek(file, -1, SEEK_CUR);
       readBytes=currentBlockSize-1;
       printLog("INFO", "readByte (backwards) %02X # bytes read= %d state is now=%s \n", *data, readBytes, state==TAPE_GAP?"TAPE_GAP":"TAPE_DATA"); 

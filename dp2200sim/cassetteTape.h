@@ -11,17 +11,21 @@ class CassetteTape {
 
   enum { TAPE_GAP, TAPE_DATA } state;
   
-  FILE * file;
+  FILE * file = nullptr;
   std::string fileName;
   int currentBlockSize;
   int readBytes;
   bool stopAtTapeGap;
-  bool writeProtect;
+  bool writeProtect = true;
   public:
   void setWriteProtected(bool);
   CassetteTape();
   bool isOpen();
   bool openFile (std::string fileName);
+  bool createFile(std::string fileName);
+  bool writeBlock(const std::vector<unsigned char> &data);
+  bool isWriteProtected() const { return writeProtect; }
+  bool atBeginning() const { return file && ftell(file)==0; }
   void closeFile ();
 
   void rewind();

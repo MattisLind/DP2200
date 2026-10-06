@@ -41,6 +41,9 @@ class commandWindow : public virtual Window {
   int cursorX, cursorY;
   WINDOW *win, *innerWin;
   std::string commandLine;
+  std::size_t editCursor = 0;
+  std::size_t viewOffset = 0;
+  void redrawCommandLine();
   std::vector<Cmd> commands;
   dp2200_cpu *cpu;
   bool activeWindow;

@@ -99,12 +99,13 @@ public:
       unsigned char physicalPage;
     };
     bool * is5500;
+    bool * is6600;
     bool * accessViolation;
     bool * writeViolation;
     bool * userMode;
-    bool memoryWatch[65536];
+    bool memoryWatch[131072];
 
-    unsigned char memory[65536];
+    unsigned char memory[131072] = {};
     public:
     struct SectorEntry sectorTable[16];
     unsigned char baseRegister;
@@ -115,7 +116,7 @@ public:
     bool removeWatch (unsigned short address);
     unsigned char read(unsigned short address, bool performChecks=true, bool fetch=false, int from=0);
     void write(unsigned short address, unsigned char data, int from=0);
-    Memory(bool * is5500, bool * accessViolation, bool * writeViolation, bool * userMode); 
+    Memory(bool * is5500, bool * is6600, bool * accessViolation, bool * writeViolation, bool * userMode);
   };
 
   // 64K memory - works with 5500 as well.
@@ -147,7 +148,8 @@ public:
 
 
   bool octal;
-  bool is5500;
+  bool is5500; // Extended architecture, shared by 5500 and 6600.
+  bool is6600 = false;
   bool is2200;
   unsigned short pMask = 0x3fff;
   unsigned char hMask = 0x3f;
@@ -228,6 +230,8 @@ public:
   void reset();
   void setCPUtype2200 ();
   void setCPUtype5500 ();
+  void setCPUtype6600 ();
+  bool cpuIs6600 ();
   bool cpuIs2200 ();
   bool cpuIs5500 ();
   bool isAutorestartEnabled();
@@ -245,6 +249,8 @@ public:
   dp2200_cpu();
   private:
   bool autorestartEnabled = true;
+  int execute6600(unsigned char);
+  int executeExtended(unsigned char);
   int stackStore();
   int stackLoad();
   int doubleLoad(int);

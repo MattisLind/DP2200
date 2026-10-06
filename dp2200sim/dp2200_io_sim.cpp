@@ -1,13 +1,12 @@
 
 
 #include "dp2200_io_sim.h"
-#include "dp2200Window.h"
-#include "RegisterWindow.h"
 #include <algorithm>
+#include <cerrno>
 #include <sys/stat.h>
 
-extern class dp2200Window * dpw;
-extern class registerWindow * rw;
+
+
 
 
 
@@ -53,85 +52,90 @@ int IOController::exAdr (unsigned char address) {
 }
 
 int IOController::exStatus () {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  // No controller responds at an absent address. Ignore its commands and
+  // return zero on INPUT so the ROM can continue probing boot devices.
+  if (!isDeviceSupported(ioAddress)) return 0;
   dev[ioAddress]->exStatus();
   return 0;
 }
 
 int IOController::exData () {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   dev[ioAddress]->exData();
   return 0;
 }
 
 int IOController::exWrite(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return dev[ioAddress]->exWrite(data);
 }
 
 int IOController::exCom1(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return dev[ioAddress]->exCom1(data);
 }
 int IOController::exCom2(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return dev[ioAddress]->exCom2(data);
 }
 int IOController::exCom3(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return dev[ioAddress]->exCom3(data);
 }
 int IOController::exCom4(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return dev[ioAddress]->exCom4(data);
 }
 int IOController::exBeep() {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return screenKeyboardDevice->exBeep();
 }
 int IOController::exClick() {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return screenKeyboardDevice->exClick();
 }
 int IOController::exDeck1() {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return cassetteDevice->exDeck1();
 }
 int IOController::exDeck2() {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return cassetteDevice->exDeck2();
 }
 int IOController::exRBK() {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return cassetteDevice->exRBK();
 }
 int IOController::exWBK() {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return cassetteDevice->exWBK();
 }
 int IOController::exBSP() {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return cassetteDevice->exBSP();
 }
 int IOController::exSF() {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return cassetteDevice->exSF();
 }
 int IOController::exSB() {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return cassetteDevice->exSB();
 }
 int IOController::exRewind() {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return cassetteDevice->exRewind();
 }
 int IOController::exTStop() {
-  if (!isDeviceSupported(ioAddress)) return -1;
+  if (!isDeviceSupported(ioAddress)) return 0;
   return cassetteDevice->exTStop();
 }
 
-int IOController::input () {
-  if (!isDeviceSupported(ioAddress)) return -1;
+int IOController::input (bool checkParity) {
+  // The restart ROM probes optional controllers. An absent device has no
+  // status bits set; it must not look like a CPU access-protection fault.
+  // PIN still detects the missing response as an input parity failure.
+  if (!isDeviceSupported(ioAddress)) return checkParity ? -1 : 0;
   return dev[ioAddress]->input();
 }
 
@@ -175,13 +179,17 @@ unsigned char IOController::CassetteDevice::input () {
   if (status) {
     printStatus("Getting status");
     if (tapeDrive[tapeDeckSelected]->isOpen()) {
-      statusRegister |= CASSETTE_STATUS_CASSETTE_IN_PLACE;  
+      statusRegister |= CASSETTE_STATUS_CASSETTE_IN_PLACE;
     } else {
       statusRegister &= ~CASSETTE_STATUS_CASSETTE_IN_PLACE;
     }
+    if (tapeDrive[tapeDeckSelected]->isWriteProtected())
+      statusRegister |= CASSETTE_STATUS_WRITE_PROTECTED;
+    else statusRegister &= ~CASSETTE_STATUS_WRITE_PROTECTED;
     return statusRegister;
   } else {
     snprintf(buffer, 255, "Getting data = %03o", dataRegister);
+    printLog("TAPE", "READ deck=%d data=%03o\n",tapeDeckSelected,dataRegister);
     printStatus(buffer);
     statusRegister &= ~(CASSETTE_STATUS_READ_READY);
     return dataRegister;
@@ -189,7 +197,27 @@ unsigned char IOController::CassetteDevice::input () {
 }
 
 int IOController::CassetteDevice::exWrite(unsigned char data) {
-  printLog("INFO", "Writing to Cassette is not really supported yet.\n");
+  if (!writing || !(statusRegister & CASSETTE_STATUS_WRITE_READY)) return 1;
+  removeAllCallbacks();
+  writeBuffer.push_back(data);
+  statusRegister &= ~CASSETTE_STATUS_WRITE_READY;
+  timespec then;
+  timeoutInNanosecs(&then,2800000);
+  outStandingCallbacks.push_back(addToTimerQueue([this](callbackRecord *record) {
+    removeFromOutstandCallbacks(record);
+    if (writing) {
+      statusRegister |= CASSETTE_STATUS_WRITE_READY;
+      timespec end;
+      timeoutInNanosecs(&end,2800000);
+      outStandingCallbacks.push_back(addToTimerQueue([this](callbackRecord *gap) {
+        removeFromOutstandCallbacks(gap);
+        // With no next byte supplied, WBK completes the record and stops.
+        if (writing && (statusRegister & CASSETTE_STATUS_WRITE_READY)) exTStop();
+        return 0;
+      },end));
+    }
+    return 0;
+  },then));
   return 0;
 }
 
@@ -226,10 +254,8 @@ int IOController::CassetteDevice::exDeck2() {
 
 void IOController::CassetteDevice::removeAllCallbacks() {
   printLog("INFO", "RemoveAllCallbacks: Number of outstanding timers to clear = %d \n", outStandingCallbacks.size());
-  for (auto it=outStandingCallbacks.begin(); it < outStandingCallbacks.end(); it++) {
-    removeTimerCallback(*it);
-    outStandingCallbacks.erase(it);
-  }
+  for (auto *record : outStandingCallbacks) removeTimerCallback(record);
+  outStandingCallbacks.clear();
 }
 
 void IOController::CassetteDevice::removeFromOutstandCallbacks(class callbackRecord * c) {
@@ -360,8 +386,13 @@ int IOController::CassetteDevice::exRBK() {
 int IOController::CassetteDevice::exWBK() {
   if (!(statusRegister & CASSETTE_STATUS_DECK_READY)) return 0;
   if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
-  printStatus("exBSP Backwards read one block");
-  return 1;
+  if (tapeDrive[tapeDeckSelected]->isWriteProtected()) return 1;
+  removeAllCallbacks();
+  writing=true; writeBuffer.clear();
+  statusRegister &= ~(CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_READ_READY
+                      | CASSETTE_STATUS_END_OF_TAPE | CASSETTE_STATUS_INTER_RECORD_GAP);
+  statusRegister |= CASSETTE_STATUS_WRITE_READY;
+  return 0;
 }
 int IOController::CassetteDevice::exBSP() {
   if (!(statusRegister & CASSETTE_STATUS_DECK_READY)) return 0;
@@ -389,6 +420,13 @@ int IOController::CassetteDevice::exSF() {
 int IOController::CassetteDevice::exSB() {
   if (!(statusRegister & CASSETTE_STATUS_DECK_READY)) return 0;
   if (!tapeDrive[tapeDeckSelected]->isOpen()) return 0;
+  // A blank cassette is already at the beginning; do not read before byte 0.
+  if (tapeDrive[tapeDeckSelected]->atBeginning()) {
+    removeAllCallbacks();
+    statusRegister |= CASSETTE_STATUS_END_OF_TAPE | CASSETTE_STATUS_DECK_READY
+                      | CASSETTE_STATUS_INTER_RECORD_GAP;
+    return 0;
+  }
   forward = false;
   stopAtGap = false; 
   printStatus("exSB Read Backwards");
@@ -418,12 +456,19 @@ int IOController::CassetteDevice::exRewind() {
 int IOController::CassetteDevice::exTStop() {
   printStatus("exTStop");
   removeAllCallbacks();
+  int result=0;
+  if (writing) {
+    result=tapeDrive[tapeDeckSelected]->writeBlock(writeBuffer) ? 0 : 1;
+    writing=false; writeBuffer.clear();
+    statusRegister &= ~CASSETTE_STATUS_WRITE_READY;
+    statusRegister |= CASSETTE_STATUS_INTER_RECORD_GAP;
+  }
   if (tapeDrive[tapeDeckSelected]->isOpen()) {
     statusRegister |= (CASSETTE_STATUS_DECK_READY);
   } else {
     statusRegister &= ~(CASSETTE_STATUS_DECK_READY);
   }
-  return 0;
+  return result;
 }
 
 
@@ -436,9 +481,13 @@ IOController::CassetteDevice::CassetteDevice () {
 
 
 bool IOController::CassetteDevice::openFile (int drive, std::string fileName, bool wp) {
-
+  if (drive<0 || drive>1) return false;
   tapeDrive[drive]->setWriteProtected(wp);
-  return tapeDrive[drive]->openFile(fileName);
+  const bool opened=tapeDrive[drive]->openFile(fileName);
+  if (drive==tapeDeckSelected && opened && !transportRunning())
+    statusRegister=CASSETTE_STATUS_DECK_READY | CASSETTE_STATUS_INTER_RECORD_GAP
+                   | CASSETTE_STATUS_CASSETTE_IN_PLACE;
+  return opened;
 }
 void IOController::CassetteDevice::closeFile (int drive) {
   tapeDrive[drive]->closeFile();
@@ -472,12 +521,12 @@ void IOController::CassetteDevice::updateReadyFlag(bool gap) {
 
 unsigned char IOController::ScreenKeyboardDevice::input () {
   if (status) {
-    if (rw->getDisplayButton()) {
+    if (console->getDisplayButton()) {
       statusRegister |= 0010;
     } else {
       statusRegister &= ~0010;
     }
-    if (rw->getKeyboardButton()) {
+    if (console->getKeyboardButton()) {
       statusRegister |= 0004;
     } else {
       statusRegister &= ~0004;
@@ -490,13 +539,13 @@ unsigned char IOController::ScreenKeyboardDevice::input () {
 }
 int IOController::ScreenKeyboardDevice::exWrite(unsigned char data) {
   if (!loadingFont) {
-    int ret = dpw->writeCharacter(data);
+    int ret = console->writeCharacter(data);
     if (incrementXOnWrite) {
-      dpw->incrementXPos();
+      console->incrementXPos();
     } 
     return ret;    
   } else {
-      dpw->updateCharGen(data);
+      console->updateCharGen(data);
       return 0;
   }
 } 
@@ -504,32 +553,31 @@ int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
   //
   loadingFont = false;
   if (data & SCRNKBD_COM1_ROLL_DOWN) { // roll down
-    dpw->scrollDown();
+    console->scrollDown();
   } 
   if (data & SCRNKBD_COM1_ERASE_EOF) {
-    dpw->eraseFromCursorToEndOfFrame();  
+    console->eraseFromCursorToEndOfFrame();
   }
   if (data & SCRNKBD_COM1_ERASE_EOL) {
-    dpw->eraseFromCursorToEndOfLine(); 
+    console->eraseFromCursorToEndOfLine();
   }
   if (data & SCRNKBD_COM1_ROLL) { // roll up 
-    //dpw->rollScreenOneLine();
-    dpw->scrollUp();
+    console->scrollUp();
   }
   if (data & SCRNKBD_COM1_CURSOR_ONOFF) {
-    dpw->showCursor(true);
+    console->showCursor(true);
   } else {
-    dpw->showCursor(false);
+    console->showCursor(false);
   }
   if (data & SCRNKBD_COM1_KDB_LIGHT) {
-    rw->setKeyboardLight(true);
+    console->setKeyboardLight(true);
   } else {
-    rw->setKeyboardLight(false);
+    console->setKeyboardLight(false);
   }
   if (data & SCRNKBD_COM1_DISP_LIGHT) {
-    rw->setDisplayLight(true);
+    console->setDisplayLight(true);
   } else {
-    rw->setDisplayLight(false);
+    console->setDisplayLight(false);
   }
   if (data & SCRNKBD_COM1_AUTO_INCREMENT) { 
     incrementXOnWrite=true;
@@ -539,18 +587,18 @@ int IOController::ScreenKeyboardDevice::exCom1(unsigned char data){
   return 0;
 }
 int IOController::ScreenKeyboardDevice::exCom2(unsigned char data){
-  return dpw->setCursorX(data);
+  return console->setCursorX(data);
 }
 int IOController::ScreenKeyboardDevice::exCom3(unsigned char data){
-  return dpw->setCursorY(data);
+  return console->setCursorY(data);
 }
 int IOController::ScreenKeyboardDevice::exCom4(unsigned char data){
   loadingFont=true;
-  dpw->setCharGenChar(data);
+  console->setCharGenChar(data);
   return 0; 
 }
 int IOController::ScreenKeyboardDevice::exBeep(){
-  beep();
+  console->soundBeep();
   return 0;
 }
 int IOController::ScreenKeyboardDevice::exClick(){
@@ -590,7 +638,9 @@ void IOController::ScreenKeyboardDevice::updateKbd(int key) {
 }
 
 IOController::ScreenKeyboardDevice::ScreenKeyboardDevice() {
-  statusRegister = (SCRNKBD_STATUS_CRT_READY);
+  // Quick Reference Guide, CRT/KEYBOARD: bit 4 identifies the RAM display.
+  // DOS FUNC11 tests this bit before attempting to load its font.
+  statusRegister = SCRNKBD_STATUS_CRT_READY | SCRNKBD_STATUS_RAM_DISPLAY;
   incrementXOnWrite = false;
   loadingFont = false;
 }
@@ -1299,12 +1349,12 @@ bool IOController::Disk9350Device::Disk9350Drive::isWriteProtected() {
 
 unsigned char IOController::Disk9370Device::input () {
   if (status==1) {
-    if (drives[selectedDrive]->isOnline()) {
+    if (drives[mediaDrive()]->isOnline()) {
       statusRegister |= DISK9370_STATUS_DRIVE_ONLINE;
     } else {
       statusRegister &= ~DISK9370_STATUS_DRIVE_ONLINE;
     }
-    if (drives[selectedDrive]->isWriteProtected()) {
+    if (drives[mediaDrive()]->isWriteProtected()) {
       statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
     } else {
       statusRegister &= ~DISK9370_STATUS_WRITE_PROTECT_ENABLE;
@@ -1318,7 +1368,9 @@ unsigned char IOController::Disk9370Device::input () {
     if (bufferAddress==256) bufferAddress=0;
     return tmp;
   } else {
-    return 001;
+    // 9370=001 is documented. 9374=020 follows the original source's
+    // tentative identification; the supplied diagnostics do not query it.
+    return model==9374 ? 020 : 001;
   }
 }
 int IOController::Disk9370Device::exWrite(unsigned char data) {
@@ -1328,157 +1380,143 @@ int IOController::Disk9370Device::exWrite(unsigned char data) {
   if (bufferAddress==256) bufferAddress=0;  
   return 0;
 } 
-int IOController::Disk9370Device::exCom1(unsigned char data){
-  struct timespec then;
-  long address; 
-  switch (data & 0xf) {
-    case 0: // Master clear
-      tmp=0;
-      statusRegister=0;
+bool IOController::Disk9370Device::validAddress() const {
+  return cylinder>=0 && cylinder<cylinderCount() && head>=0 && (model==9374 ? (head&7) : head)<headCount() && sector>=0 && sector<24;
+}
+
+int IOController::Disk9370Device::exCom1(unsigned char data) {
+  printLog("DISK", "COM1=%03o arg=%03o drive=%d cylinder=%d head=%d sector=%d page=%d\n",
+           data,tmp,selectedDrive,cylinder,head,sector,selectedBufferPage);
+  timespec then;
+  const auto generation=resetGeneration;
+  switch (data & 15) {
+    case 0: // Master clear invalidates outstanding controller operations.
+      ++resetGeneration;
+      tmp=0; statusRegister=0; status=1;
+      cylinder=0; head=0; sector=0; selectedBufferPage=0; bufferAddress=0;
+      return 0;
+    case 1: // Read
+    case 2: // Write
+    case 3: { // Write with CRC verification (CRC faults are not modeled).
+      const int command=data & 15, drive=mediaDrive(), page=selectedBufferPage;
+      const long address=(cylinder*24L*headCount()+(model==9374 ? (head&7) : head)*24L+sector)*256;
+      const bool valid=validAddress();
+      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_CRC_ERROR);
+      statusRegister |= DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS;
+      statistics.maxCylinder=std::max(statistics.maxCylinder,cylinder);
+      statistics.maxHead=std::max(statistics.maxHead,model==9374 ? (head&7) : head);
+      statistics.maxSector=std::max(statistics.maxSector,sector);
+      timeoutInNanosecs(&then,1000000);
+      addToTimerQueue([this,generation,command,drive,page,address,valid](callbackRecord *) {
+        if (generation!=resetGeneration) return 0;
+        int result=1;
+        if (command==1) {
+          ++statistics.reads;
+          if (valid) result=drives[drive]->readSector(buffer[page],address);
+        } else {
+          ++statistics.writes;
+          if (valid) result=drives[drive]->writeSector(buffer[page],address);
+        }
+        if (result) {
+          ++statistics.errors;
+          if (command!=1 && drives[drive]->isWriteProtected())
+            statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE;
+          else statusRegister |= DISK9370_STATUS_SECTOR_NOT_FOUND;
+        }
+        statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
+        printLog("DISK", "DONE command=%d drive=%d page=%d address=%ld result=%d\n",command,drive,page,address,result);
+        return 0;
+      },then);
+      return 0;
+    }
+    case 4: // Restore
       cylinder=0;
-      head=0;
-      sector=0;
-      return 0;
-    case 1: // Disk read
-      printLog("INFO", "Reading from 9370 drive %d cylinder=%d head=%d sector=%d\n", selectedDrive, cylinder, head, sector);
-      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
-      statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
-      address = (cylinder * 24 * 20 + head * 24 + sector) * 256;
-      timeoutInNanosecs(&then, 1000000);
-      addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
-          printLog("INFO", "10ms timeout 9370 disk read is ready on drive %d\n", t->selectedDrive);
-          t->statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
-          t->drives[t->selectedDrive]->readSector(t->buffer[t->selectedBufferPage], address);
-          printBuffer(t->buffer[t->selectedBufferPage]);
-          return 0;
-        }, then);      
-      return 0;
-    case 2: // Disk write
-    case 3: // Disk write verify. Same as 2 since we are not checking CRC in the simulator.
-      printLog("INFO", "Writing to 9370 drive %d cylinder=%d, head=%d, sector=%d\n", selectedDrive, cylinder, head, sector);
-      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
-      statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
-      address = (cylinder * 24 * 20 + head * 24 + sector) * 256;
-      timeoutInNanosecs(&then, 1000000);
-      addToTimerQueue([t = this, address=address](class callbackRecord *c) -> int {
-          int ret;
-          printLog("INFO", "10ms timeout 9370 disk write is ready on drive %d\n", t->selectedDrive); 
-          printBuffer(t->buffer[t->selectedBufferPage]);
-          ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
-          if (ret!=0) {
-            t->statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
-          }
-        t->statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
-          return 0;
-        }, then);      
-      return 0;
-    case 4: // Restore selected drive
-      cylinder = 0;
-      printLog("INFO", "Restoring drive %d\n", selectedDrive);
+      ++statistics.seeks;
+      statusRegister &= ~DISK9370_STATUS_SEEK_INCOMPLETE_ERROR;
       statusRegister |= DISK9370_STATUS_DRIVE_BUSY;
-      timeoutInNanosecs(&then, 1000000);
-      addToTimerQueue([t = this](class callbackRecord *c) -> int {
-          printLog("INFO", "1ms timeout 9350 restore drive is ready\n");
-          t->statusRegister &= ~DISK9370_STATUS_DRIVE_BUSY;
-          return 0;
-        },
-        then);
-
-      return 0;
-    case 5: // Select Physical Drive as per contents of the EX COM2 register 0-7
-      selectedDrive = tmp & 0x7;
-      printLog("INFO", "Selecting drive %d\n", 0x7&tmp);
+      timeoutInNanosecs(&then,1000000);
+      break;
+    case 5: // Select physical drive; 9374 head bit 3 selects its pack.
+      selectedDrive=tmp & 7;
       statusRegister |= DISK9370_STATUS_DRIVE_BUSY;
-      timeoutInNanosecs(&then, 10000);
-      addToTimerQueue([t = this](class callbackRecord *c) -> int {
-          printLog("INFO", "10us timeout 9370 drive select drive is ready\n");
-          t->statusRegister &= ~DISK9370_STATUS_DRIVE_BUSY;
-          return 0;
-        },
-        then);
-      return 0;
-    case 6: // Select cylinder as per contents of EX COM2 Register 0-312 octal (9374 - Sets upper 8 bits of cylinder address)
-    // Need to simulate seek time here.
-      cylinder = tmp;
-      printLog("INFO", "9370: Selecting cylinder %d\n", cylinder);
-      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_SECTOR_NOT_FOUND);
-      statusRegister |= (DISK9370_STATUS_DRIVE_BUSY);
-      timeoutInNanosecs(&then, 10000000);
-      addToTimerQueue([t = this](class callbackRecord *c) -> int {
-          printLog("INFO", "10ms timeout 9370 disk cylinder select %d\n", t->selectedDrive); 
-          t->statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY);
-          return 0;
-        }, then);       
-      return 0;
-    case 7: // Verify Drive type 001 -> Datapoint 9370, 020 -> Datapoint 9374 ???? What is this??
+      timeoutInNanosecs(&then,10000);
+      break;
+    case 6: // The 9374 uses 204 logical cylinders with eight logical heads.
+      cylinder=tmp;
+      ++statistics.seeks;
+      statistics.maxCylinder=std::max(statistics.maxCylinder,cylinder);
+      statusRegister &= ~DISK9370_STATUS_SEEK_INCOMPLETE_ERROR;
+      if (cylinder>=cylinderCount()) statusRegister |= DISK9370_STATUS_SEEK_INCOMPLETE_ERROR;
+      statusRegister |= DISK9370_STATUS_DRIVE_BUSY;
+      timeoutInNanosecs(&then,10000000);
+      break;
+    case 7: // Identification is returned on INPUT until EX STATUS/EX DATA.
       status=2;
-      return 0; 
-    case 8: // Format track 
-      printLog("INFO", "Formatting a track on a 9370 drive %d cylinder=%d head=%d sector=%d\n", selectedDrive, cylinder, head, sector);
-      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND);
-      statusRegister |= (DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
-      timeoutInNanosecs(&then, 3000000);
-      address = (cylinder * 24 * 20 + head * 24) * 256;
-      printLog("INFO", "To format cylinder=%d head=%d address=%08X\n", cylinder, head, address);
-      addToTimerQueue([t = this, a=address](class callbackRecord *c) -> int {
-        int ret;
-        long address=a;
-        printLog("INFO", "3ms timeout 9370 disk track format is ready on drive %d address %08X\n", t->selectedDrive,address);
-        memset(t->buffer[t->selectedBufferPage],0377,256);   
-        for (auto i=0; i<24; i++) {  
-          printLog("INFO", "Formatting address=%08X\n",address);
-          ret = t->drives[t->selectedDrive]->writeSector(t->buffer[t->selectedBufferPage], address);
-          address+=256;
+      return 0;
+    case 8: { // 9374 physical tracks contain two 24-sector logical halves.
+      const int drive=mediaDrive();
+      const int trackHead=model==9374 ? (head & 7) & ~2 : head;
+      const long address=(cylinder*24L*headCount()+trackHead*24L)*256;
+      const int halves=model==9374 ? 2 : 1;
+      const bool valid=validAddress();
+      statusRegister &= ~(DISK9370_STATUS_SECTOR_NOT_FOUND | DISK9370_STATUS_CRC_ERROR);
+      statusRegister |= DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS;
+      timeoutInNanosecs(&then,3000000);
+      addToTimerQueue([this,generation,drive,address,valid,halves](callbackRecord *) {
+        if (generation!=resetGeneration) return 0;
+        ++statistics.formats;
+        char fill[256]; memset(fill,0377,sizeof fill);
+        int result=valid ? 0 : 1;
+        for (int half=0; half<halves && !result; ++half)
+          for (int i=0; i<24 && !result; ++i)
+            result=drives[drive]->writeSector(fill,address+(half*48L+i)*256);
+        if (result) {
+          ++statistics.errors;
+          if (drives[drive]->isWriteProtected()) statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE;
+          else statusRegister |= DISK9370_STATUS_SECTOR_NOT_FOUND;
         }
-        if (ret!=0) {
-          t->statusRegister |= DISK9370_STATUS_WRITE_PROTECT_ENABLE; 
-        }
-        t->statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
-          return 0;
-        }, then);      
-      return 0;
-    case 9: // Select head as per contents of EX COM2 Register 0-19 decimal 0.-23 octal (9364 - 0-17 octal)
-      if (tmp > 19) {
-        statusRegister |= DISK9370_STATUS_SECTOR_NOT_FOUND;
-        printLog("INFO", "9370: Selected invalid head: %d\n", head);
+        statusRegister &= ~(DISK9370_STATUS_DRIVE_BUSY | DISK9370_STATUS_DATA_XFER_IN_PROGRESS);
         return 0;
-      }
-      head = tmp;
-      printLog("INFO", "9370: Selecting head %d\n", head);
+      },then);
       return 0;
-    case 10: // Select Sector as per contents of EX COM2 Register (0-24 decimal, 0-27 octal) 9374 - Sets upper 5 bits of sector address
-
-      if (tmp > 23) {
-        statusRegister |= DISK9370_STATUS_SECTOR_NOT_FOUND;
-        printLog("INFO", "9370: Selected invalid sector %d\n", tmp);
-        return 0;
-      }
-      sector = tmp;
-      printLog("INFO", "9370: Selecting sector %d\n", sector);
+    }
+    case 9:
+      head=model==9374 ? tmp & 15 : tmp;
+      if (model==9370 && head>=headCount()) statusRegister |= DISK9370_STATUS_SECTOR_NOT_FOUND;
       return 0;
-    case 11: // Clear Buffer Parity Error
+    case 10:
+      sector=model==9374 ? tmp & 31 : tmp;
+      if (model==9370 && sector>=24) statusRegister |= DISK9370_STATUS_SECTOR_NOT_FOUND;
       return 0;
-    case 12: // Diagnostic Reset: Clear File Unsafe (9374 - not used)
+    case 11:
+      statusRegister &= ~DISK9370_STATUS_BUFFER_PARITY_ERROR;
       return 0;
-    case 13: // Set Track Offset per contents pf EX COM2 register (9374 only)
+    case 12: // File-unsafe faults are not modeled.
       return 0;
-    case 14:
-      printLog("INFO", "Got an unknown EX_COM1 command : 14 (0Eh / 16o)\n");
-      return 1;
+    case 13: // 9374 track offset: stored mechanical displacement is not modeled.
+      return 0;
     default:
-      return 1; 
+      return 1;
   }
+  addToTimerQueue([this,generation](callbackRecord *) {
+    if (generation==resetGeneration) statusRegister &= ~DISK9370_STATUS_DRIVE_BUSY;
+    return 0;
+  },then);
+  return 0;
 }
 int IOController::Disk9370Device::exCom2(unsigned char data){
+  printLog("DISK", "COM2=%03o\n",data);
   printLog("INFO", "Disk 9370 ExCom2 storing %03o data into tmp\n", data);
   tmp = data;
   return 0;
 }
 int IOController::Disk9370Device::exCom3(unsigned char data){
+  printLog("DISK", "COM3=%03o\n",data);
   selectedBufferPage = data & 0xf;
   return 0;
 }
 int IOController::Disk9370Device::exCom4(unsigned char data){
+  printLog("DISK", "COM4=%03o\n",data);
   // Select Buffer Page Byte Adderss (0-255 Decimal 0.377 Octal)
   bufferAddress = data;
   return 0;
@@ -1521,73 +1559,62 @@ int IOController::Disk9370Device::exTStop(){
 }
 
 int IOController::Disk9370Device::openFile (int drive, std::string fileName, bool wp) {
-  return drives[drive]->openFile(fileName, wp);
+  if (drive<0 || drive>=driveCount()) return -1;
+  return drives[drive]->openFile(fileName, wp, cylinderCount()*headCount()*24L*256);
 }
 
 void IOController::Disk9370Device::closeFile (int drive) {
+  if (drive<0 || drive>=driveCount()) return;
   drives[drive]->closeFile();
 }
 
 
-IOController::Disk9370Device::Disk9370Device() {
-  statusRegister = 0;
-  drives[0] = new Disk9370Drive();
-  drives[1] = new Disk9370Drive();
-  drives[2] = new Disk9370Drive();
-  drives[3] = new Disk9370Drive();
-  drives[4] = new Disk9370Drive();
-  drives[5] = new Disk9370Drive();
-  drives[6] = new Disk9370Drive();
-  drives[7] = new Disk9370Drive();  
+bool IOController::Disk9370Device::setModel(int value) {
+  if (value!=9370 && value!=9374) return false;
+  if (value==model) return true;
+  for (auto * drive : drives) if (drive->isOnline()) return false;
+  model=value;
+  return true;
 }
 
+void IOController::Disk9370Device::setWriteProtected(int drive, bool value) {
+  if (drive>=0 && drive<driveCount()) drives[drive]->setWriteProtected(value);
+}
 
-int IOController::Disk9370Device::Disk9370Drive::openFile (std::string fileName, bool wp) {
-  // try to open file. If it fails to open create an empty file and attach it insted.
-  struct stat buffer;
-  if (file != NULL) {
-    closeFile();
-  }
-  writeProtected = wp;
-  if (stat (fileName.c_str(), &buffer) == 0) {
-    printLog("INFO", "Open old file %s.\n", fileName.c_str());
-    file = fopen (fileName.c_str(), "r+");
-    //file = fopen (fileName.c_str(), "w");
-  } else {
-    char b [256];
-    printLog("INFO", "Open new file %s.\n", fileName.c_str());
-    memset(b, 0, 256);
-    file = fopen (fileName.c_str(), "r+");
-    for (int i=0; i < 203*20*24; i++) {
-      fwrite(b, 256, 1, file); 
+IOController::Disk9370Device::Disk9370Device() {
+  for (auto & drive : drives) drive=new Disk9370Drive();
+}
+
+int IOController::Disk9370Device::Disk9370Drive::openFile (std::string fileName, bool wp, long imageBytes) {
+  FILE * next=fopen(fileName.c_str(),wp ? "rb" : "r+b");
+  if (!next && !wp && errno==ENOENT) {
+    next=fopen(fileName.c_str(),"w+b");
+    if (next && (fseek(next,imageBytes-1,SEEK_SET)!=0 || fputc(0,next)==EOF || fflush(next)!=0)) {
+      fclose(next); next=nullptr;
     }
-    rewind(file);
-    //fclose(file);
-    //file = fopen (fileName.c_str(), "r+");
   }
+  if (!next) return -1;
+  closeFile();
+  file=next;
+  this->fileName=fileName;
+  writeProtected=wp;
   return 0;
 }
 
 void  IOController::Disk9370Device::Disk9370Drive::closeFile() {
-  /*for (int i=0; i < 203*20*24; i++) {
-    fwrite(diskBuffer+i*256, 1, 256, file); 
-  }*/
-  fclose(file);
+  if (file) fclose(file);
   file = NULL;
 }
 
 int IOController::Disk9370Device::Disk9370Drive::readSector(char * buffer, long address) {
-  fseek(file, address, SEEK_SET);
-  fread(buffer, 1, 256, file);
-  //memcpy(buffer, diskBuffer+address, 256);
+  if (!file || address<0 || fseek(file,address,SEEK_SET)!=0) return 1;
+  if (fread(buffer,1,256,file)!=256) return 1;
   return 0;
 }
 
 int IOController::Disk9370Device::Disk9370Drive::writeSector(char * buffer, long address) {
-  if (writeProtected) return 1;
-  fseek(file, address, SEEK_SET);
-  fwrite(buffer, 1, 256, file); 
-  //memcpy(diskBuffer+address, buffer, 256);
+  if (!file || writeProtected || address<0 || fseek(file,address,SEEK_SET)!=0) return 1;
+  if (fwrite(buffer,1,256,file)!=256 || fflush(file)!=0) return 1;
   return 0;
 }
 

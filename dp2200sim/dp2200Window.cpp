@@ -1,6 +1,7 @@
 #include "dp2200Window.h"
 #include <form.h>
 #include <ncurses.h>
+#include <cstring>
 
 
 dp2200Window::dp2200Window(class dp2200_cpu * c) {
@@ -12,9 +13,12 @@ dp2200Window::dp2200Window(class dp2200_cpu * c) {
   normalWindow();
   wrefresh(win);
   activeWindow = false;
-  SDL_Event evt;
   screenDirty = false;
-  scrollok(innerWin, TRUE);
+  // Scrolling is controlled by EX COM1, never by curses writing the last cell.
+  scrollok(innerWin, FALSE);
+  memset(screen, ' ', sizeof screen);
+#if DP2200_WITH_SDL
+  SDL_Event evt;
   if (SDL_Init(SDL_INIT_VIDEO) != 0)
   {
     SDL_Log("SDL_Init fel: %s", SDL_GetError());
@@ -22,7 +26,7 @@ dp2200Window::dp2200Window(class dp2200_cpu * c) {
   }
   printLog("INFO", "SDL_init\n");
   // Skapa fönster
-  sdlwin = SDL_CreateWindow("Datapoint 5500 Emulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
+  sdlwin = SDL_CreateWindow("Datapoint 5500 Emulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W*2, WINDOW_H*2, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
   if (!sdlwin)
   {
     SDL_Log("SDL_CreateWindow fel: %s", SDL_GetError());
@@ -31,7 +35,8 @@ dp2200Window::dp2200Window(class dp2200_cpu * c) {
   }
   printLog("INFO", "SDL_CreateWindow\n");
   // Skapa renderer
-  ren = SDL_CreateRenderer(sdlwin, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+  ren = SDL_CreateRenderer(sdlwin, -1, SDL_RENDERER_ACCELERATED);
+  if (!ren) ren=SDL_CreateRenderer(sdlwin,-1,SDL_RENDERER_SOFTWARE);
   if (!ren)
   {
     SDL_Log("SDL_CreateRenderer fel: %s", SDL_GetError());
@@ -39,14 +44,21 @@ dp2200Window::dp2200Window(class dp2200_cpu * c) {
     SDL_Quit();
     exit(1);
   }
+  SDL_RenderSetLogicalSize(ren,WINDOW_W,WINDOW_H);
+  SDL_RenderSetIntegerScale(ren,SDL_TRUE);
+  SDL_StartTextInput();
+  screenDirty=true;
   while (SDL_PollEvent(&evt));
   printLog("INFO", "SDL_CreateRenderer\n");
+#endif
 }
 
 dp2200Window::~dp2200Window() {
+#if DP2200_WITH_SDL
   SDL_DestroyRenderer(ren);
   SDL_DestroyWindow(sdlwin);
   SDL_Quit();
+#endif
 }
 
 void dp2200Window::resize() {
@@ -65,8 +77,8 @@ void dp2200Window::hightlightWindow() {
   box(win, 0, 0);
   mvwprintw(win, 0, 1, "DATAPOINT 2200 SCREEN");
   wattrset(win, 0);
-  wmove(innerWin, cursorY, cursorX);
-  if (cursorEnabled) curs_set(2);
+  if (cursorInBounds()) wmove(innerWin, cursorY, cursorX);
+  if (cursorEnabled && cursorInBounds()) curs_set(2);
   else curs_set(0);
   wrefresh(win);
   redrawwin(innerWin);
@@ -94,6 +106,7 @@ void dp2200Window::handleKey(int key) {
     cpu->ioCtrl->screenKeyboardDevice->updateKbd(0x0d);
     break;
   case 0x7f:
+  case KEY_BACKSPACE:
     printLog("INFO", "Got BS\n");
     cpu->ioCtrl->screenKeyboardDevice->updateKbd(0x08);
     break;    
@@ -212,59 +225,41 @@ void dp2200Window::handleKey(int key) {
 }
 void dp2200Window::resetCursor() {
   if (activeWindow) {
-    if (cursorEnabled) curs_set(2);
-    wmove(innerWin, cursorY, cursorX);
+    curs_set(cursorEnabled && cursorInBounds() ? 2 : 0);
+    if (cursorInBounds()) wmove(innerWin, cursorY, cursorX);
     wrefresh(innerWin);
   }
 }
 int dp2200Window::eraseFromCursorToEndOfFrame() {
   printLog("INFO", "Erasing from X=%d, Y=%d to end of frame\n", cursorX, cursorY);
-  for (int i=cursorX; i<80;i++) {
-    waddch(innerWin, ' ');
-    screen[i][cursorY]=' ';
-  }
-  for (int i=cursorY+1; i <12; i++) {
-    wmove(innerWin, i, 1);
-    for (int j=0; j<80; j++) {
-      waddch(innerWin, ' ');
-      screen[j][i]=' ';
-    }
-  }
-  wmove(innerWin, cursorY, cursorX);
-  wrefresh(innerWin);
+  if (!cursorInBounds()) return 0;
+  for (int x=cursorX; x<80; ++x) screen[x][cursorY]=' ';
+  for (int y=cursorY+1; y<12; ++y)
+    for (int x=0; x<80; ++x) screen[x][y]=' ';
+  redrawTextScreen();
   screenDirty = true;
   return 0;
 }
 int dp2200Window::eraseFromCursorToEndOfLine() {
   printLog("INFO", "Erasing from X=%d, Y=%d to end of line\n", cursorX, cursorY);
-  for (int i=cursorX; i<80;i++) {
-    waddch(innerWin, ' ');
-    screen[i][cursorY]=' ';
-  }
-  wmove(innerWin, cursorY, cursorX);
-  wrefresh(innerWin);
+  if (!cursorInBounds()) return 0;
+  for (int x=cursorX; x<80; ++x) screen[x][cursorY]=' ';
+  redrawTextScreen();
   screenDirty = true;
   return 0;
 }
 int dp2200Window::rollScreenOneLine() {
   printLog("INFO", "Roll one line\n");
-  wmove(innerWin, 12, 0);
-  waddch(innerWin, '\n');
-  wmove(innerWin, cursorY, cursorX);
-  wrefresh(innerWin);
-  screenDirty = true;
-  return 0;
+  return scrollUp();
 }
 int dp2200Window::showCursor(bool value) {
   cursorEnabled=value;
+  screenDirty=true;
   printLog("INFO", "Setting cursor status = %d \n", cursorEnabled);
   return 0;
 }
 int dp2200Window::setCursorX(int value) {
-  if (value >= 80 || value < 0) {
-    printLog("INFO", "setCursorX: Value is outside limits : %d\n", value);
-    return 0;
-  }
+  if (value < 0 || value > 255) return 0;
   cursorX = value;
   printLog("INFO", "Setting Cursor X X=%d Y=%d\n", cursorX, cursorY);
   screenDirty = true;
@@ -272,10 +267,7 @@ int dp2200Window::setCursorX(int value) {
 }
 
 int dp2200Window::setCursorY(int value) {
-  if (value >= 12 || value < 0) {
-    printLog("INFO", "setCursorY: Value is outside limits : %d\n", value);
-    return 0;
-  }
+  if (value < 0 || value > 255) return 0;
   cursorY = value;
   printLog("INFO", "Setting Cursor Y X=%d Y=%d\n", cursorX, cursorY);
   screenDirty = true;
@@ -284,80 +276,110 @@ int dp2200Window::setCursorY(int value) {
 
 int dp2200Window::writeCharacter(int value) {
   printLog("INFO", "Writing char=%c to screen\n", value);
-  wmove(innerWin, cursorY, cursorX);
-  screen[cursorX][cursorY]=value;
-  waddch(innerWin, value);
+  if (!cursorInBounds()) return 0;
+  int code=value & 0177;
+  screen[cursorX][cursorY]=code;
+  // Guest control codes are glyphs, not terminal newlines, tabs or caret pairs.
+  chtype cell=(code>=32 && code<127) ? code : ' ';
+  mvwaddchnstr(innerWin, cursorY, cursorX, &cell, 1);
   wrefresh(innerWin);
   screenDirty = true;
   return 0;
 }
 
 int dp2200Window::scrollDown() {
-  int i,j;
-  wscrl(innerWin, -1);
-  for (i=0; i < 80; i++) screen[i][0] = ' ';
-  for (j=1; j < 12; j++) {
-    for (i=0; i < 80; i++) {
-      screen[i][j] = screen[i][j-1];
-    }
-  }  
+  for (int y=11; y>0; --y)
+    for (int x=0; x<80; ++x) screen[x][y]=screen[x][y-1];
+  for (int x=0; x<80; ++x) screen[x][0]=' ';
+  redrawTextScreen();
   screenDirty = true;
   return 0;
 }
 
 int dp2200Window::scrollUp() {
-  int i,j;
-  wscrl(innerWin, 1);
-  for (i=0; i < 80; i++) screen[i][11] = ' ';
-  for (j=0; j < 11; j++) {
-    for (i=0; i < 80; i++) {
-      screen[i][j] = screen[i][j+1];
-    }
-  }  
+  for (int y=0; y<11; ++y)
+    for (int x=0; x<80; ++x) screen[x][y]=screen[x][y+1];
+  for (int x=0; x<80; ++x) screen[x][11]=' ';
+  redrawTextScreen();
   screenDirty = true;
   return 0;
 }
 
 void dp2200Window::incrementXPos() {
-  cursorX++; 
+  // Writing column 79 moves off-screen; later writes wait for repositioning.
+  if (cursorX<80) ++cursorX;
+}
+
+bool dp2200Window::cursorInBounds() const {
+  return cursorX>=0 && cursorX<80 && cursorY>=0 && cursorY<12;
+}
+
+void dp2200Window::redrawTextScreen() {
+  for (int y=0; y<12; ++y) {
+    chtype cells[80];
+    for (int x=0; x<80; ++x) {
+      unsigned char code=screen[x][y] & 0177;
+      cells[x]=(code>=32 && code<127) ? code : ' ';
+    }
+    mvwaddchnstr(innerWin, y, 0, cells, 80);
+  }
+  if (cursorInBounds()) wmove(innerWin, cursorY, cursorX);
+  wrefresh(innerWin);
 }
 
 
 void dp2200Window::setCharGenChar(int data) {
-  lastCharGenChar=data & 0177;
-  charGenIndex=0;
+  characterGenerator.select(data);
 }
 
 void dp2200Window::updateCharGen(int data) {
-  font5x7[lastCharGenChar][charGenIndex] = 0177 & data;
-  printLog("INFO", "CHARGEN:  %04o %01o: %04o \n", lastCharGenChar, charGenIndex, 0177 & data);
-  charGenIndex++;
-  if (charGenIndex==5) {
-    charGenIndex = 0;
-    lastCharGenChar = 0177 & (lastCharGenChar+1);
-  }
+  characterGenerator.write(data);
+  // Redefining a glyph changes every cell using it, even without screen writes.
+  screenDirty=true;
 }
 
+#if DP2200_WITH_SDL
 void dp2200Window::drawChar(int c, int cx, int cy) {
   // pixel-offset för övre vänstra hörnet (global padding + 1px per-cell padding)
   int x0 = PADDING + cx * CELL_W + 1;
   int y0 = PADDING + cy * CELL_H + 1;
 
-  for (int row = 0; row < 5; ++row)
-  {
-    uint8_t bits = font5x7[c][row];
-    for (int col = 0; col < 7; ++col) {
-      if (bits & (1 << (6 - col))) {
-        // Draw a pixel
-        SDL_RenderDrawPoint(ren, x0 + row, y0 + col);
-      }
-    }
-  }
+  for (unsigned x=0; x<5; ++x)
+    for (unsigned y=0; y<7; ++y)
+      if (characterGenerator.pixel(c,x,y)) SDL_RenderDrawPoint(ren,x0+x,y0+y);
 }
+#endif
 
 void dp2200Window::updateScreen() {
+#if DP2200_WITH_SDL
   //printLog("INFO", "updateScreen ENTRY\n");
   SDL_Event evt;
+  while (SDL_PollEvent(&evt)) {
+    if (evt.type==SDL_TEXTINPUT)
+      for (const unsigned char *text=reinterpret_cast<const unsigned char *>(evt.text.text); *text; ++text)
+        if (*text<128) sdlKeys.push_back(*text);
+    if (evt.type==SDL_KEYDOWN) {
+      switch (evt.key.keysym.sym) {
+      case SDLK_RETURN: case SDLK_KP_ENTER: sdlKeys.push_back('\n'); break;
+      case SDLK_BACKSPACE: sdlKeys.push_back(127); break;
+      case SDLK_ESCAPE: sdlKeys.push_back(27); break;
+      case SDLK_F5: handleKey(KEY_F(5)); break;
+      case SDLK_F6: handleKey(KEY_F(6)); break;
+      default: break;
+      }
+    }
+    if (evt.type==SDL_WINDOWEVENT &&
+        (evt.window.event==SDL_WINDOWEVENT_EXPOSED ||
+         evt.window.event==SDL_WINDOWEVENT_SHOWN)) screenDirty=true;
+    if (evt.type==SDL_QUIT) SDL_HideWindow(sdlwin);
+  }
+  if (cpu && !sdlKeys.empty() && !cpu->ioCtrl->screenKeyboardDevice->keyboardReady()) {
+    handleKey(sdlKeys.front());
+    sdlKeys.pop_front();
+  }
+  bool phase=(SDL_GetTicks()/500)%2;
+  if (cursorEnabled && phase!=sdlCursorPhase) screenDirty=true;
+  sdlCursorPhase=phase;
   if (!screenDirty) return;
   // pump the event queue so the window actually appears
 
@@ -372,10 +394,19 @@ void dp2200Window::updateScreen() {
       drawChar(screen[col][row], col, row);
     }
   }
+  if (cursorEnabled && cursorInBounds() && sdlCursorPhase) {
+    int x=PADDING+cursorX*CELL_W+1, y=PADDING+cursorY*CELL_H+8;
+    SDL_RenderDrawLine(ren,x,y,x+4,y);
+  }
 
   // Paint
   SDL_RenderPresent(ren);
-  while (SDL_PollEvent(&evt));
   screenDirty = false;
   //printLog("INFO", "updateScreen EXIT\n");
+#endif
 }
+int dp2200Window::setKeyboardLight(bool value) { return rw->setKeyboardLight(value); }
+int dp2200Window::setDisplayLight(bool value) { return rw->setDisplayLight(value); }
+bool dp2200Window::getKeyboardButton() { return rw->getKeyboardButton(); }
+bool dp2200Window::getDisplayButton() { return rw->getDisplayButton(); }
+void dp2200Window::soundBeep() { beep(); }
