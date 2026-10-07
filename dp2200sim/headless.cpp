@@ -98,6 +98,29 @@ int main() {
           cpu.memory->sectorTable[page].accessEnable=true;
           cpu.memory->sectorTable[page].writeEnable=page!=15;
         }
+      } else if (command=="rim") {
+        int address=-1, node=0; input>>address>>node;
+        if (!input || !cpu.is5500 || cpu.is6600 || !cpu.ioCtrl->attachRim(address,node))
+          throw std::runtime_error("rim requires CPU 5500, a free address mask 0..255 with exactly four set bits and unique node 1..255");
+      } else if (command=="rim-state" || command=="rim-event") {
+        int address=-1; input>>address;
+        auto * rim=cpu.ioCtrl->rim(address);
+        if (!input || !rim) throw std::runtime_error("Address does not select a unique RIM");
+        if (command=="rim-event") {
+          std::string event; input>>event;
+          if (event=="reset") rim->reset();
+          else if (event=="recon") rim->reconfigure();
+          else throw std::runtime_error("rim-event requires reset|recon");
+        }
+        extra=",\"rim\":{\"node\":"+std::to_string(rim->id())
+          +",\"status\":"+std::to_string(rim->flags())
+          +",\"pointer\":"+std::to_string(rim->pointer())
+          +",\"processor_page\":"+std::to_string(rim->page())
+          +",\"transmit_page\":"+std::to_string(rim->txPage())
+          +",\"receive_page\":"+std::to_string(rim->rxPage())
+          +",\"data_mode\":"+(rim->dataMode()?"true":"false")
+          +",\"disable_transmit_pending\":"+(rim->txDisablePending()?"true":"false")
+          +",\"disable_receive_pending\":"+(rim->rxDisablePending()?"true":"false")+"}";
       } else if (command=="disk-model") {
         int model=0; input>>model;
         if (!input || !cpu.ioCtrl->disk9370Device->setModel(model))

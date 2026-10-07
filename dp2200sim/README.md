@@ -4,7 +4,7 @@ PLEASE NOTE!  STILL WORK IN PROGRESS.<BR>
  
 At this point it can load CTOS from cassette tape images and boot DOS.C from floppy disks. It also support a local printer which means that it is possible to print from DOS.C to a file.
 
-See the [diagnostic tape inventory](DIAGNOSTIC_TAPE_INVENTORY.md) for all tapes in
+See the [diagnostic tape inventory](docs/DIAGNOSTIC_TAPE_INVENTORY.md) for all tapes in
 `tapes/diagnostics/`, measured test results and peripheral implementation ideas.
 
 
@@ -72,7 +72,7 @@ The SDL window accepts ASCII typing, Enter, Backspace, Escape, F5 and F6, and
 uses the same keyboard translation as the terminal view. Closing it hides the
 extra display; use `QUIT` in the terminal COMMAND window to exit the simulator.
 
-See [programmable-font research and results](FONT_RESEARCH.md) for the ROM/DOS
+See [programmable-font research and results](docs/FONT_RESEARCH.md) for the ROM/DOS
 font comparison, historical font utilities, graphics limits, and exported images.
 
 Development and runtime testing have primarily been on macOS. The build uses
@@ -295,6 +295,14 @@ This is an unsorted list of requirements. Not necessarily part of the MVP. More 
 
 ## Headless test harness
 
+The [RIM feasibility assessment](docs/RIM_FEASIBILITY.md) covers the proposed 9483
+device and a virtual ARC network with a local backend and proposed central TCP hub.
+The optional [Stage 1 RIM implementation](docs/RIM_STAGE1.md) supplies the 5500
+register/buffer interface; run its checks with `make -C dp2200sim test-rim`.
+The [Stage 2 link design](docs/RIM_STAGE2_DESIGN.md) uses the 1983 Designer's Handbook
+to propose TCP framing for ARC control/data events and hub-coordinated simulated
+time. It also retains the earlier tested multicast transport prototype.
+
 Build and run the screen/keyboard and processor-tape regression tests from the
 repository root:
 
@@ -322,7 +330,7 @@ no error beeps; a separate check verifies a wrong byte beeps and a short line
 is erased for retry. These console checks use native keyboard bytes, including
 BACKSPACE, CANCEL and DEL. They verify the headless character/control state;
 physical keyboard scanning and rendered glyph appearance remain outside their
-scope. The checks are in [test_console_diagnostics.py](../tests/test_console_diagnostics.py).
+scope. The checks are in [test_console_diagnostics.py](tests/test_console_diagnostics.py).
 
 The executable accepts one command per stdin line and flushes one JSON response
 per command. Every response includes the complete 80 × 12 screen, with spaces
@@ -354,6 +362,9 @@ response.
 | `io-trace /path/to/output` | Record disk control commands, transfer completions and cassette reads. |
 | `screen` or `state` | Capture current screen and state without executing instructions. |
 | `key N` | Inject a native keyboard byte (decimal 0–255). An occupied latch returns an error instead of losing a key. |
+| `rim ADDRESS NODE` | Attach an isolated Stage 1 RIM on CPU 5500; both arguments are decimal. |
+| `rim-state ADDRESS` | Inspect one RIM without consuming data; an alias must select exactly one module. |
+| `rim-event ADDRESS reset` / `rim-event ADDRESS recon` | Supply an explicit RIM test event. |
 | `button keyboard 0` / `button keyboard 1` | Release / press KEYBOARD. |
 | `button display 0` / `button display 1` | Release / press DISPLAY. |
 | `quit` | Exit. |
@@ -420,7 +431,7 @@ instruction set, which remains work in progress.
 ## 9370 and 9374 disk diagnostics
 
 For EXRCASS transport verification, TAPTIM write/read checks and the measured
-timing limitations, see [cassette diagnostic results](CASSETTE_DIAGNOSTICS.md).
+timing limitations, see [cassette diagnostic results](docs/CASSETTE_DIAGNOSTICS.md).
 
 Run all five supplied tapes against disposable disk images:
 

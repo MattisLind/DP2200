@@ -2,6 +2,7 @@
 
 #include "dp2200_io_sim.h"
 #include <algorithm>
+#include <bitset>
 #include <cerrno>
 #include <sys/stat.h>
 
@@ -28,25 +29,88 @@ IOController::IOController () {
   dev[0x78] = disk9350Device = new Disk9350Device();
   dev[0x4b] = disk9370Device = new Disk9370Device();
   dev[0x71] = disk9390Device = new Disk9390Device();
-  supportedDevices.push_back(0xf0);
-  supportedDevices.push_back(0xe1);
-  supportedDevices.push_back(0x3c);
-  supportedDevices.push_back(0x96);
-  supportedDevices.push_back(0x5a);
-  supportedDevices.push_back(0xc3);
-  supportedDevices.push_back(0x78);
-  supportedDevices.push_back(0x4b);  
-  supportedDevices.push_back(0x71);
 }
-bool IOController::isDeviceSupported(unsigned char address) {
-  if (std::find(supportedDevices.begin(), supportedDevices.end(), address)==supportedDevices.end()) {
-    return false;
-  }
+bool IOController::isAddressOccupied(int address) {
+  if (address<0 || address>255) return false;
+  return dev[address] || rims[address];
+}
+
+void IOController::selectDevices() {
+  selectedDevices.clear();
+  if (ioAddress<0 || ioAddress>255) return;
+  // Existing peripherals retain their exact-address lookup. RIM straps
+  // require their four asserted bits and ignore the remaining bus bits.
+  if (dev[ioAddress]) selectedDevices.push_back(dev[ioAddress]);
+  for (unsigned mask=0; mask<rims.size(); ++mask)
+    if (rims[mask] && (ioAddress & mask)==mask)
+      selectedDevices.push_back(rims[mask].get());
+}
+
+bool IOController::attachRim(int address, int node) {
+  if (address<0 || address>255 || node<1 || node>255 ||
+      std::bitset<8>(address).count()!=4 || isAddressOccupied(address)) return false;
+  for (const auto & device : rims) if (device && device->id()==node) return false;
+  rims[address]=std::make_unique<RimDevice>(node);
+  // A newly powered module stays unselected until the next EX ADR strobe.
   return true;
+}
+
+void IOController::RimDevice::reset() {
+  // Buffer and page contents are unspecified at POR. Keep them stable on
+  // reset; zero initialization supplies a deterministic fresh-device state.
+  statusRegister=TA | RI | POR | DA;
+  disableTransmitPending=disableReceivePending=false;
+  exStatus();
+}
+
+unsigned char IOController::RimDevice::input() {
+  if (status) return statusRegister;
+  unsigned char value=buffer[processorPage*256+address];
+  ++address;
+  return value;
+}
+
+int IOController::RimDevice::exWrite(unsigned char value) {
+  // WRITE accesses buffer memory in either STATUS or DATA mode.
+  buffer[processorPage*256+address]=value;
+  ++address;
+  return 0;
+}
+
+int IOController::RimDevice::exCom1(unsigned char value) {
+  // Undefined command encodings have no effect. Page fields are valid only
+  // for select/enable commands; bits 5..7 are reserved by the 9483 interface.
+  if (value & 0xe0) return 0;
+  unsigned command=value & 7, page=(value >> 3) & 3;
+  if (page && command!=3 && command!=4 && command!=5) return 0;
+  switch (command) {
+    case 0: statusRegister &= ~IPE; break;
+    case 1: disableTransmitPending=!(statusRegister & TA); break;
+    case 2: disableReceivePending=!(statusRegister & RI); break;
+    case 3: processorPage=page; break;
+    case 4:
+      if (!(statusRegister & TA)) break;
+      transmitPage=page;
+      disableTransmitPending=false;
+      statusRegister &= ~(TA | TMA | TPE);
+      break;
+    case 5:
+      if (!(statusRegister & RI)) break;
+      receivePage=page;
+      disableReceivePending=false;
+      statusRegister &= ~RI;
+      break;
+    case 6: statusRegister &= ~POR; break;
+    case 7: statusRegister &= ~RECON; break;
+  }
+  // Without a link, no invitation-to-transmit can complete enables/disables.
+  // In particular, never manufacture TMA or receive data in Stage 1.
+  return 0;
 }
 
 int IOController::exAdr (unsigned char address) {
   ioAddress = address;
+  selectDevices();
   exStatus();
   return 0;
 }
@@ -54,80 +118,82 @@ int IOController::exAdr (unsigned char address) {
 int IOController::exStatus () {
   // No controller responds at an absent address. Ignore its commands and
   // return zero on INPUT so the ROM can continue probing boot devices.
-  if (!isDeviceSupported(ioAddress)) return 0;
-  dev[ioAddress]->exStatus();
+  for (auto * device : selectedDevices) device->exStatus();
   return 0;
 }
 
 int IOController::exData () {
-  if (!isDeviceSupported(ioAddress)) return 0;
-  dev[ioAddress]->exData();
+  for (auto * device : selectedDevices) device->exData();
   return 0;
 }
 
 int IOController::exWrite(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 0;
-  return dev[ioAddress]->exWrite(data);
+  return outputToSelected(&IODevice::exWrite, data);
+}
+
+int IOController::outputToSelected(int (IODevice::*command)(unsigned char), unsigned char data) {
+  int result=0;
+  for (auto * device : selectedDevices) {
+    int error=(device->*command)(data);
+    if (!result) result=error;
+  }
+  return result;
 }
 
 int IOController::exCom1(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 0;
-  return dev[ioAddress]->exCom1(data);
+  return outputToSelected(&IODevice::exCom1, data);
 }
 int IOController::exCom2(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 0;
-  return dev[ioAddress]->exCom2(data);
+  return outputToSelected(&IODevice::exCom2, data);
 }
 int IOController::exCom3(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 0;
-  return dev[ioAddress]->exCom3(data);
+  return outputToSelected(&IODevice::exCom3, data);
 }
 int IOController::exCom4(unsigned char data) {
-  if (!isDeviceSupported(ioAddress)) return 0;
-  return dev[ioAddress]->exCom4(data);
+  return outputToSelected(&IODevice::exCom4, data);
 }
 int IOController::exBeep() {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (selectedDevices.empty()) return 0;
   return screenKeyboardDevice->exBeep();
 }
 int IOController::exClick() {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (selectedDevices.empty()) return 0;
   return screenKeyboardDevice->exClick();
 }
 int IOController::exDeck1() {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (selectedDevices.empty()) return 0;
   return cassetteDevice->exDeck1();
 }
 int IOController::exDeck2() {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (selectedDevices.empty()) return 0;
   return cassetteDevice->exDeck2();
 }
 int IOController::exRBK() {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (selectedDevices.empty()) return 0;
   return cassetteDevice->exRBK();
 }
 int IOController::exWBK() {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (selectedDevices.empty()) return 0;
   return cassetteDevice->exWBK();
 }
 int IOController::exBSP() {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (selectedDevices.empty()) return 0;
   return cassetteDevice->exBSP();
 }
 int IOController::exSF() {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (selectedDevices.empty()) return 0;
   return cassetteDevice->exSF();
 }
 int IOController::exSB() {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (selectedDevices.empty()) return 0;
   return cassetteDevice->exSB();
 }
 int IOController::exRewind() {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (selectedDevices.empty()) return 0;
   return cassetteDevice->exRewind();
 }
 int IOController::exTStop() {
-  if (!isDeviceSupported(ioAddress)) return 0;
+  if (selectedDevices.empty()) return 0;
   return cassetteDevice->exTStop();
 }
 
@@ -135,8 +201,18 @@ int IOController::input (bool checkParity) {
   // The restart ROM probes optional controllers. An absent device has no
   // status bits set; it must not look like a CPU access-protection fault.
   // PIN still detects the missing response as an input parity failure.
-  if (!isDeviceSupported(ioAddress)) return checkParity ? -1 : 0;
-  return dev[ioAddress]->input();
+  if (selectedDevices.empty()) return checkParity ? -1 : 0;
+  int first=-1, agreed=255;
+  bool conflict=false;
+  for (auto * device : selectedDevices) {
+    int value=device->input(); // Each responder consumes its own byte once.
+    if (first<0) first=value;
+    else if (value!=first) conflict=true;
+    agreed &= value;
+  }
+  // Deterministic contention policy: retain agreed 1 bits, resolve conflicting
+  // bits to zero. PIN reports a conflict. This is not an electrical bus model.
+  return checkParity && conflict ? -1 : agreed;
 }
 
 

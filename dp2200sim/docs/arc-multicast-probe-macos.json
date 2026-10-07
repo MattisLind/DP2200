@@ -1,0 +1,52 @@
+{
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "group": "239.255.22.0",
+  "port": 60443,
+  "interface": "127.0.0.1",
+  "ttl": 0,
+  "multicast_loop": true,
+  "reuseaddr": true,
+  "reuseport": true,
+  "processes": 3,
+  "packets_per_sender": 20,
+  "max_arc_payload": 253,
+  "results": [
+    {
+      "receiver": 0,
+      "per_sender": [
+        20,
+        20,
+        20
+      ],
+      "received": 60,
+      "duplicates": 0,
+      "invalid": 0,
+      "passed": true
+    },
+    {
+      "receiver": 1,
+      "per_sender": [
+        20,
+        20,
+        20
+      ],
+      "received": 60,
+      "duplicates": 0,
+      "invalid": 0,
+      "passed": true
+    },
+    {
+      "receiver": 2,
+      "per_sender": [
+        20,
+        20,
+        20
+      ],
+      "received": 60,
+      "duplicates": 0,
+      "invalid": 0,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

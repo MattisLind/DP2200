@@ -3,6 +3,8 @@
 #define _DP2200_IO_SIM_
 
 #include <vector>
+#include <array>
+#include <memory>
 #include "cassetteTape.h"
 #include "FloppyDrive.h"
 #include "Console.h"
@@ -398,10 +400,51 @@ class IOController {
   };
 
 
-  class IODevice * dev[256];
+  // 9483 processor interface. Link completion/token events are Stage 2.
+  class RimDevice final : public virtual IODevice {
+    std::array<unsigned char, 1024> buffer{};
+    unsigned char node, processorPage = 0, transmitPage = 0, receivePage = 0;
+    unsigned char address = 0;
+    bool disableTransmitPending = false, disableReceivePending = false;
+  public:
+    enum { TA=1, TMA=2, RECON=4, TPE=8, POR=16, DA=32, IPE=64, RI=128 };
+    explicit RimDevice(unsigned char id) : node(id) { reset(); }
+    void reset();
+    void reconfigure() { statusRegister |= RECON; }
+    unsigned char input();
+    int exWrite(unsigned char);
+    int exCom1(unsigned char);
+    int exCom2(unsigned char) { return 0; }
+    int exCom3(unsigned char) { return 0; }
+    int exCom4(unsigned char value) { address=value; exData(); return 0; }
+    int exBeep() { return 0; }
+    int exClick() { return 0; }
+    int exDeck1() { return 0; }
+    int exDeck2() { return 0; }
+    int exRBK() { return 0; }
+    int exWBK() { return 0; }
+    int exBSP() { return 0; }
+    int exSF() { return 0; }
+    int exSB() { return 0; }
+    int exRewind() { return 0; }
+    int exTStop() { return 0; }
+    unsigned char id() const { return node; }
+    unsigned char flags() const { return statusRegister; }
+    unsigned char pointer() const { return address; }
+    unsigned char page() const { return processorPage; }
+    unsigned char txPage() const { return transmitPage; }
+    unsigned char rxPage() const { return receivePage; }
+    bool dataMode() const { return status==0; }
+    bool txDisablePending() const { return disableTransmitPending; }
+    bool rxDisablePending() const { return disableReceivePending; }
+  };
+  std::array<std::unique_ptr<RimDevice>, 256> rims;
+  class IODevice * dev[256]{};
   int ioAddress = -1;
-  std::vector<unsigned char> supportedDevices;
-  bool isDeviceSupported(unsigned char address);
+  std::vector<IODevice *> selectedDevices;
+  bool isAddressOccupied(int address);
+  void selectDevices();
+  int outputToSelected(int (IODevice::*command)(unsigned char), unsigned char data);
   public:
   class CassetteDevice * cassetteDevice;
   class ScreenKeyboardDevice * screenKeyboardDevice;
@@ -413,6 +456,18 @@ class IOController {
   class Disk9370Device * disk9370Device;
   class Disk9390Device * disk9390Device;
   IOController ();
+  bool attachRim(int address, int node);
+  RimDevice * rim(int address) const {
+    if (address<0 || address>255) return nullptr;
+    RimDevice * result=nullptr;
+    for (unsigned mask=0; mask<rims.size(); ++mask) {
+      if (rims[mask] && (address & mask)==mask) {
+        if (result) return nullptr; // Host inspection/events require one module.
+        result=rims[mask].get();
+      }
+    }
+    return result;
+  }
   int input (bool checkParity = false);
   int exAdr (unsigned char address);
   int exStatus ();

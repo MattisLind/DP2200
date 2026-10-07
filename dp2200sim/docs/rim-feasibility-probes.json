@@ -1,0 +1,428 @@
+{
+  "date": "2026-10-06",
+  "tape": "tapes/diagnostics/RIMTEST.tap",
+  "sha256": "f38ef550bc0520fce5a4e0f7d5cb27c479375acb186bab2cecf12fd1bbd2e151",
+  "method": "Unmodified tape; no RIM attached; ROM initialization on 5500/6600; bounded execution. This is a setup probe, not a diagnostic pass.",
+  "probes": [
+    {
+      "cpu": 2200,
+      "steps": [
+        {
+          "command": "cpu 2200",
+          "halted": false,
+          "pc": 0,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "screen": "                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/RIMTEST.tap",
+          "halted": false,
+          "pc": 0,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "screen": "                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 5000000",
+          "halted": true,
+          "pc": 11086,
+          "instructions": 4023178,
+          "time_ns": 26947281600,
+          "keyboard_ready": false,
+          "screen": "                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        }
+      ]
+    },
+    {
+      "cpu": 5500,
+      "steps": [
+        {
+          "command": "cpu 5500",
+          "halted": false,
+          "pc": 0,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "screen": "                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "pc 61470",
+          "halted": false,
+          "pc": 61470,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "screen": "                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 10000000",
+          "halted": true,
+          "pc": 65527,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "screen": "                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/RIMTEST.tap",
+          "halted": false,
+          "pc": 0,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "screen": "                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 5000000",
+          "halted": false,
+          "pc": 15507,
+          "instructions": 5198148,
+          "time_ns": 33107470400,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Left):                                                 \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 49",
+          "halted": false,
+          "pc": 15507,
+          "instructions": 5198148,
+          "time_ns": 33107470400,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Left):                                                 \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15448,
+          "instructions": 5298148,
+          "time_ns": 33714294400,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Left): 1                                               \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 13",
+          "halted": false,
+          "pc": 15448,
+          "instructions": 5298148,
+          "time_ns": 33714294400,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Left): 1                                               \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15452,
+          "instructions": 5398148,
+          "time_ns": 34319296000,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Right):                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 50",
+          "halted": false,
+          "pc": 15452,
+          "instructions": 5398148,
+          "time_ns": 34319296000,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Right):                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15520,
+          "instructions": 5498148,
+          "time_ns": 34926116800,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Right): 2                                              \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 13",
+          "halted": false,
+          "pc": 15520,
+          "instructions": 5498148,
+          "time_ns": 34926116800,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Right): 2                                              \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15509,
+          "instructions": 5598148,
+          "time_ns": 35531203200,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left):                                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 50",
+          "halted": false,
+          "pc": 15509,
+          "instructions": 5598148,
+          "time_ns": 35531203200,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left):                                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15506,
+          "instructions": 5698148,
+          "time_ns": 36138030400,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 2                                                   \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 51",
+          "halted": false,
+          "pc": 15506,
+          "instructions": 5698148,
+          "time_ns": 36138030400,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 2                                                   \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15509,
+          "instructions": 5798148,
+          "time_ns": 36744851200,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 23                                                  \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 52",
+          "halted": false,
+          "pc": 15509,
+          "instructions": 5798148,
+          "time_ns": 36744851200,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 23                                                  \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15506,
+          "instructions": 5898148,
+          "time_ns": 37351678400,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 234                                                 \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 13",
+          "halted": false,
+          "pc": 15506,
+          "instructions": 5898148,
+          "time_ns": 37351678400,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 234                                                 \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15513,
+          "instructions": 5998148,
+          "time_ns": 37955256000,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left):                                                     \n** I/O Addressing Failure **                                                    \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        }
+      ]
+    },
+    {
+      "cpu": 6600,
+      "steps": [
+        {
+          "command": "cpu 6600",
+          "halted": false,
+          "pc": 0,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "screen": "                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "pc 61470",
+          "halted": false,
+          "pc": 61470,
+          "instructions": 0,
+          "time_ns": 0,
+          "keyboard_ready": false,
+          "screen": "                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 10000000",
+          "halted": true,
+          "pc": 65527,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "screen": "                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "load {root}/tapes/diagnostics/RIMTEST.tap",
+          "halted": false,
+          "pc": 0,
+          "instructions": 198148,
+          "time_ns": 342881600,
+          "keyboard_ready": false,
+          "screen": "                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 5000000",
+          "halted": false,
+          "pc": 15454,
+          "instructions": 5198148,
+          "time_ns": 33105785600,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Left):                                                 \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 49",
+          "halted": false,
+          "pc": 15454,
+          "instructions": 5198148,
+          "time_ns": 33105785600,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Left):                                                 \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15451,
+          "instructions": 5298148,
+          "time_ns": 33712420800,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Left): 1                                               \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 13",
+          "halted": false,
+          "pc": 15451,
+          "instructions": 5298148,
+          "time_ns": 33712420800,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Left): 1                                               \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15510,
+          "instructions": 5398148,
+          "time_ns": 34317232000,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Right):                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 50",
+          "halted": false,
+          "pc": 15510,
+          "instructions": 5398148,
+          "time_ns": 34317232000,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Right):                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15510,
+          "instructions": 5498148,
+          "time_ns": 34923876800,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Right): 2                                              \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 13",
+          "halted": false,
+          "pc": 15510,
+          "instructions": 5498148,
+          "time_ns": 34923876800,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI.D. for RIM under test (Right): 2                                              \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15520,
+          "instructions": 5598148,
+          "time_ns": 35528798400,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left):                                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 50",
+          "halted": false,
+          "pc": 15520,
+          "instructions": 5598148,
+          "time_ns": 35528798400,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left):                                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15513,
+          "instructions": 5698148,
+          "time_ns": 36135432000,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 2                                                   \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 51",
+          "halted": false,
+          "pc": 15513,
+          "instructions": 5698148,
+          "time_ns": 36135432000,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 2                                                   \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15510,
+          "instructions": 5798148,
+          "time_ns": 36742067200,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 23                                                  \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 52",
+          "halted": false,
+          "pc": 15510,
+          "instructions": 5798148,
+          "time_ns": 36742067200,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 23                                                  \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15510,
+          "instructions": 5898148,
+          "time_ns": 37348712000,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 234                                                 \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "key 13",
+          "halted": false,
+          "pc": 15510,
+          "instructions": 5898148,
+          "time_ns": 37348712000,
+          "keyboard_ready": true,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left): 234                                                 \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        },
+        {
+          "command": "run 100000",
+          "halted": false,
+          "pc": 15512,
+          "instructions": 5998148,
+          "time_ns": 37952120000,
+          "keyboard_ready": false,
+          "screen": "R.I.M. Diagnotsic - RIMTEST 1.1 - RELEASE -                                     \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n                                                                                \nI/O Address for RIM (Left):                                                     \n** I/O Addressing Failure **                                                    \n                                                                                \n                                                                                \n                                                                                \n                                                                                \n"
+        }
+      ]
+    }
+  ]
+}

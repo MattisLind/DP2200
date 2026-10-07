@@ -569,6 +569,7 @@ int dp2200_cpu::execute() {
 
   /* call into four major instruction subgroups for decoding */
 
+  blockIoTimeNs=0;
   int extended = is6600 ? execute6600(inst) : -1;
   if (extended<0 && is5500) extended=executeExtended(inst);
   if (extended>=0) {
@@ -587,7 +588,9 @@ int dp2200_cpu::execute() {
     halted = load(inst);
     break;
   }
-  totalInstructionTime.tv_nsec+=timeForInstruction;
+  // MIN/MOUT timing is variable: 8.4/8.8 us per transferred byte (5500
+  // hardware reference, section 5.8.5). Their table entry has no fixed cost.
+  totalInstructionTime.tv_nsec+=blockIoTimeNs ? blockIoTimeNs : timeForInstruction;
   if (totalInstructionTime.tv_nsec >= 1000000000) {
     totalInstructionTime.tv_nsec-=1000000000;
     totalInstructionTime.tv_sec++;
@@ -2320,10 +2323,21 @@ int dp2200_cpu::executeExtended(unsigned char inst) {
   if (implicit==0111 && (inst==0061 || inst==0071)) {
     if (userMode) { privilegeViolation=true; return 0; }
     for (int i=0; i<width; ++i) {
-      if (inst==0061) memory->write(source,ioCtrl->input(),previousP);
-      else ioCtrl->exWrite(memory->read(source,true,false,previousP));
+      blockIoTimeNs += inst==0061 ? 8400 : 8800;
+      if (inst==0061) {
+        int value=ioCtrl->input();
+        if (value<0) { accessViolation=true; return 0; }
+        memory->write(source,value,previousP);
+      } else {
+        int value=memory->read(source,true,false,previousP);
+        if (accessViolation) return 0;
+        int result=ioCtrl->exWrite(value);
+        if (result) return result;
+      }
+      if (accessViolation || writeViolation) return 0;
       source=(source+1)&pMask;
       int value=regs.regC-1; regs.regC=value; setflags(value,0);
+      storePair(source,regs.regH,regs.regL);
     }
     storePair(source,regs.regH,regs.regL);
     return 0;

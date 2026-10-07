@@ -7,6 +7,7 @@
 
 class dp2200_cpu {
   int blockTransfer(bool);
+  int blockIoTimeNs = 0;
 public:
   // Define Registerset
   enum Reg { A, B, C, D, E, H, L, X };

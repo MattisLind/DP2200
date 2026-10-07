@@ -81,6 +81,19 @@ void commandWindow::doTrace(std::vector<Param> params) {
   cpu->traceEnabled=true;
 }
 
+void commandWindow::doRim(std::vector<Param> params) {
+  int address=0234, node=1;
+  for (const auto & param : params) {
+    if (param.paramId==ADDRESS) address=param.paramValue.i;
+    if (param.paramId==NODE) node=param.paramValue.i;
+  }
+  if (!cpu->is5500 || cpu->is6600 || !cpu->ioCtrl->attachRim(address,node)) {
+    wprintw(innerWin,"RIM requires CPU 5500, a free address mask 0..255 with exactly four set bits and unique node 1..255.\n");
+    return;
+  }
+  wprintw(innerWin,"9483 RIM at %03o, node %d attached (register/buffer model; no link).\n",address,node);
+}
+
 void commandWindow::doSet(std::vector<Param> params) {
   for (auto it = params.begin(); it < params.end(); it++) {
     if (it->paramId == CPU) {
@@ -483,7 +496,8 @@ commandWindow::commandWindow(class dp2200_cpu * c) {
       {"WATCH", "Add memory watch. \n  Parameter ADDRESS is used for specifying the address of the memory watch.", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doAddWatch});
   commands.push_back(
       {"NOWATCH", "Remove memory watch. \n  Parameter ADDRESS is used for specifying the address of the memory watch.", {{"ADDRESS", ADDRESS, STRING, {.s = {'\0'}}}}, &commandWindow::doRemoveWatch});  
-  commands.push_back({"TRACE", "Enable trace logging", {}, &commandWindow::doTrace});    
+  commands.push_back({"TRACE", "Enable trace logging", {}, &commandWindow::doTrace});
+  commands.push_back({"RIM", "Attach a 9483 register/buffer device (CPU 5500). ADDRESS and NODE are decimal; defaults 156 and 1. No network link yet.", {{"ADDRESS", ADDRESS, NUMBER, {.i=156}}, {"NODE", NODE, NUMBER, {.i=1}}}, &commandWindow::doRim});
   commands.push_back({"NOTRACE", "Disable trace logging", {}, &commandWindow::doNoTrace}); 
   commands.push_back({"HEXADECIMAL", "Show in hexadecimal notation.\nAlso possible to toggle in the register view by pressing 'o'.", {}, &commandWindow::doHex});  
   commands.push_back({"OCTAL", "Show in Octal notation.\nAlso possible to toggle in the register view by pressing 'o'.", {}, &commandWindow::doOct});  

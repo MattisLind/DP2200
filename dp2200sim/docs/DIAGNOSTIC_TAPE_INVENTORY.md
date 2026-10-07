@@ -324,6 +324,9 @@ No such controller currently appears in `IOController`.
 
 ### ARC Resource Interface Module
 
+See [RIM_FEASIBILITY.md](RIM_FEASIBILITY.md) for the subsequent 9483 specification
+review, 5500/6600 setup probes, CPU integration gaps and transport proposal.
+
 **Feasible, substantial effort; stage it as a two-node virtual network.**
 RIMTEST's two node IDs/I/O addresses, SID/DID/data comparisons, transmitter
 available/acknowledged, reconﬁguration, receive and parity statuses clearly
