@@ -83,16 +83,17 @@ The actual cpu simulator code is based on a 8008 simultor by Mike Willegal. I ha
 
 The simulator supports the 9380 floppy drive system, 9350 cartridge disks,
 9370 mass storage disks, and a 9374 cartridge-disk mode. The floppy drive
-supports four disks. To run DOS.C, use DP1100DisketteBoot.tap from DOS.C.
+supports four disks. To run DOS.C, use `DP1100DisketteBoot.tap` from `tapes/DOS.C`.
+The following attachment paths assume the simulator is run from `dp2200sim`.
 Attach is on cassette 0
 ```
-ATTACH F=DP1100DisketteBoot.tap
+ATTACH F=../tapes/DOS.C/DP1100DisketteBoot.tap
 LOAD
 ```
 
 The attach 011.IMD in floppy disk drive 0
 ```
-ATTACH F=011.IMD T=FLOPPY 
+ATTACH F=../tapes/DOS.C/011.IMD T=FLOPPY
 ```
 Then type RUN. NOW DOS.C will start and you get a DOS.C prompt:
 
@@ -125,7 +126,7 @@ The 5500 also have a 4k ROM memory that contains powerup code, a debugger and a 
 
 The DOS.C operating system can be booted from the restart/boot routne by simply attach the image-file and then do a restart command.
 
-For a cold 5500 boot of `DOS.C/003.IMD`, attach the floppy, select
+For a cold 5500 boot of `tapes/DOS.C/003.IMD`, attach the floppy, select
 `SET CPU=5500`, then `RESTART`. The ROM probes optional controllers before
 trying the floppy. Absent controllers return zero status and ignore commands;
 previously these probes incorrectly raised `E5 ACCESS PROTECT ERROR`, sometimes
@@ -134,11 +135,11 @@ required. Floppy controller selection and buffer state also start at zero.
 
 ```
 SET CPU=5500
-AT F=../DOS.C/001.IMD T=FLOPPY
+AT F=../tapes/DOS.C/001.IMD T=FLOPPY
 RESTART
 ```
 
-All images in the DOS.C directory is bootable in 5500 mode except for 011.IMD (which can only be booted in 2200 mode with the ```DP1100DisketteBoot.tap``` file loaded as described above) and 005.IMD which unfortunately is result of corrupt read (one sector of track 64 is missing).  
+All images in the `tapes/DOS.C` directory is bootable in 5500 mode except for 011.IMD (which can only be booted in 2200 mode with the ```DP1100DisketteBoot.tap``` file loaded as described above) and 005.IMD which unfortunately is result of corrupt read (one sector of track 64 is missing).
 
 ### Using the 5500 ROM debugger
 
@@ -636,7 +637,7 @@ python3 tests/check_dos_d_bell.py --output dos-d-results/dos-d-2.6
 
 ### Repeating the installation
 
-The supplied `DOS.D/dos.d_2.6_7_MAR_81_1of5.tap` through `5of5.tap`
+The supplied `tapes/DOS.D/dos.d_2.6_7_MAR_81_1of5.tap` through `5of5.tap`
 install successfully on the 5500 with a 9374 controller. The installation
 runner uses the original media and normal keyboard input; it does not patch
 DOS or bypass the surface test.

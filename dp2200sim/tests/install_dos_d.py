@@ -10,7 +10,7 @@ import tempfile
 from harness import Harness
 
 ROOT = Path(__file__).resolve().parents[2]
-MEDIA = ROOT / 'DOS.D'
+MEDIA = ROOT / 'tapes/DOS.D'
 IMAGE_BYTES = 204 * 8 * 24 * 256
 
 

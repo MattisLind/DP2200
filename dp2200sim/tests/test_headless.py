@@ -139,7 +139,7 @@ class HeadlessTests(unittest.TestCase):
 
     def test_5500_cold_rom_boot_dos_c(self):
         self.sim.command('cpu 5500')
-        self.sim.command(f'floppy 0 {ROOT / "DOS.C/003.IMD"}')
+        self.sim.command(f'floppy 0 {ROOT / "tapes/DOS.C/003.IMD"}')
         self.sim.command(f'pc {0o170036}')
         self.assertTrue(self.sim.command('run 1000000')['halted'])
         # Match the interactive runner's automatic restart after ROM power-up.

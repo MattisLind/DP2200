@@ -2762,7 +2762,7 @@
           "screen": ""
         },
         {
-          "command": "floppy 0 {root}/DOS.C/003.IMD",
+          "command": "floppy 0 {root}/tapes/DOS.C/003.IMD",
           "pc": 0,
           "halted": false,
           "instructions": 0,
@@ -2818,7 +2818,7 @@
           "screen": ""
         },
         {
-          "command": "floppy 0 {root}/DOS.C/003.IMD",
+          "command": "floppy 0 {root}/tapes/DOS.C/003.IMD",
           "pc": 0,
           "halted": false,
           "instructions": 0,
@@ -2874,7 +2874,7 @@
           "screen": ""
         },
         {
-          "command": "floppy 0 {root}/DOS.C/003.IMD",
+          "command": "floppy 0 {root}/tapes/DOS.C/003.IMD",
           "pc": 0,
           "halted": false,
           "instructions": 0,

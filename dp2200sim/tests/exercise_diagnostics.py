@@ -71,7 +71,7 @@ def scenarios():
     yield 'TST404', 2200, [('keys', 'N\n'), ('command', 'run 1000000')], ()
     yield 'EXRIBM_V2.3.A', 2200, [('keys', '9Y'), ('command', 'run 1000000')], ()
     for tape in ('DOSC_BOOT', 'UBOOT-2', 'UBOOT'):
-        yield tape, 2200, [('command', 'run 25000000')], ('floppy 0 {root}/DOS.C/003.IMD',)
+        yield tape, 2200, [('command', 'run 25000000')], ('floppy 0 {root}/tapes/DOS.C/003.IMD',)
     yield 'SURVAR_V1.1', 5500, [('keys', '0DR\n'), ('command', 'run 100000000'), ('command', 'disk-state')], (
         'disk-model 9370', 'disk 0 0 {work}/disk.dsk', 'disk-protect 0 1', 'printer {work}/printer.txt')
 
