@@ -1,13 +1,21 @@
 # Testing the presentation
 
-The editable source is `presentation.qmd`. It uses Quarto + Reveal.js with the built-in dark theme and local styling in `presentation.css`. The numbered slide folders remain available as source material; they are not automatically included in this deck.
+The editable source is `presentation.qmd`. It uses Quarto + Reveal.js with the built-in dark theme and local styling in `presentation.css`. The deck loads its pictures from `Bilder/`.
 
-Run these commands from the repository root.
+## Requirements
+
+- A web browser, such as Chrome, Firefox, or Safari.
+- [Quarto](https://quarto.org/docs/get-started/) to render or preview the source. This presentation has been tested with Quarto 1.11.9.
+- Python 3 only if you want to export the separate printable speaker notes.
+
+On a new machine, install Quarto and check that `quarto --version` works in a terminal. Reveal.js is supplied by Quarto; it does not need a separate installation.
+
+Run the commands below from the repository root. On this workstation, a local Quarto copy is also available: replace `quarto` with `build/tools/quarto/bin/quarto` if Quarto is not on your PATH. That local installation is not included in the presentation source files.
 
 ## Live preview
 
 ```sh
-build/tools/quarto/bin/quarto preview presentation/presentation.qmd --host 127.0.0.1 --port 4200 --no-browser
+quarto preview presentation/presentation.qmd --host 127.0.0.1 --port 4200 --no-browser
 ```
 
 Open http://localhost:4200/. Save changes to the QMD or CSS to refresh the preview. Stop the server with Ctrl+C. If an existing preview already uses port 4200, use it or choose a different port.
@@ -15,12 +23,14 @@ Open http://localhost:4200/. Save changes to the QMD or CSS to refresh the previ
 ## Render a portable HTML file
 
 ```sh
-build/tools/quarto/bin/quarto render presentation/presentation.qmd
+quarto render presentation/presentation.qmd
 ```
 
 Open `presentation/presentation.html` in a browser. Render mode embeds the images, styles, and presentation resources into the HTML. Preview mode can use separate resources while serving the deck; render again before copying the HTML elsewhere.
 
-Quarto 1.11.9 is installed locally under `build/tools/quarto`, without a system-wide installation. If you later install Quarto normally, replace `build/tools/quarto/bin/quarto` with `quarto`.
+To present on another computer, copy the rendered `presentation.html` there and open it in a browser. The rendered slides work offline and do not require Quarto or Python. Use the preview server when you want live updates and speaker view.
+
+The generated HTML and printable notes exports are excluded from Git, so render them after checking out the repository.
 
 ## Presenting and editing
 
@@ -105,22 +115,3 @@ Explain the photograph and the main point of this slide.
 ```
 
 These notes appear in speaker view and the separate printable notes export, not on the projected slide. Regenerate the notes export after editing; it does not update automatically with the slide preview.
-
-## Waveform image variants
-
-The waveform assets are in `Bilder/`:
-
-- `Tape-waveform.png`: original screenshot.
-- `Tape-waveform-annotated-clean.png`: image-tool-edited version with the cursor and bottom explanatory sentence removed.
-- `Tape-waveform-annotated-precise.png`: deterministic reconstruction from the original PNG, with only the cursor column repaired before drawing annotations. No JPEG conversion or image generation is used.
-- `Tape-waveform-annotated-precise.svg`: the same reconstruction with vector labels, shading, and brackets over an embedded PNG.
-
-Choose a variant by changing the image path in `presentation.qmd`, then save and preview or render. Existing variants are retained for comparison. See [annotation details](Bilder/Tape-waveform-annotations.md) for measurements and framing assumptions.
-
-To regenerate the precise variant from the repository root:
-
-```sh
-PYTHONPATH=build/tools/python python3 presentation/scripts/annotate_waveform.py --remove-cursor --output Tape-waveform-annotated-precise
-```
-
-This script requires NumPy and PyMuPDF, currently installed under `build/tools/python`. It writes the PNG, SVG, and JSON measurement report with the chosen output basename; it does not switch the deck's image reference.
