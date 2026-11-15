@@ -1,0 +1,493 @@
+---
+title: |
+  Datapoint 2200\
+  From IKEA kit to running\
+  Was it the first PC?
+format:
+  revealjs:
+    theme: dark
+    css: presentation.css
+    include-after-body: click-to-advance.html
+    slide-number: false
+    transition: fade
+    width: 1280
+    height: 720
+    center: false
+    auto-stretch: false
+    controls: true
+    navigation-mode: linear
+    history: true
+    embed-resources: true
+    preview-links: false
+---
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+![](Bilder/Ikea_kit.jpg){.slide-photo}
+
+:::
+
+::: {.column width="50%"}
+
+![](Bilder/Datapoint2200.jpg){.slide-photo}
+
+:::
+
+::::
+
+
+::: {.notes}
+
+This was the IKEA kit I got and this is the story how I got it running.
+Also some background on the company that made it.
+
+:::
+
+---
+
+
+![](Bilder/DalbyVisitors.jpg){.slide-photo}
+
+::: {.notes}
+
+Software engineer with a passion for electronics and hardware.
+Also running Dalby Datormuseum.
+:::
+
+---
+
+
+::: {.photo-stack}
+![](Bilder/Upstair1.JPG){.museum-photo}
+
+![](Bilder/Upstair2.JPG){.museum-photo}
+:::
+
+::: {.notes}
+
+This is Dalby Datormuseum. Upstairs.
+
+:::
+
+---
+
+![](Bilder/datapoint-book-cover.png){.slide-photo}
+
+::: {.notes}
+
+A great book on the company and people behind the machine.
+
+Written by a texan so they insist on being the first PC.
+But was it really? More on that later?
+
+:::
+
+---
+
+
+![](Bilder/datapoint-2200-product-introduction.png){.slide-photo .with-caption}
+
+::: {style="text-align: center; font-size: 0.65em;"}
+Founders: Philip Ray (left) Austin Roche (right)
+:::
+
+::: {.notes}
+Ex NASA engineers.
+Company founded 1968 as CTC - Computer Terminal Corporation
+
+:::
+
+
+---
+
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+![](Bilder/MM503.jpeg){.slide-photo}
+
+:::
+
+::: {.column width="50%"}
+
+![](Bilder/MM507.png){.slide-photo}
+
+:::
+
+::::
+
+
+::: {.notes}
+
+Availability of Dynamic shift registers. 
+A sequential access memory.
+Need to circulate to not lose its content.
+
+:::
+
+
+---
+
+
+![](Bilder/CTC_DataPoint-3300.jpg){.slide-photo}
+
+::: {.notes}
+First product. Datapoint 3300
+72 characters by 25 lines. 1800 6-bit characters using 36 MM507 chips. 
+
+:::
+
+--- 
+
+
+::::: {.columns .architecture-comparison}
+
+:::: {.column width="50%"}
+
+![](Bilder/Architecture.png){.slide-photo}
+
+::::
+
+:::: {.column width="50%"}
+
+::: {.rotated-photo-frame}
+![](Bilder/CPU_Board_Annotated.png){.rotate-clockwise}
+:::
+
+::::
+
+:::::
+
+::: {.notes}
+
+To be able to connect to all sorts of mainframes and doing data entry tasks 
+a programmable terminal was needed.
+A programmabel terminal required a CPU.  
+Vic Poor, Harry Pyle and Jonathan Schmidt designed the
+instruction set and architechture
+
+First design was bit-serial. All data was stored in shift registers.
+The ALU processed one bit at a time. Memory was shift registers.
+Slow!
+
+Version 2 on the right. 8 bit parallell CPU.
+
+:::
+
+---
+
+
+![](Bilder/KL_Intel_C8008-1.jpg){.slide-photo}
+
+
+::: {style="text-align: center; font-size: 0.45em;"}
+Photo by Thomas Nguyen 
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+:::
+
+::: {.notes}
+
+CTC contacted Intel and Texas and asked if they could design a single chip
+based on their architecture. Both companies came up with a chip
+But CTC though the chip was too slow so they continued with their v2 parallell variant
+Intel got the right to sell the chip. They called it 8008. 
+
+Then 8080 shared a lot of the original architecture.
+Later 8086, basic ideas the same but a lot of changes.
+Then virtually unchanged up until today. But wider  data paths
+
+:::
+
+---
+
+![](Bilder/Incoterm-ad-GroupRates.png){.slide-photo}
+
+
+::: {.notes}
+
+Many companies in the same business area doing the same 
+Intelligent Terminals. Here is the Incoterm SPD 10/20.
+Incoterm also founded end of 60s.
+
+However CTC early saw that their design could be used as 
+a regular computer.
+
+Pillsbury, a company running chicken farms wanted to do
+payroll processing local at the farm - They used a 2200.
+
+1971.
+
+Company changed the name from CTC to Datapoint.
+
+:::
+
+---
+
+![](Bilder/Ikea_kit.jpg){.slide-photo}
+
+::: {.notes}
+
+IKEA kit received as trade with a Ggerman computer collector.
+Thanks Achim!
+
+:::
+
+---
+
+![](Bilder/Simulator.jpg){.slide-photo}
+
+::: {.notes}
+
+To understand the machine better I started to design a Simulator
+for it.
+
+Turned out to be very useful for testing software later on.
+
+:::
+
+---
+
+![](Bilder/DDHF_tapes.JPG){.slide-photo}
+
+::: {.notes}
+
+DDHF (Dansk Datahistorisk Förening) lent me cassettes I could read
+
+:::
+
+---
+
+![](Bilder/Cassette_From_RC.jpg){.slide-photo}
+
+::: {.notes}
+
+One contained a Basic compiler / interpreter
+
+Now I finally had something interesting to run on the machine.
+The simple CTOS OS, BASIC and some demo tapes.
+
+:::
+
+---
+
+![](Bilder/Tape-waveform-annotated-precise.png){.slide-photo}
+
+::: {.notes}
+
+Tape decoding
+
+:::
+
+---
+
+![](Bilder/Dropout.png){.slide-photo}
+
+::: {.notes}
+
+Tricky to decode...
+
+:::
+
+---
+
+
+
+![](Bilder/PSU_PreRegTesting.JPG){.slide-photo}
+
+::: {.notes}
+
+Early switch mode design. 
+Two-level design: Off-line buck converter creating 60V
+Then inverter to create all voltages.
+
+:::
+
+
+---
+
+
+![](Bilder/PowerSupplyTesting.jpg){.slide-photo}
+
+::: {.notes}
+
+Testing the full PSU. Inherently lethal design.
+Regulator control circuit in the card cage
+live voltages in tha bakplane.
+
+:::
+
+---
+
+
+![](Bilder/ExtenderBoards.jpg){.slide-photo}
+
+::: {.notes}
+
+Since the design of the machine is using a card cage
+with a backplane.
+
+Very hard to reach a component and do measurements.
+
+Need to have extender boards.
+
+:::
+
+---
+
+![](Bilder/Tandberg_recorder.jpg){.slide-photo}
+
+::: {.notes}
+
+Machine is only booting directly from the tape.
+Driven by hardware. 
+No ROM memory
+
+So to be able to run the test programs I need
+write a tape.
+
+Found this school tape recorder cheap and modified it
+heavily.
+
+
+:::
+
+---
+
+![](Bilder/TapeEncoderCard.JPG){.slide-photo}
+
+::: {.notes}
+
+I created a small microprocessor based board that
+encoded the data on to the tape.
+
+
+:::
+
+---
+
+![](Bilder/Debugging.jpg){.slide-photo}
+
+::: {.notes}
+
+Debugging session. Logic analyzer and
+mother board on extender.
+
+
+:::
+
+---
+
+![](Bilder/AnnotedHalt.png){.slide-photo}
+
+::: {.notes}
+
+Tracing the error. Read from memory is not working.
+LAM reads from memory and stores into A register.
+
+:::
+
+---
+
+::: {.photo-stack .centered-photo-stack}
+![](Bilder/DP2200_sheet2.jpg){.museum-photo}
+
+![](Bilder/2200CPU_Sheet3.jpg){.museum-photo}
+:::
+
+
+::: {.notes}
+
+Tracing the schematic.
+
+
+:::
+
+---
+
+![](Bilder/Oscilloscope.JPG){.slide-photo}
+
+::: {.notes}
+
+Output of the 7400
+
+:::
+
+---
+
+![](Bilder/Borken_7400.jpg){.slide-photo}
+
+::: {.notes}
+
+This 7400 was the problem!
+
+:::
+
+---
+
+
+
+![](Bilder/LA_Screen_When_successful_run.jpg){.slide-photo}
+
+::: {.notes}
+
+With the new chip in place I could see on the LA that it was
+executing the processor test correctly, even that no 
+screen was attached.
+
+:::
+
+
+---
+
+![](Bilder/ScreenBefore.JPG){.slide-photo}
+
+::: {.notes}
+
+This was how the screen looked like.
+
+:::
+
+---
+
+![](Bilder/CRT_Cataract_removal.jpg){.slide-photo}
+
+::: {.notes}
+
+Fixing this. A glue layer.
+
+:::
+
+---
+
+![](Bilder/MemoryTests.jpg){.slide-photo}
+
+::: {.notes}
+
+With a screen I could run more tests. The memory tests
+show several bad chips.
+
+:::
+
+---
+
+![](Bilder/MemoryChips.jpg){.slide-photo}
+
+::: {.notes}
+
+Found some NOS replacement chips on Ebay.
+1k DRAM chips
+
+:::
+
+---
+
+![](Bilder/Datapoint2200.jpg){.slide-photo}
+
+::: {.notes}
+
+Running!
+
+:::

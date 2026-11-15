@@ -1,0 +1,90 @@
+/* Local styling on top of Quarto’s built-in dark theme. */
+:root {
+  --r-background-color: #101827;
+  --r-main-color: #e7edf5;
+  --r-heading-color: #ffffff;
+  --r-link-color: #71d9c0;
+  --r-selection-background-color: #245647;
+}
+.reveal { font-family: Arial, Helvetica, sans-serif; }
+.reveal h1, .reveal h2, .reveal h3 { text-transform: none; }
+.reveal h2 { font-size: 1.5em; margin-bottom: 0.45em; }
+.reveal .slide-photo {
+  display: block;
+  width: 100%;
+  height: 680px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+/* Both panoramas share one width. Their combined aspect ratios at 940px
+   produce ~678px of image height, plus a 16px gap: inside the 720px slide. */
+.reveal .photo-stack {
+  width: min(100%, 940px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.reveal .photo-stack p,
+.reveal .photo-stack figure,
+.reveal .photo-stack .quarto-figure {
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+}
+.reveal .photo-stack .museum-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+}
+.reveal #title-slide .title { font-size: 1.65em; }
+.reveal .slides section > p { margin: 0; }
+.reveal .columns { gap: 24px; }
+.reveal figure { margin: 0; }
+.reveal figcaption { display: none; }
+.reveal .slide-number { color: #b4c5d9; background: transparent; }
+
+/* Leave room for ordinary Markdown text below a photograph. */
+.reveal .slide-photo.with-caption { height: 600px; }
+
+/* Rotate a portrait photo into a landscape frame without changing the file. */
+.reveal .rotated-photo-frame {
+  position: relative;
+  width: 100%;
+  height: 680px;
+  container-type: size;
+}
+.reveal .rotated-photo-frame .rotate-clockwise {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100cqh;
+  height: 100cqw;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  object-fit: contain;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+/* Equal columns including the gap; the rotated image fits its own frame. */
+.reveal .columns.architecture-comparison {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+}
+.reveal .architecture-comparison > .column {
+  width: auto !important;
+  min-width: 0;
+  padding: 0;
+}
+.reveal .architecture-comparison p { margin: 0; }
+
+/* Center the schematic pair as a group within the slide. */
+.reveal .photo-stack.centered-photo-stack {
+  height: 720px;
+  justify-content: center;
+}

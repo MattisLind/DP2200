@@ -1,0 +1,22 @@
+<script>
+// Click the middle 70% of the presentation to advance, without an overlay
+// that could block links, media controls, or selecting text.
+document.addEventListener('click', function (event) {
+  const deck = window.Reveal;
+  if (!deck || !deck.isReady() || event.button !== 0 || event.defaultPrevented) return;
+  if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+  if (deck.isOverview() || deck.isPaused() || deck.isSpeakerNotes()) return;
+  if (new URLSearchParams(window.location.search).has('print-pdf')) return;
+  if (window.getSelection()?.toString()) return;
+  if (event.target.closest('a, button, input, textarea, select, video, audio, iframe, [contenteditable], [role="button"], .controls, .slide-menu-wrapper, .slide-menu-overlay')) return;
+
+  const stage = document.querySelector('.reveal');
+  if (!stage || !stage.contains(event.target)) return;
+  const rect = stage.getBoundingClientRect();
+  const x = (event.clientX - rect.left) / rect.width;
+  const y = (event.clientY - rect.top) / rect.height;
+  if (x >= 0.15 && x <= 0.85 && y >= 0.15 && y <= 0.85) {
+    deck.next();
+  }
+});
+</script>
