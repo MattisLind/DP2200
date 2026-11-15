@@ -429,7 +429,7 @@ This 7400 was the problem!
 
 
 
-![](Bilder/LA_Screen_When_successful_run.jpg){.slide-photo}
+![](Bilder/LA_Screen_When_successful_run-descreened.png){.slide-photo}
 
 ::: {.notes}
 
